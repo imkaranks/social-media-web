@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --ff-primary: "Inter", sans-serif;
+  }
+
+  body {
+    font-family: var(--ff-primary);
+  }
+}
