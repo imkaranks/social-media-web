@@ -4,7 +4,7 @@ export default function Post() {
       <header className="flex w-full items-start gap-4">
         <div className="flex items-start gap-2 max-sm:flex-col md:gap-4">
           <img
-            className="inline-block size-10 rounded-full"
+            className="inline-block size-8 rounded-full sm:size-9 md:size-10"
             src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80"
             alt="Me"
           />
@@ -37,9 +37,9 @@ export default function Post() {
 
       <div className="mt-3 overflow-hidden rounded-xl">
         <img
-          src="https://plus.unsplash.com/premium_photo-1682146151884-40fe6fcc284f?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHwxfHx8ZW58MHx8fHx8"
+          src="https://images.unsplash.com/photo-1531141445733-14c2eb7d4c1f?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGxpZmVzdHlsZXxlbnwwfHwwfHx8MA%3D%3D"
           className="max-h-96 w-full object-cover object-center"
-          alt=""
+          alt="man wearing white shorts holding black backpack"
         />
       </div>
 
@@ -111,7 +111,7 @@ export default function Post() {
       </div>
 
       {/* Liked by */}
-      <div className="mb-1 flex items-center gap-2 max-sm:flex-col">
+      <div className="mb-1 flex gap-2 max-sm:flex-col sm:items-center">
         <div className="flex items-center -space-x-2">
           <img
             className="inline-block size-8 rounded-full ring-2 ring-gray-100 dark:ring-neutral-700/20"

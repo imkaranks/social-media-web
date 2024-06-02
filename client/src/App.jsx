@@ -6,6 +6,12 @@ import Home from "@/pages/Home";
 import SignIn from "@/pages/Auth/SignIn";
 import SignUp from "@/pages/Auth/SignUp";
 import Profile from "@/pages/Profile";
+import Explore from "@/pages/Explore";
+import Notification from "@/pages/Notification";
+import Messages from "@/pages/Messages";
+import MessagesLayout from "@/pages/Messages/MessagesLayout";
+import Bookmarks from "@/pages/Bookmarks";
+import Settings from "@/pages/Settings";
 import { Suspense } from "react";
 
 export default function App() {
@@ -21,7 +27,15 @@ export default function App() {
 
             <Route element={<RootLayout />}>
               <Route index element={<Home />} />
-              <Route path="/me" element={<Profile />} />
+              <Route path="explore" element={<Explore />} />
+              <Route path="notification" element={<Notification />} />
+              <Route path="bookmarks" element={<Bookmarks />} />
+              <Route path="settings" element={<Settings />} />
+              <Route path="me" element={<Profile />} />
+            </Route>
+
+            <Route path="messages" element={<MessagesLayout />}>
+              <Route index element={<Messages />} />
             </Route>
           </Route>
         </Routes>

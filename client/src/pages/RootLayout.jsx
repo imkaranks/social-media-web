@@ -8,7 +8,7 @@ export default function RootLayout() {
     <>
       <Topbar />
 
-      <main className="relative mx-auto grid max-w-screen-2xl grid-cols-[auto_auto_0] md:grid-cols-[auto_auto_30vw] md:gap-4 xl:grid-cols-[min(18vw,_276.48px)_auto_min(20vw,_307.2px)]">
+      <main className="relative mx-auto grid max-w-screen-2xl grid-cols-[auto_1fr_0] md:grid-cols-[auto_1fr_30vw] md:gap-4 xl:grid-cols-[min(18vw,_276.48px)_auto_min(20vw,_307.2px)]">
         <LeftSidebar />
         <Outlet />
         <RightSidebar />

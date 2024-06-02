@@ -2,16 +2,16 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 
 export default function Topbar() {
-  const [dropdownVisible, setDropdownVisible] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 bg-gray-100 py-4 dark:bg-neutral-800">
+    <header className="sticky top-0 z-50 border-b border-b-gray-200 bg-white py-4 dark:border-b-neutral-700 dark:bg-neutral-800">
       <div className="mx-auto flex max-w-screen-2xl items-center justify-between px-4">
         <Link to="/" className="font-semibold sm:text-lg 2xl:text-xl">
           QuietSphere
         </Link>
 
-        <div className="flex w-1/3 overflow-hidden rounded-full bg-gray-200 px-3 py-2 dark:bg-neutral-700 max-lg:hidden">
+        <div className="flex w-2/5 overflow-hidden rounded-full bg-gray-200 px-3 py-2 dark:bg-neutral-700 max-md:hidden">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -40,17 +40,13 @@ export default function Topbar() {
           >
             Create
           </label>
-          {/* <img
-            className="inline-block size-9 rounded-full"
-            src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80"
-            alt="Me"
-          /> */}
+
           <div className="hs-dropdown relative inline-flex">
             <button
-              id="hs-dropdown-with-header"
+              id="avatar-dropdown"
               type="button"
               className="bg-transparent"
-              onClick={() => setDropdownVisible((prevState) => !prevState)}
+              onClick={() => setIsDropdownOpen((prevState) => !prevState)}
             >
               <img
                 className="inline-block size-9 rounded-full"
@@ -59,8 +55,8 @@ export default function Topbar() {
               />
             </button>
             <div
-              className={`${dropdownVisible ? "absolute right-0 top-12 z-50 opacity-100" : "hidden opacity-0 "}mt-2 min-w-60 rounded-lg bg-white p-2 shadow-md transition-[opacity,margin] dark:border dark:border-neutral-700 dark:bg-neutral-800`}
-              aria-labelledby="hs-dropdown-with-header"
+              className={`${isDropdownOpen ? "mt-0 opacity-100 " : "pointer-events-none mt-2 opacity-0 "}absolute right-0 top-12 z-50 min-w-60 rounded-lg bg-white p-2 shadow-md transition-[opacity,margin] focus-within:opacity-100 dark:border dark:border-neutral-700 dark:bg-neutral-800`}
+              aria-labelledby="avatar-dropdown"
             >
               <div className="-m-2 rounded-t-lg bg-gray-100 px-5 py-3 dark:bg-neutral-700">
                 <p className="text-sm text-gray-500 dark:text-neutral-400">

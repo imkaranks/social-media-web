@@ -7,6 +7,10 @@
     --ff-primary: "Inter", sans-serif;
   }
 
+  * {
+    @apply [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500 [&::-webkit-scrollbar-track]:bg-gray-100 dark:[&::-webkit-scrollbar-track]:bg-neutral-700 [&::-webkit-scrollbar]:w-2;
+  }
+
   body {
     font-family: var(--ff-primary);
   }

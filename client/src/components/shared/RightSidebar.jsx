@@ -1,6 +1,6 @@
 export default function RightSidebar() {
   return (
-    <div className="sticky top-[4.5rem] h-[calc(100vh-4.5rem)] overflow-y-auto p-4 pt-0 max-md:hidden [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500 [&::-webkit-scrollbar-track]:bg-gray-100 dark:[&::-webkit-scrollbar-track]:bg-neutral-700 [&::-webkit-scrollbar]:w-2">
+    <div className="sticky top-[4.5625rem] h-[calc(100vh-4.5625rem)] w-[calc(100%-0.5rem)] overflow-y-auto p-4 pr-2 max-md:hidden">
       {/* messages */}
       <div className="mb-4 rounded-xl bg-gray-200 p-4 dark:bg-neutral-700">
         <div className="mb-4 flex items-center justify-between">
@@ -69,7 +69,7 @@ export default function RightSidebar() {
               <div className="relative inline-block">
                 <img
                   className="inline-block size-9 rounded-full"
-                  src="https://i.pravatar.cc/150?img=9"
+                  src={`https://i.pravatar.cc/150?img=${idx + 20}`}
                   alt="Jane Doe"
                 />
                 {idx < 2 && (
@@ -100,7 +100,7 @@ export default function RightSidebar() {
               <div className="mb-2 flex gap-2 2xl:gap-4">
                 <img
                   className="inline-block size-9 rounded-full"
-                  src="https://i.pravatar.cc/150?img=54"
+                  src={`https://i.pravatar.cc/150?img=${idx + 30}`}
                   alt="John Doe"
                 />
                 <div className="max-2xl:text-sm">
@@ -115,7 +115,10 @@ export default function RightSidebar() {
                 <button className="inline-flex items-center gap-x-2 rounded-lg border border-transparent bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:pointer-events-none disabled:opacity-50">
                   Accept
                 </button>
-                <button className="inline-flex items-center gap-x-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-800 shadow-sm hover:bg-gray-50 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white dark:hover:bg-neutral-800">
+                <button
+                  // className="inline-flex items-center gap-x-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-800 shadow-sm hover:bg-gray-50 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white dark:hover:bg-neutral-800"
+                  className="inline-flex items-center gap-x-2 rounded-lg border border-transparent bg-gray-100 px-3 py-2 text-sm font-semibold text-gray-800 hover:bg-gray-200 disabled:pointer-events-none disabled:opacity-50 dark:bg-white/10 dark:text-white dark:hover:bg-white/20 dark:hover:text-white"
+                >
                   Reject
                 </button>
               </div>

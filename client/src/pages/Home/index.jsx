@@ -4,7 +4,7 @@ import Stories from "./Stories";
 
 export default function Home() {
   return (
-    <div className="overflow-x-hidden max-md:w-[calc(100%-1rem)]">
+    <div className="overflow-x-hidden p-4 md:pr-0">
       <Stories />
       <CreatePost />
       <Feed />
