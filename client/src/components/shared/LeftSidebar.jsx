@@ -3,20 +3,20 @@ import { Link, NavLink } from "react-router-dom";
 export default function LeftSidebar() {
   return (
     <aside className="sticky top-[4.5625rem] z-50 h-[calc(100vh-4.5625rem)] border-r border-r-gray-200 bg-white p-4 dark:border-r-neutral-700 dark:bg-neutral-800 xl:space-y-8 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500 [&::-webkit-scrollbar-track]:bg-gray-100 dark:[&::-webkit-scrollbar-track]:bg-neutral-700 [&::-webkit-scrollbar]:w-2">
-      <Link className="max-xl:hidden" to="/me">
+      <Link className="max-xl:hidden" to="/user/imkaran">
         <div className="group">
           <div className="flex items-center">
             <img
               className="inline-block size-14 flex-shrink-0 rounded-full"
-              src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80"
-              alt="Mark Wanner"
+              src="https://avatars.githubusercontent.com/u/109339437?v=4"
+              alt="Karan Sethi"
             />
             <div className="ms-3">
               <h3 className="font-semibold text-gray-800 dark:text-white">
-                Mark Wanner
+                Karan Sethi
               </h3>
               <p className="text-sm font-medium text-gray-400 dark:text-neutral-500">
-                mark@gmail.com
+                karan@test.com
               </p>
             </div>
           </div>
@@ -105,7 +105,7 @@ export default function LeftSidebar() {
           </li>
           <li>
             <NavLink
-              to="/me"
+              to="/user/imkaran"
               className={({ isActive }) =>
                 `${isActive ? "bg-gray-100 text-gray-700 dark:bg-neutral-700 dark:text-white " : "text-gray-700 hover:bg-gray-100 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-300 "}group relative flex items-center gap-x-3.5 rounded-lg px-2.5 py-2 max-2xl:text-sm max-xl:p-2`
               }
@@ -213,12 +213,7 @@ export default function LeftSidebar() {
             </NavLink>
           </li>
           <li>
-            <NavLink
-              to="/logout"
-              className={({ isActive }) =>
-                `${isActive ? "bg-gray-100 text-gray-700 dark:bg-neutral-700 dark:text-white " : "text-gray-700 hover:bg-gray-100 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-300 "}group relative flex items-center gap-x-3.5 rounded-lg px-2.5 py-2 max-2xl:text-sm max-xl:p-2`
-              }
-            >
+            <button className="group relative flex w-full items-center gap-x-3.5 rounded-lg px-2.5 py-2 text-gray-700 hover:bg-gray-100 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-300 max-2xl:text-sm max-xl:p-2">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -236,7 +231,7 @@ export default function LeftSidebar() {
               <span className="max-xl:invisible max-xl:absolute max-xl:left-[calc(100%+0.25rem)] max-xl:z-50 max-xl:inline-block max-xl:rounded max-xl:bg-gray-900 max-xl:px-2 max-xl:py-1 max-xl:text-xs max-xl:font-medium max-xl:text-white max-xl:opacity-0 max-xl:shadow-sm max-xl:transition-opacity max-xl:group-hover:visible max-xl:group-hover:opacity-100 max-xl:dark:bg-neutral-700">
                 Logout
               </span>
-            </NavLink>
+            </button>
           </li>
         </ul>
       </nav>

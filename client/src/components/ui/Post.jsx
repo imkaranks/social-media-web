@@ -5,11 +5,11 @@ export default function Post() {
         <div className="flex items-start gap-2 max-sm:flex-col md:gap-4">
           <img
             className="inline-block size-8 rounded-full sm:size-9 md:size-10"
-            src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80"
+            src="https://avatars.githubusercontent.com/u/109339437?v=4"
             alt="Me"
           />
           <div>
-            <p>Mark Wanner</p>
+            <p>Karan Sethi</p>
             <p>
               Lorem, ipsum dolor sit amet consectetur adipisicing elit. A,
               soluta.
@@ -115,7 +115,7 @@ export default function Post() {
         <div className="flex items-center -space-x-2">
           <img
             className="inline-block size-8 rounded-full ring-2 ring-gray-100 dark:ring-neutral-700/20"
-            src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80"
+            src="https://avatars.githubusercontent.com/u/109339437?v=4"
             alt="Image Description"
           />
           <img
@@ -136,7 +136,7 @@ export default function Post() {
 
       <div className="mb-1 text-xs sm:text-sm">
         <p>
-          <strong>Mark Wanner</strong> Lorem ipsum dolor sit amet consectetur.{" "}
+          <strong>Karan Sethi</strong> Lorem ipsum dolor sit amet consectetur.{" "}
           <span>#lifestyle</span>
         </p>
       </div>

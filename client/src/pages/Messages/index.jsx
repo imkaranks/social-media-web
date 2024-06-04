@@ -1,7 +1,27 @@
+import { useState } from "react";
+
 export default function Messages() {
+  const [expanded, setExpanded] = useState(false);
+
+  const openChatbox = () => {
+    if (innerWidth > 768) return;
+
+    if (!expanded) {
+      setExpanded(true);
+    }
+  };
+
+  const closeChatbox = () => {
+    if (innerWidth > 768) return;
+
+    if (expanded) {
+      setExpanded(false);
+    }
+  };
+
   return (
-    <div className="sticky top-[4.5rem] grid h-[calc(100vh-4.5625rem)] grid-cols-[auto_1fr] md:grid-cols-[15rem_1fr]">
-      <div className="h-full overflow-y-auto border-r border-r-gray-200 p-2 py-4 dark:border-r-neutral-700">
+    <div className="mdgrid-cols-[auto_1fr] sticky top-[4.5rem] grid h-[calc(100vh-4.5625rem)] overflow-hidden md:grid-cols-[15rem_1fr]">
+      <div className="h-full overflow-y-auto border-r border-r-gray-200 p-4 dark:border-r-neutral-700 md:px-2">
         <h2 className="mb-4">Messages</h2>
 
         <div className="mb-4 flex overflow-hidden rounded-full bg-gray-200 px-3 py-2 dark:bg-neutral-700">
@@ -30,6 +50,7 @@ export default function Messages() {
           <div
             key={idx}
             className={`${idx === 0 ? "bg-gray-200 dark:bg-neutral-700 " : ""}flex cursor-pointer items-start gap-2 rounded-xl p-2 py-2 hover:bg-gray-200 dark:hover:bg-neutral-700 md:py-3 2xl:gap-4`}
+            onClick={openChatbox}
           >
             <div className="relative inline-block">
               <img
@@ -42,7 +63,7 @@ export default function Messages() {
               )}
             </div>
 
-            <div className="max-md:hidden">
+            <div>
               <h4 className="max-2xl:text-sm">Jane Doe</h4>
               <p className="text-xs opacity-35 2xl:text-sm">
                 Lorem ipsum dolor sit.
@@ -51,8 +72,30 @@ export default function Messages() {
           </div>
         ))}
       </div>
-      <div className="relative h-full">
-        <div className="flex items-center gap-2 border-b border-b-gray-200 p-2 dark:border-b-neutral-700 sm:gap-4 md:p-4">
+      <div
+        className="relative h-full bg-white transition-transform dark:bg-neutral-800 max-md:absolute max-md:left-0 max-md:top-0 max-md:w-full max-md:translate-x-[--chatbox-offset]"
+        style={{ "--chatbox-offset": expanded ? 0 : "100%" }}
+      >
+        <div className="flex items-center gap-2 border-b border-b-gray-200 p-4 px-2 dark:border-b-neutral-700 sm:gap-4 md:px-4">
+          <button
+            className="flex items-center gap-x-3.5 rounded-lg px-2.5 py-2 text-gray-700 hover:bg-gray-100 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-300 max-2xl:text-sm max-xl:p-2 md:hidden"
+            onClick={closeChatbox}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="size-4"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
+              />
+            </svg>
+          </button>
           <img
             className="inline-block size-9 rounded-full"
             src={`https://i.pravatar.cc/150?img=${20}`}
@@ -62,37 +105,39 @@ export default function Messages() {
         </div>
 
         {/* chats */}
-        <div className="space-y-4 p-4">
+        <div className="h-[calc(100%-9rem)] space-y-4 overflow-y-auto p-4 [&>*]:max-w-[85%] [&_*]:w-fit">
           {/* me */}
-          <div className="ml-auto w-fit space-y-2 [&>*]:ml-auto">
-            <div className="w-fit rounded-lg bg-blue-500 p-2 text-white">
+          <div className="ml-auto space-y-2 [&>*]:ml-auto">
+            <div className="rounded-lg bg-blue-500 p-2 text-white">
               Hey there! How&apos;s it going?
             </div>
-            <div className="w-fit text-sm">
+            <div className="text-xs text-gray-400 dark:text-neutral-500 sm:text-sm">
               {new Date().toLocaleTimeString()}
             </div>
           </div>
 
           {/* sender */}
           <div className="space-y-2">
-            <div className="w-fit rounded-lg bg-gray-200 p-2 dark:bg-neutral-700">
+            <div className="rounded-lg bg-gray-200 p-2 dark:bg-neutral-700">
               Hey! Not too bad, thanks for asking.
             </div>
-            <div className="w-fit rounded-lg bg-gray-200 p-2 dark:bg-neutral-700">
+            <div className="rounded-lg bg-gray-200 p-2 dark:bg-neutral-700">
               How about you?
             </div>
-            <div className="text-sm">{new Date().toLocaleTimeString()}</div>
+            <div className="text-xs text-gray-400 dark:text-neutral-500 sm:text-sm">
+              {new Date().toLocaleTimeString()}
+            </div>
           </div>
 
           {/* me */}
-          <div className="ml-auto w-fit space-y-2 [&>*]:ml-auto">
-            <div className="w-fit rounded-lg bg-blue-500 p-2 text-white">
+          <div className="ml-auto space-y-2 [&>*]:ml-auto">
+            <div className="rounded-lg bg-blue-500 p-2 text-white">
               I&apos;m doing alright, just finished up some work.
             </div>
-            <div className="w-fit rounded-lg bg-blue-500 p-2 text-white">
+            <div className="rounded-lg bg-blue-500 p-2 text-white">
               What are you up to?
             </div>
-            <div className="w-fit text-sm">
+            <div className="text-xs text-gray-400 dark:text-neutral-500 sm:text-sm">
               {new Date().toLocaleTimeString()}
             </div>
           </div>
@@ -101,7 +146,7 @@ export default function Messages() {
         <form className="absolute bottom-4 left-4 flex w-[calc(100%-2rem)] items-center justify-between rounded-xl bg-gray-200 p-2 dark:bg-neutral-700 md:px-4">
           <img
             className="inline-block size-8 rounded-full sm:size-9 md:size-10"
-            src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80"
+            src="https://avatars.githubusercontent.com/u/109339437?v=4"
             alt="Someone"
           />
           <input

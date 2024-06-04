@@ -50,7 +50,7 @@ export default function Topbar() {
             >
               <img
                 className="inline-block size-9 rounded-full"
-                src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80"
+                src="https://avatars.githubusercontent.com/u/109339437?v=4"
                 alt="My Profile"
               />
             </button>
@@ -63,7 +63,7 @@ export default function Topbar() {
                   Signed in as
                 </p>
                 <p className="text-sm font-medium text-gray-800 dark:text-neutral-300">
-                  mark@gmail.com
+                  karan@test.com
                 </p>
               </div>
               <div className="mt-2 py-2 first:pt-0 last:pb-0">

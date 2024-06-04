@@ -1,6 +1,37 @@
-import Post from "@/components/ui/Post";
+import Posts from "./Posts";
+import Comments from "./Comments";
+import Media from "./Media";
+import Likes from "./Likes";
+import { useState } from "react";
+
+const tabs = [
+  {
+    title: "Posts",
+    Component: Posts,
+  },
+  {
+    title: "Comments",
+    Component: Comments,
+  },
+  {
+    title: "Likes",
+    Component: Likes,
+  },
+  {
+    title: "Media",
+    Component: Media,
+  },
+];
 
 export default function Profile() {
+  const [currentTab, setCurrentTab] = useState(0);
+
+  const showTabpanelWithIdx = (idx) => {
+    if (idx !== currentTab) {
+      setCurrentTab(idx);
+    }
+  };
+
   return (
     <div className="p-4 md:pr-0">
       <div
@@ -12,23 +43,19 @@ export default function Profile() {
       >
         <img
           className="absolute bottom-0 left-4 inline-block size-24 flex-shrink-0 translate-y-1/2 rounded-full border-4 border-white dark:border-neutral-800"
-          src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80"
-          alt="Mark Wanner"
+          src="https://avatars.githubusercontent.com/u/109339437?v=4"
+          alt="Karan Sethi"
         />
       </div>
 
       <div className="mt-14 px-4">
         <h3 className="font-semibold text-gray-800 dark:text-white">
-          Mark Wanner
+          Karan Sethi
         </h3>
         <p className="text-sm font-medium text-gray-400 dark:text-neutral-500">
-          mark@gmail.com
+          karan@test.com
         </p>
-        <p className="mt-4">
-          Lorem ipsum dolor sit, amet consectetur adipisicing elit. Fuga,
-          accusamus incidunt? Maxime, aspernatur. Illo autem in veritatis itaque
-          quae ratione!
-        </p>
+        <p className="mt-4">Hi, I&apos;m the developer of QuietSphere.</p>
 
         <div className="mt-2 flex items-center gap-1 text-sm text-gray-400 dark:text-neutral-500">
           <svg
@@ -51,7 +78,7 @@ export default function Profile() {
             />
           </svg>
 
-          <span>Worldwide</span>
+          <span>India</span>
         </div>
 
         <div className="mt-2 flex flex-wrap items-center gap-4">
@@ -73,7 +100,7 @@ export default function Profile() {
           <div className="flex items-center -space-x-2">
             <img
               className="inline-block size-6 rounded-full ring-2 ring-gray-100 dark:ring-neutral-700/20"
-              src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80"
+              src="https://avatars.githubusercontent.com/u/109339437?v=4"
               alt="Image Description"
             />
             <img
@@ -98,22 +125,33 @@ export default function Profile() {
             aria-label="Tabs"
             role="tablist"
           >
-            {["Posts", "Comments", "Media", "Likes"].map((text, idx) => (
+            {tabs.map((tab, idx) => (
               <button
                 key={idx}
                 type="button"
-                className={`${idx === 0 ? "border-blue-600 font-semibold text-blue-600 " : ""}inline-flex items-center gap-x-2 whitespace-nowrap border-b-2 border-transparent px-1 py-4 text-xs text-gray-500 hover:text-blue-600 focus:text-blue-600 focus:outline-none disabled:pointer-events-none disabled:opacity-50 dark:text-neutral-400 dark:hover:text-blue-500 sm:text-sm`}
+                className={`${idx === currentTab ? "border-blue-600 font-semibold text-blue-600 " : ""}inline-flex items-center gap-x-2 whitespace-nowrap border-b-2 border-transparent px-1 py-4 text-xs text-gray-500 hover:text-blue-600 focus:text-blue-600 focus:outline-none disabled:pointer-events-none disabled:opacity-50 dark:text-neutral-400 dark:hover:text-blue-500 sm:text-sm`}
+                id={`profile-tab-item-${idx + 1}`}
+                aria-controls={`profile-tab-${idx + 1}`}
+                onClick={() => showTabpanelWithIdx(idx)}
                 role="tab"
               >
-                {text}
+                {tab.title}
               </button>
             ))}
           </nav>
         </div>
 
-        <div className="mt-8 space-y-4">
-          {new Array(5).fill(0).map((_, idx) => (
-            <Post key={idx} />
+        <div className="mx-auto mt-8 w-[90%] space-y-4">
+          {tabs.map(({ Component }, idx) => (
+            <div
+              key={idx}
+              id={`profile-tab-${idx + 1}`}
+              className={currentTab !== idx ? "hidden" : ""}
+              role="tabpanel"
+              aria-labelledby={`profile-tab-item-${idx + 1}`}
+            >
+              <Component />
+            </div>
           ))}
         </div>
       </div>
