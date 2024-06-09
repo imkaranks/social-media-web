@@ -1,8 +1,9 @@
+import { useState } from "react";
+import useAuth from "@/hooks/useAuth";
 import Posts from "./Posts";
 import Comments from "./Comments";
 import Media from "./Media";
 import Likes from "./Likes";
-import { useState } from "react";
 
 const tabs = [
   {
@@ -24,6 +25,7 @@ const tabs = [
 ];
 
 export default function Profile() {
+  const { auth } = useAuth();
   const [currentTab, setCurrentTab] = useState(0);
 
   const showTabpanelWithIdx = (idx) => {
@@ -42,44 +44,46 @@ export default function Profile() {
         }}
       >
         <img
-          className="absolute bottom-0 left-4 inline-block size-24 flex-shrink-0 translate-y-1/2 rounded-full border-4 border-white dark:border-neutral-800"
-          src="https://avatars.githubusercontent.com/u/109339437?v=4"
-          alt="Karan Sethi"
+          className="absolute bottom-0 left-4 inline-block size-24 flex-shrink-0 translate-y-1/2 rounded-full border-4 border-white bg-gray-200 object-cover dark:border-neutral-800 dark:bg-neutral-700"
+          src={auth?.user?.avatar}
+          alt={auth?.user?.fullname}
         />
       </div>
 
       <div className="mt-14 px-4">
         <h3 className="font-semibold text-gray-800 dark:text-white">
-          Karan Sethi
+          {auth?.user?.fullname}
         </h3>
         <p className="text-sm font-medium text-gray-400 dark:text-neutral-500">
-          karan@test.com
+          {auth?.user?.email}
         </p>
-        <p className="mt-4">Hi, I&apos;m the developer of QuietSphere.</p>
+        {auth?.user?.bio && <p className="mt-4">{auth.user.bio}</p>}
 
-        <div className="mt-2 flex items-center gap-1 text-sm text-gray-400 dark:text-neutral-500">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            className="size-4"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-            />
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"
-            />
-          </svg>
+        {auth?.user?.location && (
+          <div className="mt-2 flex items-center gap-1 text-sm text-gray-400 dark:text-neutral-500">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="size-4"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"
+              />
+            </svg>
 
-          <span>India</span>
-        </div>
+            <span>{auth.user.location}</span>
+          </div>
+        )}
 
         <div className="mt-2 flex flex-wrap items-center gap-4">
           <p>
@@ -100,7 +104,7 @@ export default function Profile() {
           <div className="flex items-center -space-x-2">
             <img
               className="inline-block size-6 rounded-full ring-2 ring-gray-100 dark:ring-neutral-700/20"
-              src="https://avatars.githubusercontent.com/u/109339437?v=4"
+              src={auth?.user?.avatar}
               alt="Image Description"
             />
             <img

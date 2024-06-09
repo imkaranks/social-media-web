@@ -1,4 +1,8 @@
+import useAuth from "@/hooks/useAuth";
+
 export default function Accounts() {
+  const { auth } = useAuth();
+
   return (
     <>
       <h2 className="mb-4 text-lg font-semibold">Account Settings</h2>
@@ -6,16 +10,16 @@ export default function Accounts() {
       <div className="mb-4 flex gap-4 rounded-lg border border-gray-200 p-4 dark:border-neutral-700">
         <div className="flex flex-1 items-center">
           <img
-            className="inline-block size-14 flex-shrink-0 rounded-full"
-            src="https://avatars.githubusercontent.com/u/109339437?v=4"
-            alt="Karan Sethi"
+            className="inline-block size-14 flex-shrink-0 rounded-full object-cover"
+            src={auth?.user?.avatar}
+            alt={auth?.user?.fullname}
           />
           <div className="ms-3">
             <h3 className="font-semibold text-gray-800 dark:text-white">
-              Karan Sethi
+              {auth?.user?.fullname}
             </h3>
             <p className="text-sm font-medium text-gray-400 dark:text-neutral-500">
-              karan@test.com
+              {auth?.user?.email}
             </p>
           </div>
         </div>
@@ -42,7 +46,7 @@ export default function Accounts() {
                 type="text"
                 id="first-name"
                 className="block w-full rounded-lg border-gray-200 px-4 py-3 text-sm focus:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                value={"Karan"}
+                value={auth?.user?.fullname?.split(" ")[0]}
                 disabled
                 aria-describedby="first-name-hint"
               />
@@ -66,7 +70,7 @@ export default function Accounts() {
                 type="text"
                 id="last-name"
                 className="block w-full rounded-lg border-gray-200 px-4 py-3 text-sm focus:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                value={"Sethi"}
+                value={auth?.user?.fullname?.split(" ")[1]}
                 disabled
                 aria-describedby="last-name-hint"
               />
@@ -90,7 +94,7 @@ export default function Accounts() {
                 type="text"
                 id="username"
                 className="block w-full rounded-lg border-gray-200 px-4 py-3 text-sm focus:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                value={"imkaran"}
+                value={auth?.user?.username}
                 disabled
                 aria-describedby="username-hint"
               />
@@ -115,7 +119,7 @@ export default function Accounts() {
                 id="email"
                 className="block w-full rounded-lg border-gray-200 px-4 py-3 text-sm focus:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
                 placeholder="you@site.com"
-                value={"karan@test.com"}
+                value={auth?.user?.email}
                 disabled
                 aria-describedby="hs-inline-input-helper-text"
               />

@@ -1,6 +1,8 @@
 import { useState } from "react";
+import useAuth from "@/hooks/useAuth";
 
 export default function Messages() {
+  const { auth } = useAuth();
   const [expanded, setExpanded] = useState(false);
 
   const openChatbox = () => {
@@ -145,8 +147,8 @@ export default function Messages() {
 
         <form className="absolute bottom-4 left-4 flex w-[calc(100%-2rem)] items-center justify-between rounded-xl bg-gray-200 p-2 dark:bg-neutral-700 md:px-4">
           <img
-            className="inline-block size-8 rounded-full sm:size-9 md:size-10"
-            src="https://avatars.githubusercontent.com/u/109339437?v=4"
+            className="inline-block size-8 rounded-full object-cover sm:size-9 md:size-10"
+            src={auth?.user?.avatar}
             alt="Someone"
           />
           <input

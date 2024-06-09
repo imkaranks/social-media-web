@@ -1,22 +1,27 @@
 import { Link, NavLink } from "react-router-dom";
+import useLogout from "@/hooks/useLogout";
+import useAuth from "@/hooks/useAuth";
 
 export default function LeftSidebar() {
+  const { auth } = useAuth();
+  const { logout, isSubmitting } = useLogout();
+
   return (
     <aside className="sticky top-[4.5625rem] z-50 h-[calc(100vh-4.5625rem)] border-r border-r-gray-200 bg-white p-4 dark:border-r-neutral-700 dark:bg-neutral-800 xl:space-y-8 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500 [&::-webkit-scrollbar-track]:bg-gray-100 dark:[&::-webkit-scrollbar-track]:bg-neutral-700 [&::-webkit-scrollbar]:w-2">
       <Link className="max-xl:hidden" to="/user/imkaran">
         <div className="group">
           <div className="flex items-center">
             <img
-              className="inline-block size-14 flex-shrink-0 rounded-full"
-              src="https://avatars.githubusercontent.com/u/109339437?v=4"
-              alt="Karan Sethi"
+              className="inline-block size-14 flex-shrink-0 rounded-full object-cover"
+              src={auth?.user?.avatar}
+              alt={auth?.user?.fullname}
             />
             <div className="ms-3">
               <h3 className="font-semibold text-gray-800 dark:text-white">
-                Karan Sethi
+                {auth?.user?.fullname}
               </h3>
               <p className="text-sm font-medium text-gray-400 dark:text-neutral-500">
-                karan@test.com
+                {auth?.user?.email}
               </p>
             </div>
           </div>
@@ -213,7 +218,11 @@ export default function LeftSidebar() {
             </NavLink>
           </li>
           <li>
-            <button className="group relative flex w-full items-center gap-x-3.5 rounded-lg px-2.5 py-2 text-gray-700 hover:bg-gray-100 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-300 max-2xl:text-sm max-xl:p-2">
+            <button
+              disabled={isSubmitting}
+              onClick={logout}
+              className="group relative flex w-full items-center gap-x-3.5 rounded-lg px-2.5 py-2 text-gray-700 hover:bg-gray-100 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-300 max-2xl:text-sm max-xl:p-2"
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"

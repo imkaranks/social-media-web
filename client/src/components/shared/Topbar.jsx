@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import useAuth from "@/hooks/useAuth";
 
 export default function Topbar() {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const { auth } = useAuth();
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-50 border-b border-b-gray-200 bg-white py-4 dark:border-b-neutral-700 dark:bg-neutral-800">
@@ -46,16 +48,16 @@ export default function Topbar() {
               id="avatar-dropdown"
               type="button"
               className="bg-transparent"
-              onClick={() => setIsDropdownOpen((prevState) => !prevState)}
+              onClick={() => setIsOpen((prevState) => !prevState)}
             >
               <img
-                className="inline-block size-9 rounded-full"
-                src="https://avatars.githubusercontent.com/u/109339437?v=4"
+                className="inline-block size-9 rounded-full object-cover"
+                src={auth?.user?.avatar}
                 alt="My Profile"
               />
             </button>
             <div
-              className={`${isDropdownOpen ? "mt-0 opacity-100 " : "pointer-events-none mt-2 opacity-0 "}absolute right-0 top-12 z-50 min-w-60 rounded-lg bg-white p-2 shadow-md transition-[opacity,margin] focus-within:opacity-100 dark:border dark:border-neutral-700 dark:bg-neutral-800`}
+              className={`${isOpen ? "mt-0 opacity-100 " : "pointer-events-none mt-2 opacity-0 "}absolute right-0 top-12 z-50 min-w-60 rounded-lg bg-white p-2 shadow-md transition-[opacity,margin] focus-within:opacity-100 dark:border dark:border-neutral-700 dark:bg-neutral-800`}
               aria-labelledby="avatar-dropdown"
             >
               <div className="-m-2 rounded-t-lg bg-gray-100 px-5 py-3 dark:bg-neutral-700">

@@ -1,23 +1,38 @@
-export default function Post() {
+export default function Post({
+  _id,
+  title,
+  content,
+  images,
+  author,
+  isSubmitting = false,
+  deletePost = () => {},
+}) {
   return (
     <article className="my-4 rounded-xl bg-gray-100 p-4 text-sm leading-normal dark:bg-neutral-700/20">
       <header className="flex w-full items-start gap-4">
         <div className="flex items-start gap-2 max-sm:flex-col md:gap-4">
           <img
-            className="inline-block size-8 rounded-full sm:size-9 md:size-10"
-            src="https://avatars.githubusercontent.com/u/109339437?v=4"
+            className="inline-block size-8 rounded-full object-cover sm:size-9 md:size-10"
+            src={
+              author?.avatar ||
+              "https://avatars.githubusercontent.com/u/109339437?v=4"
+            }
             alt="Me"
           />
           <div>
-            <p>Karan Sethi</p>
+            <p>{author?.username || "lorem ipsum"}</p>
             <p>
-              Lorem, ipsum dolor sit amet consectetur adipisicing elit. A,
-              soluta.
+              {title ||
+                "Lorem, ipsum dolor sit amet consectetur adipisicing elit. A, soluta."}
             </p>
           </div>
         </div>
 
-        <button className="ml-auto mt-2">
+        <button
+          className="ml-auto mt-2 cursor-pointer disabled:cursor-wait"
+          disabled={isSubmitting}
+          onClick={() => deletePost(_id)}
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -37,7 +52,11 @@ export default function Post() {
 
       <div className="mt-3 overflow-hidden rounded-xl">
         <img
-          src="https://images.unsplash.com/photo-1531141445733-14c2eb7d4c1f?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGxpZmVzdHlsZXxlbnwwfHwwfHx8MA%3D%3D"
+          src={
+            images
+              ? images[0]?.url
+              : "https://images.unsplash.com/photo-1531141445733-14c2eb7d4c1f?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGxpZmVzdHlsZXxlbnwwfHwwfHx8MA%3D%3D"
+          }
           className="max-h-96 w-full object-cover object-center"
           alt="man wearing white shorts holding black backpack"
         />
@@ -136,7 +155,8 @@ export default function Post() {
 
       <div className="mb-1 text-xs sm:text-sm">
         <p>
-          <strong>Karan Sethi</strong> Lorem ipsum dolor sit amet consectetur.{" "}
+          <strong>{author?.username || "lorem ipsum"}</strong>{" "}
+          {content || "Lorem ipsum dolor sit amet consectetur"}.{" "}
           <span>#lifestyle</span>
         </p>
       </div>

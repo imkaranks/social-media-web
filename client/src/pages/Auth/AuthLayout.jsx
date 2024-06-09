@@ -2,8 +2,8 @@ import { Outlet } from "react-router-dom";
 
 export default function AuthLayout() {
   return (
-    <div className="grid h-screen gap-4 md:grid-cols-2 lg:grid-cols-[1fr_1.1fr]">
-      <div className="grid place-items-center">
+    <div className="grid h-screen md:grid-cols-2 lg:grid-cols-[1fr_1.1fr]">
+      <div className="grid h-full place-items-center overflow-y-auto">
         <Outlet />
       </div>
       <div className="relative max-md:hidden">

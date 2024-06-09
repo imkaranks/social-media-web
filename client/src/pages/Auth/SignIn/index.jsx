@@ -1,13 +1,49 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import toast, { Toaster } from "react-hot-toast";
+import useLogin from "@/hooks/useLogin";
+import useAuth from "@/hooks/useAuth";
+
+const INITIAL_DATA = {
+  email: "",
+  password: "",
+};
 
 export default function SignIn() {
+  const { updateRemember } = useAuth();
+  const { login, isSubmitting } = useLogin();
+
+  const [data, setData] = useState(INITIAL_DATA);
+  const [remember, setRemember] = useState(true);
+
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
+
+    setData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    try {
+      await login(data);
+      setData(INITIAL_DATA);
+      updateRemember(remember);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : error);
+    }
+  };
+
   return (
     <div className="w-11/12 max-w-lg md:max-w-2xl lg:w-4/5">
       <div className="space-y-4 p-6 sm:p-8 md:space-y-6">
         <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 dark:text-white md:text-2xl">
           Sign in to your account
         </h1>
-        <form className="space-y-4 md:space-y-6">
+        <form className="space-y-4 md:space-y-6" onSubmit={handleSubmit}>
           <div className="grid">
             <label
               htmlFor="email"
@@ -18,6 +54,9 @@ export default function SignIn() {
             <input
               type="email"
               id="email"
+              name="email"
+              value={data.email}
+              onChange={handleInputChange}
               className="block w-full rounded-lg border-2 border-gray-200 bg-transparent px-4 py-3 text-sm focus:border-blue-500 focus:ring-0 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:border-neutral-600 dark:focus:ring-neutral-600"
               placeholder="you@site.com"
             />
@@ -31,7 +70,10 @@ export default function SignIn() {
             </label>
             <input
               type="password"
+              name="password"
               id="password"
+              value={data.password}
+              onChange={handleInputChange}
               placeholder="••••••••"
               className="block w-full rounded-lg border-2 border-gray-200 bg-transparent px-4 py-3 text-sm focus:border-blue-500 focus:ring-0 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:border-neutral-600 dark:focus:ring-neutral-600"
             />
@@ -42,6 +84,8 @@ export default function SignIn() {
                 type="checkbox"
                 className="mt-0.5 shrink-0 rounded border-gray-200 text-blue-600 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
                 id="remember-me"
+                checked={remember}
+                onChange={(e) => setRemember(e.target.checked)}
               />
               <label
                 htmlFor="remember-me"
@@ -58,8 +102,22 @@ export default function SignIn() {
               Forgot password?
             </Link>
           </div>
-          <button className="inline-flex w-full items-center justify-center gap-x-2 rounded-lg border border-transparent bg-blue-600 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-700 disabled:pointer-events-none disabled:opacity-50">
-            Sign in
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="inline-flex w-full items-center justify-center gap-x-2 rounded-lg border border-transparent bg-blue-600 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-700 disabled:pointer-events-none disabled:opacity-50"
+          >
+            {isSubmitting ? (
+              <div
+                className="inline-block size-5 animate-spin rounded-full border-[3px] border-white border-t-transparent text-blue-600"
+                role="status"
+                aria-label="loading"
+              >
+                <span className="sr-only">Loading...</span>
+              </div>
+            ) : (
+              <span>Sign in</span>
+            )}
           </button>
           <p className="text-sm font-light text-gray-500 dark:text-gray-400">
             Don’t have an account yet?{" "}
@@ -125,6 +183,7 @@ export default function SignIn() {
           </Link>
         </div>
       </div>
+      <Toaster />
     </div>
   );
 }
