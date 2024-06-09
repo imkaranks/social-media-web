@@ -1,36 +1,35 @@
+import useToggleLike from "@/hooks/useToggleLike";
+
 export default function Post({
   _id,
   title,
   content,
   images,
   author,
-  isSubmitting = false,
+  likes,
+  isBeingDeleted = false,
   deletePost = () => {},
 }) {
+  const { toggleLike, isSubmitting } = useToggleLike();
+
   return (
     <article className="my-4 rounded-xl bg-gray-100 p-4 text-sm leading-normal dark:bg-neutral-700/20">
       <header className="flex w-full items-start gap-4">
         <div className="flex items-start gap-2 max-sm:flex-col md:gap-4">
           <img
             className="inline-block size-8 rounded-full object-cover sm:size-9 md:size-10"
-            src={
-              author?.avatar ||
-              "https://avatars.githubusercontent.com/u/109339437?v=4"
-            }
+            src={author?.avatar}
             alt="Me"
           />
           <div>
             <p>{author?.username || "lorem ipsum"}</p>
-            <p>
-              {title ||
-                "Lorem, ipsum dolor sit amet consectetur adipisicing elit. A, soluta."}
-            </p>
+            <p>{title}</p>
           </div>
         </div>
 
         <button
           className="ml-auto mt-2 cursor-pointer disabled:cursor-wait"
-          disabled={isSubmitting}
+          disabled={isBeingDeleted}
           onClick={() => deletePost(_id)}
         >
           <svg
@@ -50,20 +49,23 @@ export default function Post({
         </button>
       </header>
 
-      <div className="mt-3 overflow-hidden rounded-xl">
-        <img
-          src={
-            images
-              ? images[0]?.url
-              : "https://images.unsplash.com/photo-1531141445733-14c2eb7d4c1f?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGxpZmVzdHlsZXxlbnwwfHwwfHx8MA%3D%3D"
-          }
-          className="max-h-96 w-full object-cover object-center"
-          alt="man wearing white shorts holding black backpack"
-        />
-      </div>
+      {!!images.length && (
+        <div className="mt-3 overflow-hidden rounded-xl">
+          <img
+            src={images[0]?.url}
+            className="max-h-96 w-full object-cover object-center"
+            alt="man wearing white shorts holding black backpack"
+          />
+        </div>
+      )}
 
       <div className="my-1.5 flex items-center">
-        <button className="inline-flex items-center gap-x-2 rounded-lg border border-transparent p-2 text-sm font-semibold text-blue-600 hover:bg-blue-100 hover:text-blue-800 disabled:pointer-events-none disabled:opacity-50 dark:text-blue-500 dark:hover:bg-blue-800/30 dark:hover:text-blue-400">
+        <button
+          disabled={isSubmitting}
+          onClick={() => toggleLike("post", _id)}
+          className="inline-flex items-center gap-x-2 rounded-lg border border-transparent p-2 text-sm font-semibold text-blue-600 hover:bg-blue-100 hover:text-blue-800 disabled:pointer-events-none disabled:opacity-50 dark:text-blue-500 dark:hover:bg-blue-800/30 dark:hover:text-blue-400"
+        >
+          <span className="sr-only">like</span>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -130,34 +132,30 @@ export default function Post({
       </div>
 
       {/* Liked by */}
-      <div className="mb-1 flex gap-2 max-sm:flex-col sm:items-center">
-        <div className="flex items-center -space-x-2">
-          <img
-            className="inline-block size-8 rounded-full ring-2 ring-gray-100 dark:ring-neutral-700/20"
-            src="https://avatars.githubusercontent.com/u/109339437?v=4"
-            alt="Image Description"
-          />
-          <img
-            className="inline-block size-8 rounded-full ring-2 ring-gray-100 dark:ring-neutral-700/20"
-            src="https://images.unsplash.com/photo-1531927557220-a9e23c1e4794?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80"
-            alt="Image Description"
-          />
-          <img
-            className="inline-block size-8 rounded-full ring-2 ring-gray-100 dark:ring-neutral-700/20"
-            src="https://images.unsplash.com/photo-1541101767792-f9b2b1c4f127?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&&auto=format&fit=facearea&facepad=3&w=300&h=300&q=80"
-            alt="Image Description"
-          />
+      {!!likes.length && (
+        <div className="mb-1 flex gap-2 max-sm:flex-col sm:items-center">
+          <div className="flex items-center -space-x-2">
+            {(likes.length > 3 ? likes.slice(0, 3) : likes).map(
+              (likedBy, idx) => (
+                <img
+                  key={idx}
+                  className="inline-block size-8 rounded-full object-cover ring-2 ring-gray-100 dark:ring-neutral-700/20"
+                  src={likedBy.avatar}
+                  alt={likedBy.username}
+                />
+              ),
+            )}
+          </div>
+          <p className="text-xs sm:text-sm">
+            Liked by <strong>{likes[0].username}</strong>{" "}
+            {!!likes.slice(1).length && `and ${likes.slice(1).length} others`}
+          </p>
         </div>
-        <p className="text-xs sm:text-sm">
-          Liked by <strong>Ernest Becker</strong> and 69 others
-        </p>
-      </div>
+      )}
 
       <div className="mb-1 text-xs sm:text-sm">
         <p>
-          <strong>{author?.username || "lorem ipsum"}</strong>{" "}
-          {content || "Lorem ipsum dolor sit amet consectetur"}.{" "}
-          <span>#lifestyle</span>
+          <strong>{author?.username}</strong> {content} <span>#lifestyle</span>
         </p>
       </div>
 

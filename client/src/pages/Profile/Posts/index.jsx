@@ -9,15 +9,19 @@ export default function Posts() {
   const { auth } = useAuth();
   const axiosPrivate = useAxiosPrivate();
   const { deletePost: removePost, isSubmitting } = useDeletePost();
-  const [data, setData] = useState([]);
+  const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [deletingPostId, setDeletingPostId] = useState(null);
 
   const deletePost = async (id) => {
     try {
+      setDeletingPostId(id);
       await removePost(id);
-      setData((prevData) => prevData.filter((post) => post._id !== id));
+      setPosts((prevPosts) => prevPosts.filter((post) => post._id !== id));
     } catch (error) {
       toast.error(error instanceof Error ? error.message : error);
+    } finally {
+      setDeletingPostId(null);
     }
   };
 
@@ -25,27 +29,27 @@ export default function Posts() {
     async function fetchPosts() {
       setIsLoading(true);
       try {
-        const response = await axiosPrivate.get("/post");
-        setData(response?.data?.data);
+        const response = await axiosPrivate.get(`/post/${auth.user._id}`);
+        // console.log(response?.data?.data);
+        setPosts(response?.data?.data);
       } catch (error) {
-        console.log(error);
+        toast.error(error instanceof Error ? error.message : error);
       } finally {
         setIsLoading(false);
       }
     }
 
     fetchPosts();
-  }, [axiosPrivate]);
+  }, [auth, axiosPrivate]);
 
   return isLoading ? (
     <p>Loading...</p>
-  ) : data?.length ? (
+  ) : posts?.length ? (
     <>
-      {data.map((post, idx) => {
+      {posts.map((post, idx) => {
         const props = {
           ...post,
-          author: auth.user,
-          isSubmitting,
+          isBeingDeleted: deletingPostId === post._id ? isSubmitting : false,
           deletePost: () => deletePost(post._id),
         };
         return <Post key={idx} {...props} />;

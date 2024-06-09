@@ -1,3 +1,40 @@
+import { useEffect, useState } from "react";
+import useAxiosPrivate from "@/hooks/useAxiosPrivate";
+import Post from "@/components/ui/Post";
+import Loader from "@/components/ui/Loader";
+
 export default function Explore() {
-  return <div className="p-4 md:pr-0">Explore</div>;
+  const axiosPrivate = useAxiosPrivate();
+  const [posts, setPosts] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    async function fetchPosts() {
+      setIsLoading(true);
+      try {
+        const response = await axiosPrivate.get("/post");
+        setPosts(response?.data?.data);
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchPosts();
+  }, [axiosPrivate]);
+
+  return isLoading ? (
+    <Loader />
+  ) : posts.length ? (
+    <div className="p-4 md:pr-0">
+      {posts.map((post, idx) => (
+        <Post key={idx} {...post} />
+      ))}
+    </div>
+  ) : (
+    <div className="p-4 md:pr-0">
+      <h2>No Posts</h2>
+    </div>
+  );
 }

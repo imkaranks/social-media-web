@@ -94,9 +94,9 @@ export default function CreatePost() {
       {/* main modal */}
       <div className="pointer-events-none fixed start-0 top-0 z-[80] size-full overflow-y-auto overflow-x-hidden">
         <div
-          className={`${isOpen ? "mt-7 opacity-100 " : "pointer-events-none mt-0 opacity-0 "}m-3 transition-all duration-300 ease-out md:mx-auto md:w-full md:max-w-2xl`}
+          className={`${isOpen ? "pointer-events-auto mt-7 opacity-100 " : "pointer-events-none mt-0 opacity-0 "}m-3 transition-all duration-300 ease-out md:mx-auto md:w-full md:max-w-2xl`}
         >
-          <div className="pointer-events-auto flex flex-col rounded-xl border bg-white shadow-sm dark:border-neutral-700 dark:bg-neutral-800 dark:shadow-neutral-700/70">
+          <div className="flex flex-col rounded-xl border bg-white shadow-sm dark:border-neutral-700 dark:bg-neutral-800 dark:shadow-neutral-700/70">
             <div className="flex items-center justify-between border-b px-4 py-3 dark:border-neutral-700">
               <h3 className="font-bold text-gray-800 dark:text-white">
                 Create new post

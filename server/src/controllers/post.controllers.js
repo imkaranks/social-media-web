@@ -6,8 +6,28 @@ import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";
 import upload from "../utils/cloudinary.js";
 
+export const getPostsByUser = catchAsyncError(async (req, res) => {
+  const { userId } = req.params;
+
+  if (!userId.trim()) {
+    throw new ApiError(400, "User id is required");
+  }
+
+  const posts = await Post.find({ author: userId })
+    .sort({ createdAt: -1 })
+    .populate("author")
+    .populate({ path: "likes", model: "User", select: "_id username avatar" });
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, posts || [], "Post fetched Successfully"));
+});
+
 export const getAllPosts = catchAsyncError(async (req, res) => {
-  const posts = await Post.find({ author: req.user._id });
+  const posts = await Post.find({})
+    .sort({ createdAt: -1 })
+    .populate("author")
+    .populate({ path: "likes", model: "User", select: "_id username avatar" });
 
   res
     .status(200)

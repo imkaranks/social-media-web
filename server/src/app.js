@@ -19,9 +19,11 @@ app.use(cookieParser());
 
 import authRouter from "./routes/auth.routes.js";
 import postRouter from "./routes/post.routes.js";
+import likeRouter from "./routes/like.routes.js";
 
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/post", postRouter);
+app.use("/api/v1/like", likeRouter);
 
 /* ######### Error Handler ######### */
 
