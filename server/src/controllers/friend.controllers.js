@@ -135,21 +135,6 @@ export const getFriends = catchAsyncError(async (req, res) => {
   res.status(200).json(new ApiResponse(200, friends));
 });
 
-// export const getPendingFriendRequests = catchAsyncError(async (req, res) => {
-//   const userId = req?.user?._id;
-
-//   const pendingRequests = await Friend.find({
-//     user2: userId,
-//     status: "pending",
-//   }).populate({
-//     path: "user1",
-//     model: "User",
-//     select: "username",
-//   });
-
-//   res.status(200).json(new ApiResponse(200, pendingRequests));
-// });
-
 export const getPendingFriendRequests = catchAsyncError(async (req, res) => {
   const userId = req?.user?._id || req.params.userId;
 

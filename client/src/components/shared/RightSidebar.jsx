@@ -1,6 +1,3 @@
-// import { useEffect, useState } from "react";
-// import useAxiosPrivate from "@/hooks/useAxiosPrivate";
-// import useAuth from "@/hooks/useAuth";
 import useFriend from "@/hooks/useFriend";
 
 function RequestSkeleton() {
@@ -23,8 +20,6 @@ function RequestSkeleton() {
 }
 
 export default function RightSidebar() {
-  // const axiosPrivate = useAxiosPrivate();
-  // const { auth } = useAuth();
   const {
     friends,
     friendsLoading,

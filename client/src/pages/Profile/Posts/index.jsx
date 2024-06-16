@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
-import Post from "@/components/ui/Post";
 import useAuth from "@/hooks/useAuth";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 import useDeletePost from "@/hooks/useDeletePost";
 import useFriend from "@/hooks/useFriend";
-import { useParams } from "react-router-dom";
+import Post from "@/components/ui/Post";
 import PostSkeleton from "@/components/ui/PostSkeleton";
 
 export default function Posts() {

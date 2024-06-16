@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 import Loader from "@/components/shared/Loader";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -14,7 +15,6 @@ import Messages from "@/pages/Messages";
 import Bookmarks from "@/pages/Bookmarks";
 import Settings from "@/pages/Settings";
 import PostDetails from "@/pages/PostDetails";
-import { Suspense } from "react";
 
 export default function App() {
   return (

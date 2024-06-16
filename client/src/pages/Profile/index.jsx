@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import useAuth from "@/hooks/useAuth";
+import useAxiosPrivate from "@/hooks/useAxiosPrivate";
+import useFriend from "@/hooks/useFriend";
 import Posts from "./Posts";
 import Comments from "./Comments";
 import Media from "./Media";
 import Likes from "./Likes";
-import useAuth from "@/hooks/useAuth";
-import useAxiosPrivate from "@/hooks/useAxiosPrivate";
-import useFriend from "@/hooks/useFriend";
 
 const tabs = [
   {

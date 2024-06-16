@@ -10,7 +10,6 @@ export default function Feed() {
   const setPosts = useStore((state) => state.setPosts);
   const { friends } = useFriend();
   const axiosPrivate = useAxiosPrivate();
-  // const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {

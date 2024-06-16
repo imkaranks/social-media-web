@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 import useFriend from "@/hooks/useFriend";
-import Post from "@/components/ui/Post";
 import useStore from "@/app/store";
+import Post from "@/components/ui/Post";
 import PostSkeleton from "@/components/ui/PostSkeleton";
 
 export default function Explore() {
@@ -10,7 +10,6 @@ export default function Explore() {
   const setPosts = useStore((state) => state.setPosts);
   const axiosPrivate = useAxiosPrivate();
   const { friends } = useFriend();
-  // const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
