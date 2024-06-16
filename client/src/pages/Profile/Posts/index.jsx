@@ -4,10 +4,15 @@ import Post from "@/components/ui/Post";
 import useAuth from "@/hooks/useAuth";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 import useDeletePost from "@/hooks/useDeletePost";
+import useFriend from "@/hooks/useFriend";
+import { useParams } from "react-router-dom";
+import PostSkeleton from "@/components/ui/PostSkeleton";
 
 export default function Posts() {
   const { auth } = useAuth();
+  const { username } = useParams();
   const axiosPrivate = useAxiosPrivate();
+  const { friends } = useFriend();
   const { deletePost: removePost, isSubmitting } = useDeletePost();
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -29,8 +34,7 @@ export default function Posts() {
     async function fetchPosts() {
       setIsLoading(true);
       try {
-        const response = await axiosPrivate.get(`/post/${auth.user._id}`);
-        // console.log(response?.data?.data);
+        const response = await axiosPrivate.get(`/post/user/${username}`);
         setPosts(response?.data?.data);
       } catch (error) {
         toast.error(error instanceof Error ? error.message : error);
@@ -43,7 +47,12 @@ export default function Posts() {
   }, [auth, axiosPrivate]);
 
   return isLoading ? (
-    <p>Loading...</p>
+    <>
+      <PostSkeleton />
+      <PostSkeleton />
+      <PostSkeleton />
+      <PostSkeleton />
+    </>
   ) : posts?.length ? (
     <>
       {posts.map((post, idx) => {
@@ -52,7 +61,17 @@ export default function Posts() {
           isBeingDeleted: deletingPostId === post._id ? isSubmitting : false,
           deletePost: () => deletePost(post._id),
         };
-        return <Post key={idx} {...props} />;
+        return (
+          <Post
+            key={idx}
+            {...props}
+            friendsWhoLiked={post.likes.filter(
+              (like) =>
+                friends.length &&
+                friends?.find((friend) => friend._id === like._id),
+            )}
+          />
+        );
       })}
       <Toaster />
     </>

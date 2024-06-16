@@ -5,7 +5,7 @@ export default function Stories() {
         <div
           className="relative isolate flex w-1/5 min-w-28 max-w-32 flex-shrink-0 flex-col items-center justify-between overflow-hidden rounded-xl bg-gray-200 bg-cover bg-center bg-no-repeat p-4 text-xs before:absolute before:top-0 before:-z-10 before:h-full before:w-full before:bg-gradient-to-b before:from-black/30 before:to-black before:content-[''] dark:bg-neutral-700"
           style={{
-            backgroundImage: `url(https://source.unsplash.com/random/?People&${idx + 1}/)`,
+            backgroundImage: `url("https://picsum.photos/id/${237 + idx}/200/300/")`,
           }}
           key={idx}
         >

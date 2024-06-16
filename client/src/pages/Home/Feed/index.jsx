@@ -1,11 +1,16 @@
 import { useEffect, useState } from "react";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 import Post from "@/components/ui/Post";
-import Loader from "@/components/ui/Loader";
+import useStore from "@/app/store";
+import useFriend from "@/hooks/useFriend";
+import PostSkeleton from "@/components/ui/PostSkeleton";
 
 export default function Feed() {
+  const posts = useStore((state) => state.posts);
+  const setPosts = useStore((state) => state.setPosts);
+  const { friends } = useFriend();
   const axiosPrivate = useAxiosPrivate();
-  const [posts, setPosts] = useState([]);
+  // const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -23,18 +28,31 @@ export default function Feed() {
     }
 
     fetchPosts();
-  }, [axiosPrivate]);
+  }, [axiosPrivate, setPosts]);
 
   return isLoading ? (
-    <Loader />
+    <div className="mx-auto lg:w-[90%]">
+      <PostSkeleton />
+      <PostSkeleton />
+      <PostSkeleton />
+      <PostSkeleton />
+    </div>
   ) : posts.length ? (
-    <div className="mx-auto w-[90%]">
+    <div className="mx-auto lg:w-[90%]">
       {posts.map((post, idx) => (
-        <Post key={idx} {...post} />
+        <Post
+          key={idx}
+          {...post}
+          friendsWhoLiked={post.likes.filter(
+            (like) =>
+              friends.length &&
+              friends?.find((friend) => friend._id === like._id),
+          )}
+        />
       ))}
     </div>
   ) : (
-    <div className="mx-auto w-[90%]">
+    <div className="mx-auto lg:w-[90%]">
       <h2>No Posts</h2>
     </div>
   );

@@ -8,14 +8,22 @@ export default function LeftSidebar() {
 
   return (
     <aside className="sticky top-[4.5625rem] z-50 h-[calc(100vh-4.5625rem)] border-r border-r-gray-200 bg-white p-4 dark:border-r-neutral-700 dark:bg-neutral-800 xl:space-y-8 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500 [&::-webkit-scrollbar-track]:bg-gray-100 dark:[&::-webkit-scrollbar-track]:bg-neutral-700 [&::-webkit-scrollbar]:w-2">
-      <Link className="max-xl:hidden" to="/user/imkaran">
+      <Link className="max-xl:hidden" to={`/user/${auth?.user?.username}`}>
         <div className="group">
           <div className="flex items-center">
-            <img
-              className="inline-block size-14 flex-shrink-0 rounded-full object-cover"
-              src={auth?.user?.avatar}
-              alt={auth?.user?.fullname}
-            />
+            {auth?.user?.avatar?.url ? (
+              <img
+                className="inline-block size-14 flex-shrink-0 rounded-full object-cover"
+                src={auth.user.avatar.url}
+                alt={auth?.user?.fullname}
+              />
+            ) : (
+              <span className="inline-flex size-14 items-center justify-center rounded-full bg-gray-100 text-sm font-semibold leading-none text-gray-800 dark:bg-white/10 dark:text-white">
+                {auth?.user?.fullname
+                  .split(" ")
+                  .map((word) => word[0].toUpperCase())}
+              </span>
+            )}
             <div className="ms-3">
               <h3 className="font-semibold text-gray-800 dark:text-white">
                 {auth?.user?.fullname}
@@ -110,7 +118,7 @@ export default function LeftSidebar() {
           </li>
           <li>
             <NavLink
-              to="/user/imkaran"
+              to={`/user/${auth?.user?.username}`}
               className={({ isActive }) =>
                 `${isActive ? "bg-gray-100 text-gray-700 dark:bg-neutral-700 dark:text-white " : "text-gray-700 hover:bg-gray-100 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-300 "}group relative flex items-center gap-x-3.5 rounded-lg px-2.5 py-2 max-2xl:text-sm max-xl:p-2`
               }

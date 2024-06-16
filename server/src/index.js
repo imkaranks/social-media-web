@@ -11,7 +11,7 @@ const PORT = process.env.PORT || 3000;
     await connect();
 
     server.on("error", (error) => {
-      console.log(error);
+      console.error(`Server error: ${error.message}`);
       throw error;
     });
 

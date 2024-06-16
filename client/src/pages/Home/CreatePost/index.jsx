@@ -61,11 +61,19 @@ export default function CreatePost() {
         onClick={() => setIsOpen(true)}
         className="mt-4 flex items-center justify-between rounded-xl bg-gray-200 px-4 py-2 dark:bg-neutral-700"
       >
-        <img
-          className="inline-block size-8 rounded-full object-cover sm:size-9 md:size-10"
-          src={auth?.user?.avatar}
-          alt={auth?.user?.fullname}
-        />
+        {auth?.user?.avatar?.url ? (
+          <img
+            className="inline-block size-8 rounded-full object-cover sm:size-9 md:size-10"
+            src={auth.user.avatar.url}
+            alt={auth?.user?.fullname}
+          />
+        ) : (
+          <span className="inline-flex size-8 flex-shrink-0 items-center justify-center rounded-full bg-gray-100 text-sm font-semibold leading-none text-gray-800 dark:bg-white/10 dark:text-white">
+            {auth?.user?.fullname
+              .split(" ")
+              .map((word) => word[0].toUpperCase())}
+          </span>
+        )}
         <input
           type="text"
           placeholder={`What's on your mind, ${auth?.user?.fullname?.split(" ")[0]}?`}
@@ -127,11 +135,19 @@ export default function CreatePost() {
             <div className="space-y-2 overflow-y-auto p-4">
               {/* Avatar */}
               <div className="flex items-start gap-2 max-sm:flex-col md:gap-4">
-                <img
-                  className="inline-block size-8 rounded-full object-cover sm:size-9 md:size-10"
-                  src={auth?.user?.avatar}
-                  alt="Me"
-                />
+                {auth?.user?.avatar?.url ? (
+                  <img
+                    className="inline-block size-8 rounded-full object-cover sm:size-9 md:size-10"
+                    src={auth.user.avatar.url}
+                    alt="Me"
+                  />
+                ) : (
+                  <span className="inline-flex size-8 flex-shrink-0 items-center justify-center rounded-full bg-gray-100 text-sm font-semibold leading-none text-gray-800 dark:bg-white/10 dark:text-white">
+                    {auth?.user?.fullname
+                      .split(" ")
+                      .map((word) => word[0].toUpperCase())}
+                  </span>
+                )}
                 <div className="leading-tight">
                   <p>{auth?.user?.username}</p>
                   <span className="rounded bg-gray-200 px-1 py-0.5 text-xs dark:bg-neutral-700">

@@ -1,11 +1,16 @@
 import { useEffect, useState } from "react";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
+import useFriend from "@/hooks/useFriend";
 import Post from "@/components/ui/Post";
-import Loader from "@/components/ui/Loader";
+import useStore from "@/app/store";
+import PostSkeleton from "@/components/ui/PostSkeleton";
 
 export default function Explore() {
+  const posts = useStore((state) => state.posts);
+  const setPosts = useStore((state) => state.setPosts);
   const axiosPrivate = useAxiosPrivate();
-  const [posts, setPosts] = useState([]);
+  const { friends } = useFriend();
+  // const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -22,14 +27,27 @@ export default function Explore() {
     }
 
     fetchPosts();
-  }, [axiosPrivate]);
+  }, [axiosPrivate, setPosts]);
 
   return isLoading ? (
-    <Loader />
+    <div className="p-4 md:pr-0">
+      <PostSkeleton />
+      <PostSkeleton />
+      <PostSkeleton />
+      <PostSkeleton />
+    </div>
   ) : posts.length ? (
     <div className="p-4 md:pr-0">
       {posts.map((post, idx) => (
-        <Post key={idx} {...post} />
+        <Post
+          key={idx}
+          {...post}
+          friendsWhoLiked={post.likes.filter(
+            (like) =>
+              friends.length &&
+              friends?.find((friend) => friend._id === like._id),
+          )}
+        />
       ))}
     </div>
   ) : (

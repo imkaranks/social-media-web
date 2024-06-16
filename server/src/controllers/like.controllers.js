@@ -38,22 +38,23 @@ export const toggleLike = catchAsyncError(async (req, res) => {
 
   if (existingLike) {
     await Model.findByIdAndUpdate(target._id, {
-      // $pull: { likes: existingLike._id },
       $pull: { likes: req.user._id },
     });
 
     await Like.findByIdAndDelete(existingLike._id);
 
-    res.status(200).json(new ApiResponse(200, existingLike, "Like removed"));
+    res
+      .status(200)
+      .json(new ApiResponse(200, existingLike, "Like removed successfully"));
   } else {
     const like = await Like.create({
       user: req.user._id,
       [field]: target._id,
     });
-    // target.likes.push(like._id);
+
     target.likes.push(req.user._id);
     await target.save();
 
-    res.status(201).json(new ApiResponse(201, like, "Like added"));
+    res.status(201).json(new ApiResponse(201, like, "Like added successfully"));
   }
 });

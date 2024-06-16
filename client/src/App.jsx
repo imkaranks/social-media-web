@@ -13,6 +13,7 @@ import Notification from "@/pages/Notification";
 import Messages from "@/pages/Messages";
 import Bookmarks from "@/pages/Bookmarks";
 import Settings from "@/pages/Settings";
+import PostDetails from "@/pages/PostDetails";
 import { Suspense } from "react";
 
 export default function App() {
@@ -37,6 +38,7 @@ export default function App() {
             <Route path="notification" element={<Notification />} />
             <Route path="bookmarks" element={<Bookmarks />} />
             <Route path="user/:username" element={<Profile />} />
+            <Route path="post/:postId" element={<PostDetails />} />
           </Route>
 
           <Route

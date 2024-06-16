@@ -56,7 +56,7 @@ export const signup = catchAsyncError(async (req, res) => {
     username,
     email,
     password,
-    avatar: `https://robohash.org/${username}`,
+    avatar: { url: `https://robohash.org/${username}` },
   });
 
   // Generate authentication token and set cookie

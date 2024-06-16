@@ -7,7 +7,7 @@ const connect = async () => {
     );
     return connectionInstance;
   } catch (error) {
-    console.log(`Mongo connection failed: ${error}`);
+    console.log(`Mongo connection failed: ${error.message}`);
     process.exit(0);
   }
 };

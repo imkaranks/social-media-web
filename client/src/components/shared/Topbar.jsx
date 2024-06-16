@@ -50,11 +50,19 @@ export default function Topbar() {
               className="bg-transparent"
               onClick={() => setIsOpen((prevState) => !prevState)}
             >
-              <img
-                className="inline-block size-9 rounded-full object-cover"
-                src={auth?.user?.avatar}
-                alt="My Profile"
-              />
+              {auth?.user?.avatar?.url ? (
+                <img
+                  className="inline-block size-9 rounded-full object-cover"
+                  src={auth.user.avatar.url}
+                  alt="My Profile"
+                />
+              ) : (
+                <span className="inline-flex size-9 items-center justify-center rounded-full bg-gray-100 text-sm font-semibold leading-none text-gray-800 dark:bg-white/10 dark:text-white">
+                  {auth?.user?.fullname
+                    .split(" ")
+                    .map((word) => word[0].toUpperCase())}
+                </span>
+              )}
             </button>
             <div
               className={`${isOpen ? "mt-0 opacity-100 " : "pointer-events-none mt-2 opacity-0 "}absolute right-0 top-12 z-50 min-w-60 rounded-lg bg-white p-2 shadow-md transition-[opacity,margin] focus-within:opacity-100 dark:border dark:border-neutral-700 dark:bg-neutral-800`}
