@@ -28,10 +28,9 @@ export const createPost = catchAsyncError(async (req, res) => {
   const images = [];
 
   for (const file of req.files) {
-    const result = await upload(file.path);
-
-    // If upload to Cloudinary is successful, delete the local file
-    fs.unlinkSync(file.path);
+    const b64 = Buffer.from(file.buffer).toString("base64");
+    let dataURI = "data:" + file.mimetype + ";base64," + b64;
+    const result = await upload(dataURI);
 
     // Push the Cloudinary URL of the uploaded image to the array
     images.push({ public_id: result.public_id, url: result.url });
