@@ -40,7 +40,15 @@ export const createPost = catchAsyncError(async (req, res) => {
   post.images = images;
   await post.save();
 
-  res.status(201).json(new ApiResponse(201, post, "Post added successfully"));
+  const createdPost = await Post.findById(post._id).populate({
+    path: "author",
+    model: "User",
+    select: "_id username fullname avatar",
+  });
+
+  res
+    .status(201)
+    .json(new ApiResponse(201, createdPost, "Post added successfully"));
 });
 
 export const getPostsByUserId = catchAsyncError(async (req, res) => {

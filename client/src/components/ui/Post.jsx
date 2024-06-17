@@ -15,16 +15,16 @@ export default function Post({
   likedByYou,
   commentCount,
   friendsWhoLiked,
-  // isBeingDeleted = false,
-  // deletePost = () => {},
+  isBeingDeleted = false,
+  deletePost = () => {},
 }) {
   // const axiosPrivate = useAxiosPrivate();
   const { auth } = useAuth();
   const { toggleLike, isSubmitting } = useToggleLike();
 
   const [isOpen, setIsOpen] = useState(false);
-  const [isLiked, setIsLiked] = useState(likedByYou);
-  const [likesCount, setLikesCount] = useState(likeCount);
+  const [isLiked, setIsLiked] = useState(likedByYou || false);
+  const [likesCount, setLikesCount] = useState(likeCount || 0);
 
   const isAuthor = auth?.user?._id === author?._id;
 
@@ -86,7 +86,14 @@ export default function Post({
                   <button className="flex items-center gap-x-3.5 rounded-lg px-3 py-2 text-sm text-gray-800 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-300 dark:focus:bg-neutral-700">
                     Edit
                   </button>
-                  <button className="flex items-center gap-x-3.5 rounded-lg px-3 py-2 text-sm text-gray-800 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-300 dark:focus:bg-neutral-700">
+                  <button
+                    className="flex items-center gap-x-3.5 rounded-lg px-3 py-2 text-sm text-gray-800 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-300 dark:focus:bg-neutral-700"
+                    disabled={isBeingDeleted}
+                    onClick={async () => {
+                      await deletePost();
+                      setIsOpen(false);
+                    }}
+                  >
                     Delete
                   </button>
                 </>
@@ -139,7 +146,7 @@ export default function Post({
                 <path d="M720-120H280v-520l280-280 50 50q7 7 11.5 19t4.5 23v14l-44 174h258q32 0 56 24t24 56v80q0 7-2 15t-4 15L794-168q-9 20-30 34t-44 14Zm-360-80h360l120-280v-80H480l54-220-174 174v406Zm0-406v406-406Zm-80-34v80H160v360h120v80H80v-520h200Z" />
               </svg>
             )}
-            <span>{likesCount}</span>
+            {!!likesCount && <span>{likesCount}</span>}
           </button>
           <Link
             to={`/post/${_id}`}
@@ -160,7 +167,7 @@ export default function Post({
                 d="M8.625 9.75a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 0 1 .778-.332 48.294 48.294 0 0 0 5.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z"
               />
             </svg>
-            <span>{commentCount}</span>
+            {!!commentCount && <span>{commentCount}</span>}
           </Link>
           <button className="inline-flex items-center gap-x-2 rounded-lg border border-transparent p-2 text-sm font-semibold text-blue-600 hover:bg-blue-100 hover:text-blue-800 disabled:pointer-events-none disabled:opacity-50 dark:text-blue-500 dark:hover:bg-blue-800/30 dark:hover:text-blue-400">
             <svg

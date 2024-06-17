@@ -1,7 +1,9 @@
 import { useState } from "react";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
+import useStore from "@/app/store";
 
 export default function useCreatePost() {
+  const addPost = useStore((state) => state.addPost);
   const axiosPrivate = useAxiosPrivate();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -17,11 +19,13 @@ export default function useCreatePost() {
         formData.append("images", file);
       }
 
-      await axiosPrivate.post("/post/create", formData, {
+      const response = await axiosPrivate.post("/post/create", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
+
+      addPost(response?.data?.data);
     } catch (error) {
       throw new Error(
         error?.response?.data?.message ||

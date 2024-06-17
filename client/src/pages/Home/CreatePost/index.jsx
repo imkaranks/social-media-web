@@ -179,7 +179,11 @@ export default function CreatePost() {
               {!!filePreviews.length && (
                 <div className="grid grid-cols-2 gap-4">
                   {filePreviews.map((filePreview, idx) => (
-                    <img key={idx} src={filePreview} />
+                    <img
+                      key={idx}
+                      src={filePreview}
+                      className="h-full max-h-40"
+                    />
                   ))}
                 </div>
               )}

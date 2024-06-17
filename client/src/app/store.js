@@ -5,6 +5,7 @@ const useStore = create((set) => ({
   friends: [],
   pendingFriendRequests: [],
   setPosts: (newPosts) => set(() => ({ posts: newPosts })),
+  addPost: (newPost) => set((state) => ({ posts: [newPost, ...state.posts] })),
   addMorePosts: (newPosts) =>
     set((state) => ({ posts: [...state.posts, ...newPosts] })),
   setFriends: (newFriends) => set(() => ({ friends: newFriends })),

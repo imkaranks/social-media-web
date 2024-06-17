@@ -44,7 +44,7 @@ export default function Posts() {
     }
 
     fetchPosts();
-  }, [auth, axiosPrivate]);
+  }, [username, auth, axiosPrivate]);
 
   return isLoading ? (
     <>

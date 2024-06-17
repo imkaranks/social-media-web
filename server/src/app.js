@@ -15,6 +15,9 @@ app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 app.use(cors(corsOptions));
 app.use(cookieParser());
 
+// // Serve static assets from Vite's build output
+// app.use(express.static(path.join(__dirname, "dist")));
+
 // Additional CORS headers for OPTIONS requests
 app.options("*", cors(corsOptions));
 
@@ -44,6 +47,11 @@ app.use("/api/v1/friend", friendRouter);
 app.use("/api/v1/post", postRouter);
 app.use("/api/v1/like", likeRouter);
 app.use("/api/v1/comment", commentRouter);
+
+// // Serve index.html for all other routes to enable SPA routing
+// app.get("*", (req, res) => {
+//   res.sendFile(path.join(__dirname, "dist/index.html"));
+// });
 
 /* ######### Error Handler ######### */
 
