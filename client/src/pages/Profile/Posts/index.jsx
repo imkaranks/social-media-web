@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import useAuth from "@/hooks/useAuth";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 import useDeletePost from "@/hooks/useDeletePost";
@@ -73,7 +73,6 @@ export default function Posts() {
           />
         );
       })}
-      <Toaster />
     </>
   ) : (
     <p>No Posts</p>

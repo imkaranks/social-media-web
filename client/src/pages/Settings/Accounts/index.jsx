@@ -1,7 +1,63 @@
+import { useState } from "react";
 import useAuth from "@/hooks/useAuth";
+import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 
 export default function Accounts() {
-  const { auth } = useAuth();
+  const { auth, setAuth } = useAuth();
+  const axiosPrivate = useAxiosPrivate();
+  const [avatar, setAvatar] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState(null);
+  const [isAvatarEditing, setIsAvatarEditing] = useState(false);
+  const [isAvatarSubmitting, setIsAvatarSubmitting] = useState(false);
+
+  const onAvatarChange = (e) => {
+    const file = e.target.files[0];
+
+    setAvatar(file);
+
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      setAvatarPreview(e.target.result);
+    };
+
+    reader.readAsDataURL(file);
+  };
+
+  const changeAvatar = async () => {
+    setIsAvatarSubmitting(true);
+
+    try {
+      if (avatar === null) throw new Error("Avatar is missing");
+
+      const formData = new FormData();
+
+      formData.set("avatar", avatar);
+
+      const response = await axiosPrivate.patch(
+        `user/avatar/${auth?.user?._id}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        },
+      );
+
+      setAvatar(null);
+      setAvatarPreview(null);
+      setIsAvatarEditing(false);
+
+      setAuth((prevAuth) => ({
+        ...prevAuth,
+        user: response?.data?.data,
+      }));
+    } catch (error) {
+      console.log(error?.message);
+    } finally {
+      setIsAvatarSubmitting(false);
+    }
+  };
 
   return (
     <>
@@ -9,11 +65,22 @@ export default function Accounts() {
 
       <div className="mb-4 flex gap-4 rounded-lg border border-gray-200 p-4 dark:border-neutral-700">
         <div className="flex flex-1 items-center">
-          <img
-            className="inline-block size-14 flex-shrink-0 rounded-full object-cover"
-            src={auth?.user?.avatar}
-            alt={auth?.user?.fullname}
-          />
+          <div className="grid">
+            <img
+              className="inline-block size-14 flex-shrink-0 rounded-full object-cover"
+              src={avatarPreview || auth?.user?.avatar?.url}
+              alt={auth?.user?.fullname}
+            />
+            {isAvatarEditing && (
+              <input
+                type="file"
+                name="avatar"
+                id="avatar"
+                accept="image/*"
+                onChange={onAvatarChange}
+              />
+            )}
+          </div>
           <div className="ms-3">
             <h3 className="font-semibold text-gray-800 dark:text-white">
               {auth?.user?.fullname}
@@ -23,10 +90,38 @@ export default function Accounts() {
             </p>
           </div>
         </div>
-        <div>
-          <button className="inline-flex items-center gap-x-2 rounded-lg border border-transparent bg-gray-100 px-3 py-2 text-sm font-semibold text-gray-800 hover:bg-gray-200 disabled:pointer-events-none disabled:opacity-50 dark:bg-white/10 dark:text-white dark:hover:bg-white/20 dark:hover:text-white">
-            Edit
-          </button>
+        <div className="flex items-start gap-2 2xl:gap-4">
+          {!isAvatarEditing ? (
+            <button
+              onClick={() => setIsAvatarEditing(true)}
+              className="inline-flex items-center gap-x-2 rounded-lg border border-transparent bg-gray-100 px-3 py-2 text-sm font-semibold text-gray-800 hover:bg-gray-200 disabled:pointer-events-none disabled:opacity-50 dark:bg-white/10 dark:text-white dark:hover:bg-white/20 dark:hover:text-white"
+            >
+              Edit
+            </button>
+          ) : (
+            <>
+              {avatar !== null && (
+                <button
+                  onClick={changeAvatar}
+                  disabled={isAvatarSubmitting}
+                  className="inline-flex items-center gap-x-2 rounded-lg border border-transparent bg-gray-100 px-3 py-2 text-sm font-semibold text-gray-800 hover:bg-gray-200 disabled:pointer-events-none disabled:opacity-50 dark:bg-white/10 dark:text-white dark:hover:bg-white/20 dark:hover:text-white"
+                >
+                  Save
+                </button>
+              )}
+              <button
+                disabled={isAvatarSubmitting}
+                onClick={() => {
+                  setAvatar(null);
+                  setAvatarPreview(null);
+                  setIsAvatarEditing(false);
+                }}
+                className="inline-flex items-center gap-x-2 rounded-lg border border-transparent bg-gray-100 px-3 py-2 text-sm font-semibold text-gray-800 hover:bg-gray-200 disabled:pointer-events-none disabled:opacity-50 dark:bg-white/10 dark:text-white dark:hover:bg-white/20 dark:hover:text-white"
+              >
+                Cancel
+              </button>
+            </>
+          )}
         </div>
       </div>
 

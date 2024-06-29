@@ -1,15 +1,66 @@
-import { useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import useAuth from "@/hooks/useAuth";
 import useFriend from "@/hooks/useFriend";
+import useSocket from "@/hooks/useSocket";
+// import useListenChats from "@/hooks/useListenChats";
+import useAxiosPrivate from "@/hooks/useAxiosPrivate";
+import useMessages from "@/hooks/useMessages";
+import MessageInput from "./MessageInput";
+import useStore from "@/app/store";
 
 export default function Messages() {
+  const messagesRef = useRef();
+
   const { auth } = useAuth();
+  const axiosPrivate = useAxiosPrivate();
   const { friends, friendsLoading } = useFriend();
+  const { onlineUsers } = useSocket();
+  const { currentChatUserId, setCurrentParticipant } = useMessages();
+
+  const chats = useStore((state) => state.chats);
+  const unreadFriendChats = useStore((state) => state.unreadFriendChats);
+  const setChats = useStore((state) => state.setChats);
+  const initUnreadFriendChats = useStore(
+    (state) => state.initUnreadFriendChats,
+  );
+  const messages = chats[currentChatUserId];
+
   const [expanded, setExpanded] = useState(false);
   const [currentConversation, setCurrentConversation] = useState(-1);
 
+  // useListenChats();
+
+  useEffect(() => {
+    messagesRef?.current?.scrollTo(0, messagesRef.current.scrollHeight);
+  });
+
+  useEffect(() => {
+    if (!auth) return;
+
+    async function getAllMessages() {
+      const responses = await Promise.all(
+        friends.map((friend) => axiosPrivate.get(`/message/${friend._id}`)),
+      );
+      const chats = responses.reduce(
+        (acc, response, idx) => ({
+          ...acc,
+          [friends[idx]._id]: response?.data?.data,
+        }),
+        {},
+      );
+      setChats(chats);
+      initUnreadFriendChats(friends.map((friend) => ({ user: friend._id })));
+    }
+
+    !Object.keys(chats)?.length && getAllMessages();
+  }, [auth, friends, axiosPrivate, setChats, initUnreadFriendChats]);
+
+  useEffect(() => {
+    return () => setCurrentParticipant(-1);
+  }, [setCurrentParticipant]);
+
   const openChatbox = (idx) => {
-    if (innerWidth > 768) {
+    if (innerWidth > 767) {
       if (currentConversation !== idx) {
         setCurrentConversation(idx);
       }
@@ -22,7 +73,7 @@ export default function Messages() {
   };
 
   const closeChatbox = () => {
-    if (innerWidth > 768) return;
+    if (innerWidth > 767) return;
 
     if (expanded) {
       setExpanded(false);
@@ -63,7 +114,10 @@ export default function Messages() {
             <div
               key={idx}
               className={`${idx === currentConversation ? "bg-gray-200 dark:bg-neutral-700 " : ""}flex group cursor-pointer items-start gap-2 rounded-xl p-2 py-2 hover:bg-gray-200 dark:hover:bg-neutral-700 md:py-3 2xl:gap-4`}
-              onClick={() => openChatbox(idx)}
+              onClick={() => {
+                openChatbox(idx);
+                setCurrentParticipant(friend?._id);
+              }}
             >
               <div className="relative inline-block">
                 <img
@@ -71,19 +125,29 @@ export default function Messages() {
                   src={friend.avatar.url}
                   alt={friend.fullname}
                 />
-                {idx < 2 && (
-                  <span
-                    className={`${idx === currentConversation ? "ring-gray-200 dark:ring-neutral-700 " : "ring-white group-hover:ring-gray-200 dark:ring-neutral-800 dark:group-hover:ring-neutral-700 "}absolute bottom-0 end-0 block size-2 rounded-full bg-teal-400 ring-2`}
-                  />
-                )}
+                {onlineUsers &&
+                  onlineUsers.some(
+                    (onlineUser) => onlineUser === friend._id,
+                  ) && (
+                    <span
+                      className={`${idx === currentConversation ? "ring-gray-200 dark:ring-neutral-700 " : "ring-white group-hover:ring-gray-200 dark:ring-neutral-800 dark:group-hover:ring-neutral-700 "}absolute bottom-0 end-0 block size-2 rounded-full bg-teal-400 ring-2`}
+                    />
+                  )}
               </div>
 
-              <div>
+              <div className="flex-1">
                 <h4 className="max-2xl:text-sm">{friend.username}</h4>
-                <p className="text-xs opacity-35 2xl:text-sm">
-                  Lorem ipsum dolor sit.
-                </p>
+                {!!chats[friend?._id]?.length && (
+                  <p className="text-xs opacity-35 2xl:text-sm">
+                    {`${chats[friend?._id][chats[friend?._id].length - 1].sender === auth.user._id ? "me: " : ""}${chats[friend?._id][chats[friend?._id].length - 1].message}`}
+                  </p>
+                )}
               </div>
+              {!!unreadFriendChats[friend._id] && (
+                <span className="inline-grid size-4 place-items-center rounded-full bg-green-500 text-xs">
+                  {unreadFriendChats[friend._id]}
+                </span>
+              )}
             </div>
           ))
         ) : (
@@ -91,7 +155,7 @@ export default function Messages() {
         )}
       </div>
       <div
-        className="relative h-full bg-white transition-transform dark:bg-neutral-800 max-md:absolute max-md:left-0 max-md:top-0 max-md:w-full max-md:translate-x-[--chatbox-offset]"
+        className="relative h-full overflow-y-hidden bg-white transition-transform dark:bg-neutral-800 max-md:absolute max-md:left-0 max-md:top-0 max-md:w-full max-md:translate-x-[--chatbox-offset]"
         style={{ "--chatbox-offset": expanded ? 0 : "100%" }}
       >
         {currentConversation !== -1 ? (
@@ -125,81 +189,36 @@ export default function Messages() {
             </div>
 
             {/* chats */}
-            <div className="h-[calc(100%-9rem)] space-y-4 overflow-y-auto p-4 [&>*]:max-w-[85%] [&_*]:w-fit">
-              {/* me */}
-              <div className="ml-auto space-y-2 [&>*]:ml-auto">
-                <div className="rounded-lg bg-blue-500 p-2 text-white">
-                  Hey there! How&apos;s it going?
-                </div>
-                <div className="text-xs text-gray-400 dark:text-neutral-500 sm:text-sm">
-                  {new Date().toLocaleTimeString()}
-                </div>
-              </div>
-
-              {/* sender */}
-              <div className="space-y-2">
-                <div className="rounded-lg bg-gray-200 p-2 dark:bg-neutral-700">
-                  Hey! Not too bad, thanks for asking.
-                </div>
-                <div className="rounded-lg bg-gray-200 p-2 dark:bg-neutral-700">
-                  How about you?
-                </div>
-                <div className="text-xs text-gray-400 dark:text-neutral-500 sm:text-sm">
-                  {new Date().toLocaleTimeString()}
-                </div>
-              </div>
-
-              {/* me */}
-              <div className="ml-auto space-y-2 [&>*]:ml-auto">
-                <div className="rounded-lg bg-blue-500 p-2 text-white">
-                  I&apos;m doing alright, just finished up some work.
-                </div>
-                <div className="rounded-lg bg-blue-500 p-2 text-white">
-                  What are you up to?
-                </div>
-                <div className="text-xs text-gray-400 dark:text-neutral-500 sm:text-sm">
-                  {new Date().toLocaleTimeString()}
-                </div>
-              </div>
+            <div
+              className="h-[calc(100%-9rem)] space-y-4 overflow-y-auto p-4"
+              ref={messagesRef}
+            >
+              {!!messages?.length &&
+                messages.map((message, idx) => {
+                  const isSender = message.sender === auth?.user?._id;
+                  return (
+                    <div
+                      key={idx}
+                      className="space-y-2 [&>*]:max-w-[85%] [&_*]:w-fit"
+                      style={{
+                        "--margin-start": isSender ? "auto" : "0",
+                        "--clr-chat": isSender
+                          ? "rgb(59 130 246)"
+                          : "rgb(64 64 64)",
+                      }}
+                    >
+                      <div className="ml-[--margin-start] w-fit max-w-[90%] rounded-lg bg-[--clr-chat] p-2 py-1 text-white">
+                        <p>{message.message}</p>
+                      </div>
+                      <span className="ml-[--margin-start] block w-fit text-xs opacity-50 2xl:text-sm">
+                        {new Date(message?.createdAt).toLocaleTimeString()}
+                      </span>
+                    </div>
+                  );
+                })}
             </div>
 
-            <form className="absolute bottom-4 left-4 flex w-[calc(100%-2rem)] items-center justify-between rounded-xl bg-gray-200 p-2 dark:bg-neutral-700 md:px-4">
-              {auth?.user?.avatar?.url ? (
-                <img
-                  className="inline-block size-8 rounded-full object-cover sm:size-9 md:size-10"
-                  src={auth.user.avatar.url}
-                  alt={auth.user.fullname}
-                />
-              ) : (
-                <span className="inline-flex size-8 flex-shrink-0 items-center justify-center rounded-full bg-gray-100 text-sm font-semibold leading-none text-gray-800 dark:bg-white/10 dark:text-white">
-                  {auth?.user?.fullname
-                    .split(" ")
-                    .map((word) => word[0].toUpperCase())}
-                </span>
-              )}
-              <input
-                type="text"
-                placeholder="Say Hi 👋"
-                className="flex w-full justify-self-start bg-transparent pl-2 outline-none sm:pl-4"
-              />
-              <button className="inline-flex items-center gap-x-2 rounded-lg border border-transparent bg-blue-600 p-2 text-center text-sm font-semibold text-white hover:bg-blue-700 disabled:pointer-events-none disabled:opacity-50">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="size-5 sm:size-6"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5"
-                  />
-                </svg>
-                <span className="sr-only">Send</span>
-              </button>
-            </form>
+            <MessageInput />
           </>
         ) : (
           <>

@@ -107,7 +107,7 @@ export default function Post({
             <img
               src={images[0]?.url}
               className="h-96 w-full object-cover object-center"
-              alt="man wearing white shorts holding black backpack"
+              alt={title}
             />
           </div>
         )}

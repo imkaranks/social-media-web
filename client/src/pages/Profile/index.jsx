@@ -38,7 +38,8 @@ export default function Profile() {
   const [sendRequestSubmitting, setSendRequestSubmitting] = useState(false);
   // const [rejectRequestSubmitting, setRejectRequestSubmitting] = useState(false);
 
-  const alreadyFriend = friends?.find((friend) => friend._id === user?._id);
+  const alreadyFriend =
+    !!friends.length && friends.find((friend) => friend._id === user?._id);
 
   const showTabpanelWithIdx = (idx) => {
     if (idx !== currentTab) {
@@ -174,21 +175,17 @@ export default function Profile() {
 
         <div className="mt-2 flex gap-2 max-sm:flex-col sm:items-center">
           <div className="flex items-center -space-x-2">
-            <img
-              className="inline-block size-6 rounded-full ring-2 ring-gray-100 dark:ring-neutral-700/20"
-              src={user?.avatar?.url}
-              alt="Image Description"
-            />
-            <img
-              className="inline-block size-6 rounded-full ring-2 ring-gray-100 dark:ring-neutral-700/20"
-              src="https://images.unsplash.com/photo-1531927557220-a9e23c1e4794?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2&w=300&h=300&q=80"
-              alt="Image Description"
-            />
-            <img
-              className="inline-block size-6 rounded-full ring-2 ring-gray-100 dark:ring-neutral-700/20"
-              src="https://images.unsplash.com/photo-1541101767792-f9b2b1c4f127?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&&auto=format&fit=facearea&facepad=3&w=300&h=300&q=80"
-              alt="Image Description"
-            />
+            {!!friends.length &&
+              (friends.length > 3 ? friends.slice(0, 3) : friends).map(
+                (friend, idx) => (
+                  <img
+                    key={idx}
+                    className="inline-block size-6 rounded-full ring-2 ring-gray-100 dark:ring-neutral-700/20"
+                    src={friend?.avatar?.url}
+                    alt={friend?.fullname}
+                  />
+                ),
+              )}
           </div>
           <p className="text-xs text-gray-400 dark:text-neutral-500 sm:text-sm">
             followed by <strong>Ernest Becker</strong> and 69 others you follow

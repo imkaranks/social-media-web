@@ -1,8 +1,11 @@
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 import User from "../models/user.model.js";
 import catchAsyncError from "../utils/catchAsyncError.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
+import VerificationToken from "../models/verificationToken.model.js";
+import { sendMail } from "../utils/sendMail.js";
 
 const generateAuthTokens = async (userId, res) => {
   try {
@@ -68,13 +71,71 @@ export const signup = catchAsyncError(async (req, res) => {
 
   if (!createdUser) throw new ApiError(500);
 
+  // // Generate a verification token
+  // const token = crypto.randomBytes(20).toString("hex");
+
+  // // Save the verification token in the database
+  // const verificationToken = await VerificationToken.create({
+  //   user: user._id,
+  //   token,
+  // });
+
+  // await sendMail({
+  //   email,
+  //   subject: "Verification required for QuietSphere",
+  //   text: "Click to Verify Email",
+  //   html: `<div>
+  //     <a href="http://localhost:3000/api/v1/auth/verify/${token}">Click to Verify Email</a>
+  //   </div>`,
+  // });
+
   return res
     .status(201)
     .json(
       new ApiResponse(
         200,
         { user: createdUser, accessToken },
-        "User registered successfully"
+        "User created successfully. Please check your email to verify your account."
+      )
+    );
+});
+
+export const verifyEmail = catchAsyncError(async (req, res) => {
+  const { token } = req.params;
+
+  const verificationToken = await VerificationToken.findOne({ token });
+
+  if (
+    !verificationToken ||
+    verificationToken.createdAt < new Date(new Date() - 24 * 60 * 60 * 1000)
+  ) {
+    throw new ApiError(400, "Invalid or expired verification token.");
+  }
+
+  const user = await User.findById(verificationToken.user).select(
+    "-password -refreshToken"
+  );
+
+  if (!user) {
+    throw new ApiError(404, "User not found.");
+  }
+
+  user.isVerified = true;
+  await user.save();
+
+  await VerificationToken.deleteOne({ token });
+
+  // Generate authentication token and set cookie
+  const { accessToken } = await generateAuthTokens(user._id, res);
+
+  res
+    .status(200)
+    .redirect("http://localhost:5173/")
+    .json(
+      new ApiResponse(
+        200,
+        { user, accessToken },
+        "Email address verified successfully."
       )
     );
 });
@@ -94,7 +155,6 @@ export const signin = catchAsyncError(async (req, res) => {
     throw new ApiError(404, "User not found");
   }
 
-  // Validate user's password
   const isValidPassword = await user.didPasswordMatch(password);
   if (!isValidPassword) {
     throw new ApiError(401, "Invalid user credentials");

@@ -1,5 +1,6 @@
 import User from "../models/user.model.js";
 import Friend from "../models/friend.model.js";
+import Conversation from "../models/conversation.model.js";
 import catchAsyncError from "../utils/catchAsyncError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";
@@ -132,7 +133,27 @@ export const getFriends = catchAsyncError(async (req, res) => {
     "-password -refreshToken"
   );
 
-  res.status(200).json(new ApiResponse(200, friends));
+  // Retrieve last messages for each friend
+  const friendsWithLastMessages = await Promise.all(
+    friends.map(async (friend) => {
+      const conversation = await Conversation.findOne({
+        participants: { $all: [userId, friend._id] },
+      })
+        .limit(1)
+        .populate("messages");
+
+      const lastMessage = conversation
+        ? conversation.messages[conversation.messages.length - 1]
+        : null;
+
+      return {
+        ...friend.toObject(),
+        lastMessage,
+      };
+    })
+  );
+
+  res.status(200).json(new ApiResponse(200, friendsWithLastMessages));
 });
 
 export const getPendingFriendRequests = catchAsyncError(async (req, res) => {
@@ -144,12 +165,66 @@ export const getPendingFriendRequests = catchAsyncError(async (req, res) => {
   }).populate({
     path: "user1",
     model: "User",
-    select: "username avatar fullname",
+    select: "-password -refreshToken",
   });
 
-  // const pendingRequestsData = pendingRequests.map((pendingRequest) => ({
-  //   sender: pendingRequest.user1,
-  // }));
+  // Array to hold pending requests with mutual friends count
+  const pendingRequestsData = await Promise.all(
+    pendingRequests.map(async (pendingRequest) => {
+      const senderId = pendingRequest.user1._id;
 
-  res.status(200).json(new ApiResponse(200, pendingRequests));
+      // Find mutual friends count
+      const mutualFriendsCount = await getMutualFriendsCount(userId, senderId);
+
+      return {
+        _id: pendingRequest._id,
+        sender: pendingRequest.user1,
+        mutualFriendsCount,
+      };
+    })
+  );
+
+  res.status(200).json(new ApiResponse(200, pendingRequestsData));
 });
+
+async function getMutualFriendsCount(userId1, userId2) {
+  try {
+    // Find all friends of userId1
+    const friendsOfUser1 = await Friend.find({
+      $or: [
+        { user1: userId1, status: "accepted" },
+        { user2: userId1, status: "accepted" },
+      ],
+    });
+
+    // Find all friends of userId2
+    const friendsOfUser2 = await Friend.find({
+      $or: [
+        { user1: userId2, status: "accepted" },
+        { user2: userId2, status: "accepted" },
+      ],
+    });
+
+    // Extract user ids from each set of friends
+    const friendsIdsUser1 = friendsOfUser1.map((friend) =>
+      friend.user1.toString() === userId1.toString()
+        ? friend.user2.toString()
+        : friend.user1.toString()
+    );
+    const friendsIdsUser2 = friendsOfUser2.map((friend) =>
+      friend.user1.toString() === userId2.toString()
+        ? friend.user2.toString()
+        : friend.user1.toString()
+    );
+
+    // Calculate mutual friends by finding intersection of friends lists
+    const mutualFriends = friendsIdsUser1.filter((friendId) =>
+      friendsIdsUser2.includes(friendId)
+    );
+
+    return mutualFriends.length;
+  } catch (error) {
+    console.error("Error fetching mutual friends:", error);
+    return 0; // Handle error gracefully
+  }
+}

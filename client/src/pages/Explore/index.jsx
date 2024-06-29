@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 import useFriend from "@/hooks/useFriend";
-import useStore from "@/app/store";
 import Post from "@/components/ui/Post";
 import PostSkeleton from "@/components/ui/PostSkeleton";
+import useStore from "@/app/store";
 
 export default function Explore() {
   const posts = useStore((state) => state.posts);
   const setPosts = useStore((state) => state.setPosts);
+  // const [posts, setPosts] = useState([]);
   const axiosPrivate = useAxiosPrivate();
   const { friends } = useFriend();
   const [isLoading, setIsLoading] = useState(false);

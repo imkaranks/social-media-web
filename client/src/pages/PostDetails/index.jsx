@@ -5,6 +5,7 @@ import useAuth from "@/hooks/useAuth";
 import Loader from "@/components/ui/Loader";
 import Post from "@/components/ui/Post";
 import Comments from "@/components/ui/Comments";
+// import PopulateComments from "../../components/PopulateComments";
 
 export default function PostWithComments() {
   const { postId } = useParams();
@@ -22,8 +23,9 @@ export default function PostWithComments() {
       const response = await axiosPrivate.post(`/comment/create/${postId}`, {
         content: comment,
       });
-      setComment("");
+
       setComments((prevComments) => [response?.data?.data, ...prevComments]);
+      setComment("");
     } catch (error) {
       console.log(error);
     }
@@ -93,6 +95,7 @@ export default function PostWithComments() {
           {comments?.length ? (
             <>
               <Comments data={comments} />
+              {/* <PopulateComments comments={comments} /> */}
             </>
           ) : (
             <p>No comments yet</p>

@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 import Post from "@/components/ui/Post";
-import useStore from "@/app/store";
 import useFriend from "@/hooks/useFriend";
 import PostSkeleton from "@/components/ui/PostSkeleton";
+import useStore from "@/app/store";
 
 export default function Feed() {
   const posts = useStore((state) => state.posts);
   const setPosts = useStore((state) => state.setPosts);
+  // const [posts, setPosts] = useState([]);
   const { friends } = useFriend();
   const axiosPrivate = useAxiosPrivate();
   const [isLoading, setIsLoading] = useState(false);

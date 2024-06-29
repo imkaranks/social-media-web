@@ -1,10 +1,19 @@
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import useLogout from "@/hooks/useLogout";
 import useAuth from "@/hooks/useAuth";
+import useStore from "@/app/store";
 
 export default function LeftSidebar() {
   const { auth } = useAuth();
+  const location = useLocation();
   const { logout, isSubmitting } = useLogout();
+  const unreadFriendChats = useStore((state) => state.unreadFriendChats);
+  const unreadChats =
+    location.pathname !== "/messages" &&
+    Object.values(unreadFriendChats).reduce(
+      (cnt, item) => (item > 0 ? cnt + 1 : cnt),
+      0,
+    );
 
   return (
     <aside className="sticky top-[4.5625rem] z-50 h-[calc(100vh-4.5625rem)] border-r border-r-gray-200 bg-white p-4 dark:border-r-neutral-700 dark:bg-neutral-800 xl:space-y-8 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500 [&::-webkit-scrollbar-track]:bg-gray-100 dark:[&::-webkit-scrollbar-track]:bg-neutral-700 [&::-webkit-scrollbar]:w-2">
@@ -166,6 +175,11 @@ export default function LeftSidebar() {
               <span className="max-xl:invisible max-xl:absolute max-xl:left-[calc(100%+0.25rem)] max-xl:z-50 max-xl:inline-block max-xl:rounded max-xl:bg-gray-900 max-xl:px-2 max-xl:py-1 max-xl:text-xs max-xl:font-medium max-xl:text-white max-xl:opacity-0 max-xl:shadow-sm max-xl:transition-opacity max-xl:group-hover:visible max-xl:group-hover:opacity-100 max-xl:dark:bg-neutral-700">
                 Messages
               </span>
+              {!!unreadChats && (
+                <span className="ml-auto inline-grid size-6 place-items-center rounded-full bg-green-500 text-sm">
+                  {unreadChats}
+                </span>
+              )}
             </NavLink>
           </li>
           <li>

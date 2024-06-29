@@ -5,13 +5,23 @@ import {
   getUserById,
   getUserByUsername,
   searchUsers,
+  updateUser,
+  changeAvatar,
 } from "../controllers/user.controllers.js";
+import upload from "../middlewares/multer.middleware.js";
 
 const router = express.Router();
 
 router.route("/").get(isAuthenticated, getUsers);
 
-router.route("/:userId").get(isAuthenticated, getUserById);
+router
+  .route("/:userId")
+  .get(isAuthenticated, getUserById)
+  .patch(isAuthenticated, updateUser);
+
+router
+  .route("/avatar/:userId")
+  .patch(isAuthenticated, upload.single("avatar"), changeAvatar);
 
 router.route("/u/:username").get(isAuthenticated, getUserByUsername);
 

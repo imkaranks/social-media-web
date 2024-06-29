@@ -25,9 +25,7 @@ export const AuthProvider = ({ children }) => {
     const persistAuth = async () => {
       setIsLoading(true);
       try {
-        const response = await axios.get("/auth/refresh", {
-          withCredentials: true,
-        });
+        const response = await axios.post("/auth/refresh");
 
         setAuth(response?.data?.data);
 

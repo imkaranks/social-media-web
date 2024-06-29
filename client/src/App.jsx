@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
 import Loader from "@/components/shared/Loader";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import RootLayout from "@/pages/RootLayout";
@@ -18,41 +19,44 @@ import PostDetails from "@/pages/PostDetails";
 
 export default function App() {
   return (
-    <Suspense fallback={<Loader />}>
-      <Routes>
-        <Route path="/">
-          <Route element={<AuthLayout />}>
-            <Route path="sign-in" element={<SignIn />} />
-            <Route path="sign-up" element={<SignUp />} />
-          </Route>
+    <>
+      <Suspense fallback={<Loader />}>
+        <Routes>
+          <Route path="/">
+            <Route element={<AuthLayout />}>
+              <Route path="sign-in" element={<SignIn />} />
+              <Route path="sign-up" element={<SignUp />} />
+            </Route>
 
-          <Route
-            element={
-              <ProtectedRoute>
-                <RootLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<Home />} />
-            <Route path="explore" element={<Explore />} />
-            <Route path="notification" element={<Notification />} />
-            <Route path="bookmarks" element={<Bookmarks />} />
-            <Route path="user/:username" element={<Profile />} />
-            <Route path="post/:postId" element={<PostDetails />} />
-          </Route>
+            <Route
+              element={
+                <ProtectedRoute>
+                  <RootLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<Home />} />
+              <Route path="explore" element={<Explore />} />
+              <Route path="notification" element={<Notification />} />
+              <Route path="bookmarks" element={<Bookmarks />} />
+              <Route path="user/:username" element={<Profile />} />
+              <Route path="post/:postId" element={<PostDetails />} />
+            </Route>
 
-          <Route
-            element={
-              <ProtectedRoute>
-                <SingleSidebarLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route path="messages" element={<Messages />} />
-            <Route path="settings" element={<Settings />} />
+            <Route
+              element={
+                <ProtectedRoute>
+                  <SingleSidebarLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route path="messages" element={<Messages />} />
+              <Route path="settings" element={<Settings />} />
+            </Route>
           </Route>
-        </Route>
-      </Routes>
-    </Suspense>
+        </Routes>
+      </Suspense>
+      <Toaster />
+    </>
   );
 }

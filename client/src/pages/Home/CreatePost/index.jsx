@@ -1,5 +1,5 @@
 import { useState } from "react";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import useAuth from "@/hooks/useAuth";
 import useCreatePost from "@/hooks/useCreatePost";
 
@@ -249,8 +249,6 @@ export default function CreatePost() {
           </div>
         </div>
       </div>
-
-      <Toaster />
     </>
   );
 }

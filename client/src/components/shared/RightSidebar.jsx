@@ -1,4 +1,5 @@
 import useFriend from "@/hooks/useFriend";
+import useSocket from "@/hooks/useSocket";
 
 function RequestSkeleton() {
   return (
@@ -29,6 +30,9 @@ export default function RightSidebar() {
     acceptRequest,
     rejectRequest,
   } = useFriend();
+  const { onlineUsers } = useSocket();
+
+  // console.log(pendingRequests, friends);
 
   return (
     <div className="sticky top-[4.5625rem] h-[calc(100vh-4.5625rem)] w-[calc(100%-0.5rem)] overflow-y-auto p-4 pr-2 max-md:hidden">
@@ -106,9 +110,12 @@ export default function RightSidebar() {
                     src={friend?.avatar?.url}
                     alt={friend?.fullname}
                   />
-                  {idx < 1 && (
-                    <span className="absolute bottom-0 end-0 block size-2 rounded-full bg-teal-400 ring-2 ring-gray-200 dark:ring-neutral-700" />
-                  )}
+                  {onlineUsers &&
+                    onlineUsers.some(
+                      (onlineUser) => onlineUser === friend._id,
+                    ) && (
+                      <span className="absolute bottom-0 end-0 block size-2 rounded-full bg-teal-400 ring-2 ring-gray-200 dark:ring-neutral-700" />
+                    )}
                 </div>
 
                 <div>
@@ -145,14 +152,17 @@ export default function RightSidebar() {
                 <div className="mb-2 flex gap-2 2xl:gap-4">
                   <img
                     className="inline-block size-9 rounded-full object-cover object-center"
-                    src={pendingRequest.user1.avatar.url}
-                    alt={pendingRequest.user1.fullname}
+                    src={pendingRequest.sender.avatar.url}
+                    alt={pendingRequest.sender.fullname}
                   />
                   <div className="max-2xl:text-sm">
-                    <h4>{pendingRequest.user1.username}</h4>
-                    <p className="text-xs text-gray-400 dark:text-neutral-400 2xl:text-sm">
-                      8 mutual friends
-                    </p>
+                    <h4>{pendingRequest.sender.username}</h4>
+                    {!!pendingRequest?.mutualFriendsCount && (
+                      <p className="text-xs text-gray-400 dark:text-neutral-400 2xl:text-sm">
+                        {pendingRequest.mutualFriendsCount} mutual friend
+                        {pendingRequest.mutualFriendsCount > 1 ? "s" : ""}
+                      </p>
+                    )}
                   </div>
                 </div>
 
