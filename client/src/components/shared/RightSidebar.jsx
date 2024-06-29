@@ -1,5 +1,8 @@
 import useFriend from "@/hooks/useFriend";
 import useSocket from "@/hooks/useSocket";
+// import useMessages from "@/hooks/useMessages";
+import useStore from "@/app/store";
+import { Link } from "react-router-dom";
 
 function RequestSkeleton() {
   return (
@@ -31,8 +34,10 @@ export default function RightSidebar() {
     rejectRequest,
   } = useFriend();
   const { onlineUsers } = useSocket();
+  // const { setCurrentParticipant } = useMessages();
 
-  // console.log(pendingRequests, friends);
+  const chats = useStore((state) => state.chats);
+  const unreadFriendChats = useStore((state) => state.unreadFriendChats);
 
   return (
     <div className="sticky top-[4.5625rem] h-[calc(100vh-4.5625rem)] w-[calc(100%-0.5rem)] overflow-y-auto p-4 pr-2 max-md:hidden">
@@ -82,7 +87,11 @@ export default function RightSidebar() {
         {/* category tabs */}
         <div className="mb-4 border-b border-gray-100 dark:border-white/5">
           <nav className="flex" aria-label="Tabs" role="tablist">
-            {["Primary", "General", "Request(7)"].map((text, idx) => (
+            {[
+              "Primary",
+              "General",
+              `Request(${pendingRequests?.received?.length || 0})`,
+            ].map((text, idx) => (
               <button
                 key={idx}
                 type="button"
@@ -102,30 +111,45 @@ export default function RightSidebar() {
           {friendsLoading ? (
             <p>Loading...</p>
           ) : friends.length ? (
-            friends.map((friend, idx) => (
-              <div key={idx} className="flex items-start gap-2 2xl:gap-4">
-                <div className="relative inline-block">
-                  <img
-                    className="inline-block size-9 rounded-full object-cover object-center"
-                    src={friend?.avatar?.url}
-                    alt={friend?.fullname}
-                  />
-                  {onlineUsers &&
-                    onlineUsers.some(
-                      (onlineUser) => onlineUser === friend._id,
-                    ) && (
-                      <span className="absolute bottom-0 end-0 block size-2 rounded-full bg-teal-400 ring-2 ring-gray-200 dark:ring-neutral-700" />
-                    )}
-                </div>
+            friends.map((friend, idx) => {
+              const lastMessage =
+                chats[friend?._id]?.[chats[friend?._id]?.length - 1]?.message ??
+                "";
 
-                <div>
-                  <h4 className="max-2xl:text-sm">{friend?.username}</h4>
-                  <p className="text-xs opacity-35 2xl:text-sm">
-                    Lorem ipsum dolor sit.
-                  </p>
+              return (
+                <div key={idx} className="flex items-start gap-2 2xl:gap-4">
+                  <div className="relative inline-block">
+                    <img
+                      className="inline-block size-9 rounded-full object-cover object-center"
+                      src={friend?.avatar?.url}
+                      alt={friend?.fullname}
+                    />
+                    {onlineUsers &&
+                      onlineUsers.some(
+                        (onlineUser) => onlineUser === friend._id,
+                      ) && (
+                        <span className="absolute bottom-0 end-0 block size-2 rounded-full bg-teal-400 ring-2 ring-gray-200 dark:ring-neutral-700" />
+                      )}
+                  </div>
+
+                  <div className="flex-1 truncate">
+                    <h4 className="max-2xl:text-sm">{friend?.username}</h4>
+                    {!!lastMessage?.length && (
+                      <p className="truncate text-xs opacity-35 2xl:text-sm">
+                        {lastMessage}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Unread messages count */}
+                  {!!unreadFriendChats[friend._id] && (
+                    <span className="mt-auto inline-grid size-5 place-items-center rounded-full bg-blue-500 text-[0.65rem] font-medium text-white">
+                      {unreadFriendChats[friend._id]}
+                    </span>
+                  )}
                 </div>
-              </div>
-            ))
+              );
+            })
           ) : (
             <p className="text-gray-400 dark:text-neutral-500 max-2xl:text-sm">
               No friends yet
@@ -143,18 +167,20 @@ export default function RightSidebar() {
               <RequestSkeleton />
               <RequestSkeleton />
             </>
-          ) : pendingRequests.length ? (
-            pendingRequests.map((pendingRequest, idx) => (
+          ) : pendingRequests?.received?.length ? (
+            pendingRequests?.received.map((pendingRequest, idx) => (
               <div
                 key={idx}
                 className="rounded-xl bg-gray-200 p-4 dark:bg-neutral-700"
               >
                 <div className="mb-2 flex gap-2 2xl:gap-4">
-                  <img
-                    className="inline-block size-9 rounded-full object-cover object-center"
-                    src={pendingRequest.sender.avatar.url}
-                    alt={pendingRequest.sender.fullname}
-                  />
+                  <Link to={`/user/${pendingRequest.sender.username}`}>
+                    <img
+                      className="inline-block size-9 rounded-full object-cover object-center"
+                      src={pendingRequest.sender.avatar.url}
+                      alt={pendingRequest.sender.fullname}
+                    />
+                  </Link>
                   <div className="max-2xl:text-sm">
                     <h4>{pendingRequest.sender.username}</h4>
                     {!!pendingRequest?.mutualFriendsCount && (

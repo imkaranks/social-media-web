@@ -19,13 +19,13 @@ const useStore = create((set) => ({
     set(() => ({ pendingFriendRequests: newPendingFriendRequests })),
   acceptPendingFriendRequest: (pendingFriendRequestId) =>
     set((state) => {
-      const newFriend = state.pendingFriendRequests.find(
+      const newFriend = state.pendingFriendRequests.received.find(
         (pendingFriendRequest) =>
           pendingFriendRequest._id === pendingFriendRequestId,
       );
       state.addFriend(newFriend?.sender);
       return {
-        pendingFriendRequests: state.pendingFriendRequests.filter(
+        pendingFriendRequests: state.pendingFriendRequests.received.filter(
           (pendingFriendRequest) =>
             pendingFriendRequest._id !== pendingFriendRequestId,
         ),
@@ -33,7 +33,7 @@ const useStore = create((set) => ({
     }),
   rejectPendingFriendRequest: (pendingFriendRequestId) =>
     set((state) => ({
-      pendingFriendRequests: state.pendingFriendRequests.filter(
+      pendingFriendRequests: state.pendingFriendRequests.received.filter(
         (pendingFriendRequest) =>
           pendingFriendRequest._id !== pendingFriendRequestId,
       ),

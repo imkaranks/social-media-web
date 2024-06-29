@@ -176,7 +176,7 @@ export default function LeftSidebar() {
                 Messages
               </span>
               {!!unreadChats && (
-                <span className="ml-auto inline-grid size-6 place-items-center rounded-full bg-green-500 text-sm">
+                <span className="absolute -right-1 inline-grid size-6 place-items-center rounded-full bg-blue-600 text-sm font-medium max-xl:-top-1 xl:right-2">
                   {unreadChats}
                 </span>
               )}

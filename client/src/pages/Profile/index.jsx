@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import toast from "react-hot-toast";
 import useAuth from "@/hooks/useAuth";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 import useFriend from "@/hooks/useFriend";
@@ -31,7 +32,15 @@ export default function Profile() {
   const { auth } = useAuth();
   const { username } = useParams();
   const axiosPrivate = useAxiosPrivate();
-  const { friends, friendsLoading } = useFriend();
+  const {
+    friends,
+    friendsLoading,
+    pendingRequests,
+    isSubmitting,
+    pendingRequestsLoading,
+    acceptRequest,
+    rejectRequest,
+  } = useFriend();
   const [currentTab, setCurrentTab] = useState(0);
   const [user, setUser] = useState({});
   const [userLoading, setUserLoading] = useState(false);
@@ -40,6 +49,16 @@ export default function Profile() {
 
   const alreadyFriend =
     !!friends.length && friends.find((friend) => friend._id === user?._id);
+  const sentRequest =
+    !pendingRequestsLoading &&
+    pendingRequests?.sent?.find(
+      (request) => request?.receiver?._id === user?._id,
+    );
+  const receivedRequest =
+    !pendingRequestsLoading &&
+    pendingRequests?.received?.find(
+      (request) => request?.sender?._id === user?._id,
+    );
 
   const showTabpanelWithIdx = (idx) => {
     if (idx !== currentTab) {
@@ -58,7 +77,10 @@ export default function Profile() {
         recipientId,
       });
     } catch (error) {
-      console.log(error);
+      toast.error(
+        error?.response?.data?.message ||
+          "Error occur while sending friend request",
+      );
     } finally {
       setSendRequestSubmitting(false);
     }
@@ -141,13 +163,39 @@ export default function Profile() {
           !friendsLoading &&
           user?._id !== auth?.user?._id &&
           (alreadyFriend ? (
-            <div className="mt-2 flex flex-wrap items-center gap-4">
+            <div className="mt-2 flex flex-wrap items-center gap-2 2xl:gap-4">
               <button className="inline-flex items-center rounded-lg border border-transparent bg-gray-100 px-3 py-2 text-sm font-semibold text-gray-500 hover:bg-gray-200 disabled:pointer-events-none disabled:opacity-50 dark:bg-white/10 dark:text-neutral-400 dark:hover:bg-white/20 dark:hover:text-neutral-300">
                 Unfriend
               </button>
             </div>
+          ) : sentRequest ? (
+            <div className="mt-2 flex flex-wrap items-center gap-2 2xl:gap-4">
+              <button
+                disabled
+                className="inline-flex items-center rounded-lg border border-transparent bg-gray-100 px-3 py-2 text-sm font-semibold text-gray-500 hover:bg-gray-200 disabled:pointer-events-none disabled:opacity-50 dark:bg-white/10 dark:text-neutral-400 dark:hover:bg-white/20 dark:hover:text-neutral-300"
+              >
+                Friend request sent
+              </button>
+            </div>
+          ) : receivedRequest ? (
+            <div className="mt-2 flex flex-wrap items-center gap-2 2xl:gap-4">
+              <button
+                disabled={isSubmitting}
+                onClick={() => acceptRequest(receivedRequest?._id)}
+                className="inline-flex items-center rounded-lg border border-transparent bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:pointer-events-none disabled:opacity-50"
+              >
+                Accept
+              </button>
+              <button
+                disabled={isSubmitting}
+                onClick={() => rejectRequest(receivedRequest?._id)}
+                className="inline-flex items-center rounded-lg border border-transparent bg-gray-100 px-3 py-2 text-sm font-semibold text-gray-500 hover:bg-gray-200 disabled:pointer-events-none disabled:opacity-50 dark:bg-white/10 dark:text-neutral-400 dark:hover:bg-white/20 dark:hover:text-neutral-300"
+              >
+                Reject
+              </button>
+            </div>
           ) : (
-            <div className="mt-2 flex flex-wrap items-center gap-4">
+            <div className="mt-2 flex flex-wrap items-center gap-2 2xl:gap-4">
               <button
                 disabled={sendRequestSubmitting}
                 className="inline-flex items-center rounded-lg border border-transparent bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:pointer-events-none disabled:opacity-50"
@@ -158,7 +206,7 @@ export default function Profile() {
             </div>
           ))}
 
-        <div className="mt-2 flex flex-wrap items-center gap-4">
+        {/* <div className="mt-2 flex flex-wrap items-center gap-4">
           <p>
             <strong>1K</strong>{" "}
             <span className="text-gray-400 dark:text-neutral-500">
@@ -171,9 +219,9 @@ export default function Profile() {
               followers
             </span>
           </p>
-        </div>
+        </div> */}
 
-        <div className="mt-2 flex gap-2 max-sm:flex-col sm:items-center">
+        <div className="mt-4 flex gap-2 max-sm:flex-col sm:items-center">
           <div className="flex items-center -space-x-2">
             {!!friends.length &&
               (friends.length > 3 ? friends.slice(0, 3) : friends).map(
@@ -188,7 +236,7 @@ export default function Profile() {
               )}
           </div>
           <p className="text-xs text-gray-400 dark:text-neutral-500 sm:text-sm">
-            followed by <strong>Ernest Becker</strong> and 69 others you follow
+            friends with <strong>Ernest Becker</strong> and 69 others you know
           </p>
         </div>
 

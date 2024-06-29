@@ -38,7 +38,7 @@ export const sendFriendRequest = catchAsyncError(async (req, res) => {
   });
 
   if (existingFriend) {
-    throw new ApiError(400, "Friend request already sent");
+    throw new ApiError(400, "Friend request already pending");
   }
 
   const newFriend = await Friend.create({
@@ -159,72 +159,79 @@ export const getFriends = catchAsyncError(async (req, res) => {
 export const getPendingFriendRequests = catchAsyncError(async (req, res) => {
   const userId = req?.user?._id || req.params.userId;
 
-  const pendingRequests = await Friend.find({
+  const pendingRequestsSent = await Friend.find({
+    user1: userId,
+    status: "pending",
+  }).populate({
+    path: "user2",
+    model: User,
+    select: "-password -refreshToken",
+  });
+
+  const pendingRequestsReceived = await Friend.find({
     user2: userId,
     status: "pending",
   }).populate({
     path: "user1",
-    model: "User",
+    model: User,
     select: "-password -refreshToken",
   });
 
-  // Array to hold pending requests with mutual friends count
-  const pendingRequestsData = await Promise.all(
-    pendingRequests.map(async (pendingRequest) => {
-      const senderId = pendingRequest.user1._id;
-
-      // Find mutual friends count
-      const mutualFriendsCount = await getMutualFriendsCount(userId, senderId);
-
-      return {
-        _id: pendingRequest._id,
-        sender: pendingRequest.user1,
-        mutualFriendsCount,
-      };
-    })
-  );
+  const pendingRequestsData = {
+    sent: await formatPendingRequests(userId, pendingRequestsSent),
+    received: await formatPendingRequests(userId, pendingRequestsReceived),
+  };
 
   res.status(200).json(new ApiResponse(200, pendingRequestsData));
 });
 
-async function getMutualFriendsCount(userId1, userId2) {
+async function formatPendingRequests(userId, pendingRequests) {
+  const formattedRequests = await Promise.all(
+    pendingRequests.map(async (pendingRequest) => {
+      const senderId = pendingRequest.user1._id;
+      const mutualFriendsCount = await getMutualFriendsCount(userId, senderId);
+      return {
+        _id: pendingRequest._id,
+        sender: pendingRequest.user1,
+        receiver: pendingRequest.user2,
+        mutualFriendsCount,
+      };
+    })
+  );
+  return formattedRequests;
+}
+
+export async function getMutualFriendsCount(userId1, userId2) {
   try {
-    // Find all friends of userId1
-    const friendsOfUser1 = await Friend.find({
-      $or: [
-        { user1: userId1, status: "accepted" },
-        { user2: userId1, status: "accepted" },
-      ],
-    });
+    const friendsOfUser1 = await getAcceptedFriends(userId1);
+    const friendsOfUser2 = await getAcceptedFriends(userId2);
 
-    // Find all friends of userId2
-    const friendsOfUser2 = await Friend.find({
-      $or: [
-        { user1: userId2, status: "accepted" },
-        { user2: userId2, status: "accepted" },
-      ],
-    });
-
-    // Extract user ids from each set of friends
-    const friendsIdsUser1 = friendsOfUser1.map((friend) =>
-      friend.user1.toString() === userId1.toString()
-        ? friend.user2.toString()
-        : friend.user1.toString()
-    );
-    const friendsIdsUser2 = friendsOfUser2.map((friend) =>
-      friend.user1.toString() === userId2.toString()
-        ? friend.user2.toString()
-        : friend.user1.toString()
-    );
-
-    // Calculate mutual friends by finding intersection of friends lists
-    const mutualFriends = friendsIdsUser1.filter((friendId) =>
-      friendsIdsUser2.includes(friendId)
+    const mutualFriends = friendsOfUser1.filter((friend1) =>
+      friendsOfUser2.some(
+        (friend2) => friend1.toString() === friend2.toString()
+      )
     );
 
     return mutualFriends.length;
   } catch (error) {
     console.error("Error fetching mutual friends:", error);
-    return 0; // Handle error gracefully
+    return 0;
   }
+}
+
+async function getAcceptedFriends(userId) {
+  const friends = await Friend.find({
+    $or: [
+      { user1: userId, status: "accepted" },
+      { user2: userId, status: "accepted" },
+    ],
+  });
+
+  return friends.flatMap((friend) => {
+    const friendId =
+      friend.user1.toString() === userId.toString()
+        ? friend.user2.toString()
+        : friend.user1.toString();
+    return friendId;
+  });
 }

@@ -6,6 +6,7 @@ import useStore from "@/app/store";
 export default function useFriend() {
   const axiosPrivate = useAxiosPrivate();
   const { auth } = useAuth();
+
   const friends = useStore((state) => state.friends);
   const setFriends = useStore((state) => state.setFriends);
   const pendingRequests = useStore((state) => state.pendingFriendRequests);
@@ -54,7 +55,7 @@ export default function useFriend() {
       } catch (error) {
         console.log(error);
       } finally {
-        setIsSubmitting(true);
+        setIsSubmitting(false);
       }
     },
     [axiosPrivate, auth, rejectPendingRequest],
@@ -65,7 +66,7 @@ export default function useFriend() {
       setFriendsLoading(true);
 
       try {
-        const response = await axiosPrivate.get(`/friend/${auth.user._id}`);
+        const response = await axiosPrivate.get(`/friend/${auth?.user?._id}`);
 
         setFriends(response?.data?.data);
       } catch (error) {
@@ -80,7 +81,7 @@ export default function useFriend() {
 
       try {
         const response = await axiosPrivate.get(
-          `/friend/pending/${auth.user._id}`,
+          `/friend/pending/${auth?.user?._id}`,
         );
 
         setPendingRequests(response?.data?.data);
@@ -91,7 +92,9 @@ export default function useFriend() {
       }
     }
 
-    Promise.all([getFriends(), getPendingRequests()]);
+    if (auth) {
+      Promise.all([getFriends(), getPendingRequests()]);
+    }
   }, [axiosPrivate, auth, setFriends, setPendingRequests]);
 
   return {

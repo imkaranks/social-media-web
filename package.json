@@ -1,11 +1,12 @@
 {
   "name": "quiet-sphere-server",
   "version": "1.0.0",
-  "main": "src/index.js",
+  "main": "server/index.js",
   "type": "module",
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "start": "node server/index.js",
+    "dev": "nodemon server/index.js",
+    "build": "npm install && npm install --prefix client && npm run build --prefix client"
   },
   "author": "Karan Sethi",
   "license": "ISC",
