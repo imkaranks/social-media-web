@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
-import Loader from "@/components/shared/Loader";
+import Loader from "@/components/ui/Loader";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import RootLayout from "@/pages/RootLayout";
 import SingleSidebarLayout from "@/pages/SingleSidebarLayout";
@@ -9,6 +9,7 @@ import AuthLayout from "@/pages/Auth/AuthLayout";
 import Home from "@/pages/Home";
 import SignIn from "@/pages/Auth/SignIn";
 import SignUp from "@/pages/Auth/SignUp";
+import EmailVerification from "@/pages/Auth/EmailVerification";
 import Profile from "@/pages/Profile";
 import Explore from "@/pages/Explore";
 import Notification from "@/pages/Notification";
@@ -27,6 +28,8 @@ export default function App() {
               <Route path="sign-in" element={<SignIn />} />
               <Route path="sign-up" element={<SignUp />} />
             </Route>
+
+            <Route path="verify" element={<EmailVerification />} />
 
             <Route
               element={

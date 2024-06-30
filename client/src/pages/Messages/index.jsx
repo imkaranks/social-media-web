@@ -179,6 +179,20 @@ export default function Messages() {
               alt={friends[currentConversation]?.fullname}
             />
             <h3>{friends[currentConversation]?.username}</h3>
+            {/* <div>
+              <h3>{friends[currentConversation]?.username}</h3>
+              {!onlineUsers?.some(
+                (onlineUser) =>
+                  onlineUser === friends[currentConversation]?._id,
+              ) &&
+                friends[currentConversation]?.lastSeen && (
+                  <span className="text-xs text-gray-400 dark:text-neutral-500">
+                    {new Date(
+                      friends[currentConversation].lastSeen,
+                    ).toLocaleTimeString()}
+                  </span>
+                )}
+            </div> */}
           </div>
         ) : (
           // Placeholder for starting conversation

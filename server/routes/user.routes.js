@@ -7,6 +7,7 @@ import {
   searchUsers,
   updateUser,
   changeAvatar,
+  updateUserLastSeen,
 } from "../controllers/user.controllers.js";
 import upload from "../middlewares/multer.middleware.js";
 
@@ -26,5 +27,7 @@ router
 router.route("/u/:username").get(isAuthenticated, getUserByUsername);
 
 router.route("/search").get(isAuthenticated, searchUsers);
+
+router.route("/update-last-seen").post(isAuthenticated, updateUserLastSeen);
 
 export default router;

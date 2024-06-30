@@ -133,27 +133,7 @@ export const getFriends = catchAsyncError(async (req, res) => {
     "-password -refreshToken"
   );
 
-  // Retrieve last messages for each friend
-  const friendsWithLastMessages = await Promise.all(
-    friends.map(async (friend) => {
-      const conversation = await Conversation.findOne({
-        participants: { $all: [userId, friend._id] },
-      })
-        .limit(1)
-        .populate("messages");
-
-      const lastMessage = conversation
-        ? conversation.messages[conversation.messages.length - 1]
-        : null;
-
-      return {
-        ...friend.toObject(),
-        lastMessage,
-      };
-    })
-  );
-
-  res.status(200).json(new ApiResponse(200, friendsWithLastMessages));
+  res.status(200).json(new ApiResponse(200, friends));
 });
 
 export const getPendingFriendRequests = catchAsyncError(async (req, res) => {
@@ -165,7 +145,7 @@ export const getPendingFriendRequests = catchAsyncError(async (req, res) => {
   }).populate({
     path: "user2",
     model: User,
-    select: "-password -refreshToken",
+    select: "_id avatar username fullname",
   });
 
   const pendingRequestsReceived = await Friend.find({
@@ -174,7 +154,7 @@ export const getPendingFriendRequests = catchAsyncError(async (req, res) => {
   }).populate({
     path: "user1",
     model: User,
-    select: "-password -refreshToken",
+    select: "_id avatar username fullname",
   });
 
   const pendingRequestsData = {

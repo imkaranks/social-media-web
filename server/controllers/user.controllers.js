@@ -141,7 +141,26 @@ export const updateUser = catchAsyncError(async (req, res) => {
   //   throw new ApiError(404, "User not found");
   // }
 
-  res.status(200).json(new ApiResponse(200, user));
+  res.status(200).json(new ApiResponse(200, {}));
+});
+
+export const updateUserLastSeen = catchAsyncError(async (req, res) => {
+  const userId = req.user._id;
+
+  if (!userId.toString().trim()) {
+    throw new ApiError(401, "Unauthorized Request");
+  }
+
+  const updateQuery = { lastSeen: Date.now() };
+
+  await User.findByIdAndUpdate(userId, updateQuery);
+
+  const response = new ApiResponse(
+    200,
+    updateQuery,
+    "Last seen updated successfully"
+  );
+  res.status(response.status).json(response);
 });
 
 export const changeEmail = catchAsyncError(async (req, res) => {});

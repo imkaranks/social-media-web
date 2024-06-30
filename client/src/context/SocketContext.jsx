@@ -5,9 +5,10 @@ import useAuth from "@/hooks/useAuth";
 const SocketContext = createContext(null);
 
 export const SocketProvider = ({ children }) => {
+  const { auth } = useAuth();
+
   const [socket, setSocket] = useState(null);
   const [onlineUsers, setOnlineUsers] = useState(null);
-  const { auth } = useAuth();
 
   useEffect(() => {
     if (auth) {

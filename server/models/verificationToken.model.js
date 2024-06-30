@@ -13,7 +13,7 @@ const verificationTokenSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now,
-    expires: "1d", // Automatically delete documents older than 1 day
+    expires: "30m", // Automatically delete documents older than 30 mins
   },
 });
 

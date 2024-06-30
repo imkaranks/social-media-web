@@ -33,7 +33,9 @@ export default function SignIn() {
       setData(INITIAL_DATA);
       updateRemember(remember);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : error);
+      toast.error(error instanceof Error ? error.message : error, {
+        duration: 5000,
+      });
     }
   };
 

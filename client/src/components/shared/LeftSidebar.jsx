@@ -33,11 +33,11 @@ export default function LeftSidebar() {
                   .map((word) => word[0].toUpperCase())}
               </span>
             )}
-            <div className="ms-3">
+            <div className="ms-3 truncate">
               <h3 className="font-semibold text-gray-800 dark:text-white">
                 {auth?.user?.fullname}
               </h3>
-              <p className="text-sm font-medium text-gray-400 dark:text-neutral-500">
+              <p className="truncate text-sm font-medium text-gray-400 dark:text-neutral-500">
                 {auth?.user?.email}
               </p>
             </div>

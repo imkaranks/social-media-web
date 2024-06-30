@@ -165,7 +165,7 @@ export default function Profile() {
           (alreadyFriend ? (
             <div className="mt-2 flex flex-wrap items-center gap-2 2xl:gap-4">
               <button className="inline-flex items-center rounded-lg border border-transparent bg-gray-100 px-3 py-2 text-sm font-semibold text-gray-500 hover:bg-gray-200 disabled:pointer-events-none disabled:opacity-50 dark:bg-white/10 dark:text-neutral-400 dark:hover:bg-white/20 dark:hover:text-neutral-300">
-                Unfriend
+                Remove friend
               </button>
             </div>
           ) : sentRequest ? (
@@ -201,7 +201,7 @@ export default function Profile() {
                 className="inline-flex items-center rounded-lg border border-transparent bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:pointer-events-none disabled:opacity-50"
                 onClick={() => sendFriendRequest(user._id)}
               >
-                Add Friend
+                Send Friend Request
               </button>
             </div>
           ))}

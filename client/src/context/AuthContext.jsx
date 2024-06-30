@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 import { createContext, useCallback, useLayoutEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "@/app/axios";
@@ -31,7 +30,7 @@ export const AuthProvider = ({ children }) => {
 
         navigate(from);
       } catch (error) {
-        console.log(error);
+        console.log(error?.response?.data?.message);
       } finally {
         setIsLoading(false);
       }
@@ -41,14 +40,17 @@ export const AuthProvider = ({ children }) => {
   }, [auth, remember, navigate, from]);
 
   return (
-    <AuthContext.Provider value={{ auth, setAuth, remember, updateRemember }}>
+    <AuthContext.Provider
+      value={{
+        auth,
+        setAuth,
+        remember,
+        updateRemember,
+      }}
+    >
       {isLoading ? <Loader /> : children}
     </AuthContext.Provider>
   );
-};
-
-AuthProvider.propTypes = {
-  children: PropTypes.node.isRequired,
 };
 
 export default AuthContext;
