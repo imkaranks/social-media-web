@@ -15,3 +15,11 @@
     font-family: var(--ff-primary);
   }
 }
+
+@layer utilities {
+  .stroked {
+    color: currentColor;
+    -webkit-text-fill-color: transparent;
+    -webkit-text-stroke: 1px currentColor;
+  }
+}

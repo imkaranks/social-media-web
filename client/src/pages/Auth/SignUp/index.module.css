@@ -1,0 +1,19 @@
+.signupPopupEnter {
+  animation: popup-enter 300ms cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+}
+
+@keyframes popup-enter {
+  from {
+    transform: translateX(100%);
+  }
+}
+
+.signupPopupExit {
+  animation: popup-exit 300ms cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+}
+
+@keyframes popup-exit {
+  to {
+    transform: translateX(100%);
+  }
+}

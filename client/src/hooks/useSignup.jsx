@@ -1,6 +1,5 @@
 import { useState } from "react";
 import axios from "@/app/axios";
-import toast from "react-hot-toast";
 
 export default function useSignup() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -8,8 +7,11 @@ export default function useSignup() {
   const signup = async (data) => {
     setIsSubmitting(true);
     try {
-      const response = await axios.post("/auth/signup", data);
-      toast.success(response?.data?.message, { duration: 10000 });
+      await axios.post("/auth/signup", data, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
     } catch (error) {
       throw new Error(
         error?.response?.data?.message ||

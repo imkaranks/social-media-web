@@ -1,5 +1,4 @@
 import express from "express";
-import { isAuthenticated } from "../middlewares/auth.middleware.js";
 import {
   acceptFriendRequest,
   getFriends,
@@ -7,18 +6,20 @@ import {
   rejectFriendRequest,
   sendFriendRequest,
 } from "../controllers/friend.controllers.js";
+import { isAuthenticated } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
-router.post("/send", isAuthenticated, sendFriendRequest);
+router.route("/send").post(isAuthenticated, sendFriendRequest);
 
-router.post("/accept", isAuthenticated, acceptFriendRequest);
+router.route("/accept").post(isAuthenticated, acceptFriendRequest);
 
-router.post("/reject", isAuthenticated, rejectFriendRequest);
+router.route("/reject").post(isAuthenticated, rejectFriendRequest);
 
-router.get("/:userId", isAuthenticated, getFriends);
+router.route("/:userId").get(isAuthenticated, getFriends);
 
-router.get("/pending", isAuthenticated, getPendingFriendRequests);
-router.get("/pending/:userId", isAuthenticated, getPendingFriendRequests);
+router.route("/pending").get(isAuthenticated, getPendingFriendRequests);
+
+router.route("/pending/:userId").get(isAuthenticated, getPendingFriendRequests);
 
 export default router;

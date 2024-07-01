@@ -6,6 +6,7 @@ import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import VerificationToken from "../models/verificationToken.model.js";
 import { sendMail } from "../utils/sendMail.js";
+import upload from "../utils/cloudinary.js";
 
 const generateAuthTokens = async (userId, res) => {
   try {
@@ -158,6 +159,7 @@ const sendVerificationEmail = async (email, token) => {
 
 export const signup = catchAsyncError(async (req, res) => {
   const { fullname, username, email, password } = req.body;
+  const file = req?.file;
 
   if (
     ![fullname, username, email, password].every(
@@ -175,12 +177,22 @@ export const signup = catchAsyncError(async (req, res) => {
     );
   }
 
+  let result;
+
+  if (file) {
+    const b64 = Buffer.from(file.buffer).toString("base64");
+    const dataURI = "data:" + file.mimetype + ";base64," + b64;
+    result = await upload(dataURI);
+  }
+
   const user = await User.create({
     fullname,
     username,
     email,
     password,
-    avatar: { url: `https://robohash.org/${username}` },
+    avatar: file
+      ? { public_id: result.public_id, url: result.url }
+      : { url: `https://robohash.org/${username}` },
   });
 
   if (!user) {

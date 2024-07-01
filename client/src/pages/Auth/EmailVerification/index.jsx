@@ -3,6 +3,8 @@ import { Link, useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import Loader from "@/components/ui/Loader";
 import axios from "@/app/axios";
+import iconSuccess from "@/assets/media/icon-success.svg";
+import iconError from "@/assets/media/icon-error.svg";
 
 export default function EmailVerification() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -50,86 +52,73 @@ export default function EmailVerification() {
 
   return (
     <div className="grid min-h-screen place-items-center">
-      <div className="mx-auto w-11/12 max-w-md bg-gray-100 p-6 dark:bg-neutral-700 md:mx-auto">
-        {isLoading ? (
-          <div className="[&>*]:!h-80">
-            <Loader />
+      {isLoading ? (
+        <Loader />
+      ) : success ? (
+        <div className="flex w-11/12 max-w-screen-xl items-center rounded-xl bg-gray-100 p-5 dark:bg-neutral-700 lg:h-[33rem] lg:p-[3rem_4rem]">
+          <div className="mx-auto grid h-full max-w-[33rem] grid-rows-[1fr_auto] gap-6">
+            <div className="flex flex-col items-center gap-8 self-center text-center">
+              <figure>
+                <img
+                  className="w-16 sm:w-20 md:w-24 xl:w-28 2xl:w-32"
+                  src={iconSuccess}
+                />
+              </figure>
+              <h1 className="text-[clamp(2rem,_6vw,_3.75rem)] font-bold leading-none">
+                Verified!
+              </h1>
+              <p className="w-full 2xl:text-lg">
+                Thank you for verifying your email! You can now log in to your
+                account to continue.
+              </p>
+            </div>
+            <Link
+              to="/sign-in"
+              className={`w-full self-end rounded-lg bg-blue-500 from-indigo-400 to-indigo-500 p-[0.95rem] text-center text-white hover:bg-gradient-to-r`}
+            >
+              Login
+            </Link>
           </div>
-        ) : success ? (
-          <>
-            <svg
-              viewBox="0 0 24 24"
-              className="mx-auto my-6 h-16 w-16 text-green-600"
-            >
-              <path
-                fill="currentColor"
-                d="M12,0A12,12,0,1,0,24,12,12.014,12.014,0,0,0,12,0Zm6.927,8.2-6.845,9.289a1.011,1.011,0,0,1-1.43.188L5.764,13.769a1,1,0,1,1,1.25-1.562l4.076,3.261,6.227-8.451A1,1,0,1,1,18.927,8.2Z"
-              ></path>
-            </svg>
-            <div className="text-center">
-              <h3 className="text-center text-lg font-semibold sm:text-xl 2xl:text-2xl">
-                Verification Done!
-              </h3>
-              <p className="my-2 text-gray-400 dark:text-neutral-500">
-                Thank you for completing your email verification.
+        </div>
+      ) : (
+        <div className="flex w-11/12 max-w-screen-xl items-center rounded-xl bg-gray-100 p-5 dark:bg-neutral-700 lg:h-[33rem] lg:p-[3rem_4rem]">
+          <div className="mx-auto grid h-full max-w-[33rem] grid-rows-[1fr_auto] gap-6">
+            <div className="flex flex-col items-center gap-8 self-center text-center">
+              <figure>
+                <img
+                  className="w-16 sm:w-20 md:w-24 xl:w-28 2xl:w-32"
+                  src={iconError}
+                />
+              </figure>
+              <h1 className="text-[clamp(2rem,_6vw,_3.75rem)] font-bold leading-none">
+                Failed!
+              </h1>
+              <p className="w-full 2xl:text-lg">
+                Oops! It looks like there was an issue verifying your email.
+                Please double-check your email address and try again. If the
+                problem persists, please try again after some time.
               </p>
-              <p className="text-gray-400 dark:text-neutral-500">
-                Have a great day!
-              </p>
-              <div className="py-10 text-center">
-                <Link
-                  className="rounded-lg bg-indigo-600 px-12 py-3 font-semibold text-white hover:bg-indigo-500 max-2xl:text-sm"
-                  to="/sign-in"
-                >
-                  Login
-                </Link>
-              </div>
             </div>
-          </>
-        ) : (
-          <>
-            <svg
-              viewBox="0 0 24 24"
-              className="mx-auto my-6 h-16 w-16 text-red-600"
+            <button
+              disabled={isSubmitting}
+              onClick={resendToken}
+              className={`w-full self-end rounded-lg bg-blue-500 from-indigo-400 to-indigo-500 p-[0.95rem] text-white hover:bg-gradient-to-r disabled:bg-blue-500 disabled:opacity-60 disabled:hover:from-blue-500 disabled:hover:to-blue-500`}
             >
-              <path
-                fill="currentColor"
-                d="M12,0A12,12,0,1,0,24,12,12.014,12.014,0,0,0,12,0Zm6.927,8.2-6.845,9.289a1.011,1.011,0,0,1-1.43.188L5.764,13.769a1,1,0,1,1,1.25-1.562l4.076,3.261,6.227-8.451A1,1,0,1,1,18.927,8.2Z"
-              ></path>
-            </svg>
-            <div className="text-center">
-              <h3 className="text-center text-lg font-semibold sm:text-xl 2xl:text-2xl">
-                Verification Failed!
-              </h3>
-              <p className="my-2 text-gray-400 dark:text-neutral-500">
-                Please try again after some time.
-              </p>
-              <p className="text-gray-400 dark:text-neutral-500">
-                Have a great day!
-              </p>
-              <div className="py-10 text-center">
-                <button
-                  disabled={isSubmitting}
-                  className="min-w-[11.9375rem] rounded-lg bg-indigo-600 px-12 py-3 font-semibold text-white hover:bg-indigo-500 disabled:bg-indigo-600/60 max-2xl:text-sm"
-                  onClick={resendToken}
+              {isSubmitting ? (
+                <div
+                  className="inline-block size-5 animate-spin rounded-full border-[3px] border-white border-t-transparent text-blue-600"
+                  role="status"
+                  aria-label="loading"
                 >
-                  {isSubmitting ? (
-                    <div
-                      className="inline-block size-5 animate-spin rounded-full border-[3px] border-white border-t-transparent text-blue-600"
-                      role="status"
-                      aria-label="loading"
-                    >
-                      <span className="sr-only">Loading...</span>
-                    </div>
-                  ) : (
-                    <span>Resend Token</span>
-                  )}
-                </button>
-              </div>
-            </div>
-          </>
-        )}
-      </div>
+                  <span className="sr-only">Loading...</span>
+                </div>
+              ) : (
+                <span>Resend Link</span>
+              )}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
