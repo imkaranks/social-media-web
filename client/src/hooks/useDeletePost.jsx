@@ -1,15 +1,18 @@
 import { useCallback, useState } from "react";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
+import useStore from "@/app/store";
 
 export default function useDeletePost() {
   const axiosPrivate = useAxiosPrivate();
+  const removePost = useStore((state) => state.removePost);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const deletePost = useCallback(
-    async (id) => {
+    async (postId) => {
       setIsSubmitting(true);
       try {
-        const response = await axiosPrivate.delete(`/post/${id}`);
+        const response = await axiosPrivate.delete(`/post/${postId}`);
+        removePost(postId);
         return response?.data;
       } catch (error) {
         throw new Error(
@@ -21,7 +24,7 @@ export default function useDeletePost() {
         setIsSubmitting(false);
       }
     },
-    [axiosPrivate],
+    [axiosPrivate, removePost],
   );
 
   return { deletePost, isSubmitting };

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import useAuth from "@/hooks/useAuth";
 import useMessages from "@/hooks/useMessages";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
+import Avatar from "@/components/ui/Avatar";
 import useStore from "@/app/store";
 
 export default function MessageInput() {
@@ -43,17 +44,7 @@ export default function MessageInput() {
       className="absolute bottom-4 left-4 flex w-[calc(100%-2rem)] items-center justify-between rounded-xl bg-gray-200 p-2 dark:bg-neutral-700 md:px-4"
       onSubmit={handleSubmit}
     >
-      {auth?.user?.avatar?.url ? (
-        <img
-          className="inline-block size-8 rounded-full object-cover sm:size-9 md:size-10"
-          src={auth.user.avatar.url}
-          alt={auth.user.fullname}
-        />
-      ) : (
-        <span className="inline-flex size-8 flex-shrink-0 items-center justify-center rounded-full bg-gray-100 text-sm font-semibold leading-none text-gray-800 dark:bg-white/10 dark:text-white">
-          {auth?.user?.fullname.split(" ").map((word) => word[0].toUpperCase())}
-        </span>
-      )}
+      <Avatar user={auth?.user} className="size-8 sm:size-9 md:size-10" />
       <input
         type="text"
         placeholder="Say Hi 👋"

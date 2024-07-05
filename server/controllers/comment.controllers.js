@@ -1,11 +1,11 @@
 import Post from "../models/post.model.js";
 import User from "../models/user.model.js";
 import Comment from "../models/comment.model.js";
-import catchAsyncError from "../utils/catchAsyncError.js";
+import handleAsyncError from "../utils/handleAsyncError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";
 
-export const createComment = catchAsyncError(async (req, res) => {
+export const createComment = handleAsyncError(async (req, res) => {
   const { postId } = req.params;
   const { content, parentId } = req.body;
 
@@ -63,7 +63,47 @@ async function populateChildren(comment) {
   }
 }
 
-export const getAllComments = catchAsyncError(async (req, res) => {
+export const getComments = handleAsyncError(async (req, res) => {
+  const { id, postId, userId, username } = req.query;
+  const query = {};
+
+  if (id?.trim()) {
+    query._id = id.trim();
+  } else if (postId?.trim()) {
+    query.post = postId.trim();
+  } else if (username?.trim()) {
+    const user = await User.findOne({ username }).select(
+      "-password -refreshToken"
+    );
+
+    if (!user) {
+      throw new ApiError(404, "No user exists by this username");
+    }
+
+    query.user = user._id;
+  } else if (userId?.trim()) {
+    query.user = userId.trim();
+  }
+
+  const comments = await Comment.find({
+    ...query,
+    parent: { $exists: false },
+  })
+    .sort({ createdAt: -1 })
+    .populate({ path: "user", select: "_id avatar username fullname" })
+    .populate({ path: "post", model: "Post", select: "title" })
+    .exec();
+
+  if (!comments || comments.length === 0) {
+    throw new ApiError(404, "No comments found");
+  }
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, comments, "Comments fetched successfully"));
+});
+
+export const getCommentsByPostId = handleAsyncError(async (req, res) => {
   const { postId } = req.params;
 
   if (postId?.trim() === "") {
@@ -96,15 +136,28 @@ export const getAllComments = catchAsyncError(async (req, res) => {
     .json(new ApiResponse(200, comments, "Comment fetched successfully"));
 });
 
-export const getCommentsByUserId = catchAsyncError(async (req, res) => {
-  const { userId } = req.params;
+export const getCommentsByUser = handleAsyncError(async (req, res) => {
+  const { id, username, userId } = req.query;
+  const query = {};
 
-  if (userId?.trim() === "") {
-    throw new ApiError(400, "userId must be provided");
+  if (id?.trim()) {
+    query._id = id;
+  } else if (username?.trim()) {
+    const user = await User.findOne({ username }).select(
+      "-password -refreshToken"
+    );
+
+    if (!user) {
+      throw new ApiError(404, "No user exists by this username");
+    }
+
+    query.user = user._id;
+  } else if (userId?.trim()) {
+    query.user = userId.trim();
   }
 
   const comments = await Comment.find({
-    user: userId,
+    ...query,
     parent: { $exists: false },
   })
     .sort({ createdAt: -1 })
@@ -121,40 +174,7 @@ export const getCommentsByUserId = catchAsyncError(async (req, res) => {
     .json(new ApiResponse(200, comments, "Comment fetched successfully"));
 });
 
-export const getCommentsByUsername = catchAsyncError(async (req, res) => {
-  const { username } = req.params;
-
-  if (username?.trim() === "") {
-    throw new ApiError(400, "username must be provided");
-  }
-
-  const user = await User.findOne({ username }).select(
-    "-password -refreshToken"
-  );
-
-  if (!user) {
-    throw new ApiError(404, "user not found");
-  }
-
-  const comments = await Comment.find({
-    user: user._id,
-    parent: { $exists: false },
-  })
-    .sort({ createdAt: -1 })
-    .populate({ path: "user", select: "_id avatar username fullname" })
-    .populate({
-      path: "post",
-      model: "Post",
-      select: "title",
-    })
-    .exec();
-
-  res
-    .status(200)
-    .json(new ApiResponse(200, comments, "Comment fetched successfully"));
-});
-
-export const deleteComment = catchAsyncError(async (req, res) => {
+export const deleteComment = handleAsyncError(async (req, res) => {
   // not complete
   const { commentId } = req.params;
 

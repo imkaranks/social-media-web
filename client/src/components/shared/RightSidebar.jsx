@@ -1,8 +1,9 @@
-import useFriend from "@/hooks/useFriend";
-import useSocket from "@/hooks/useSocket";
-// import useMessages from "@/hooks/useMessages";
-import useStore from "@/app/store";
+import useFriendshipHandler from "@/hooks/useFriendshipHandler";
 import { Link } from "react-router-dom";
+import useSocket from "@/hooks/useSocket";
+import Button from "@/components/ui/Button";
+import Avatar from "@/components/ui/Avatar";
+import useStore from "@/app/store";
 
 function RequestSkeleton() {
   return (
@@ -26,15 +27,14 @@ function RequestSkeleton() {
 export default function RightSidebar() {
   const {
     friends,
-    friendsLoading,
+    isLoading: friendsLoading,
     pendingRequests,
     isSubmitting,
     pendingRequestsLoading,
     acceptRequest,
     rejectRequest,
-  } = useFriend();
+  } = useFriendshipHandler();
   const { onlineUsers } = useSocket();
-  // const { setCurrentParticipant } = useMessages();
 
   const chats = useStore((state) => state.chats);
   const unreadFriendChats = useStore((state) => state.unreadFriendChats);
@@ -111,45 +111,43 @@ export default function RightSidebar() {
           {friendsLoading ? (
             <p>Loading...</p>
           ) : friends.length ? (
-            friends.map((friend, idx) => {
-              const lastMessage =
-                chats[friend?._id]?.[chats[friend?._id]?.length - 1]?.message ??
-                "";
+            (friends.length > 3 ? friends.slice(0, 3) : friends).map(
+              (friend, idx) => {
+                const lastMessage =
+                  chats[friend?._id]?.[chats[friend?._id]?.length - 1]
+                    ?.message ?? "";
 
-              return (
-                <div key={idx} className="flex items-start gap-2 2xl:gap-4">
-                  <div className="relative inline-block">
-                    <img
-                      className="inline-block size-9 rounded-full object-cover object-center"
-                      src={friend?.avatar?.url}
-                      alt={friend?.fullname}
-                    />
-                    {onlineUsers &&
-                      onlineUsers.some(
-                        (onlineUser) => onlineUser === friend._id,
-                      ) && (
-                        <span className="absolute bottom-0 end-0 block size-2 rounded-full bg-teal-400 ring-2 ring-gray-200 dark:ring-neutral-700" />
+                return (
+                  <div key={idx} className="flex items-start gap-2 2xl:gap-4">
+                    <div className="relative inline-block">
+                      <Avatar size="xsmall" user={friend} />
+                      {onlineUsers &&
+                        onlineUsers.some(
+                          (onlineUser) => onlineUser === friend._id,
+                        ) && (
+                          <span className="absolute bottom-0 end-0 block size-2 rounded-full bg-teal-400 ring-2 ring-gray-200 dark:ring-neutral-700" />
+                        )}
+                    </div>
+
+                    <div className="flex-1 truncate">
+                      <h4 className="max-2xl:text-sm">{friend?.username}</h4>
+                      {!!lastMessage?.length && (
+                        <p className="truncate text-xs opacity-35 2xl:text-sm">
+                          {lastMessage}
+                        </p>
                       )}
-                  </div>
+                    </div>
 
-                  <div className="flex-1 truncate">
-                    <h4 className="max-2xl:text-sm">{friend?.username}</h4>
-                    {!!lastMessage?.length && (
-                      <p className="truncate text-xs opacity-35 2xl:text-sm">
-                        {lastMessage}
-                      </p>
+                    {/* Unread messages count */}
+                    {!!unreadFriendChats[friend._id] && (
+                      <span className="mt-auto inline-grid size-5 place-items-center rounded-full bg-blue-500 text-[0.65rem] font-medium text-white">
+                        {unreadFriendChats[friend._id]}
+                      </span>
                     )}
                   </div>
-
-                  {/* Unread messages count */}
-                  {!!unreadFriendChats[friend._id] && (
-                    <span className="mt-auto inline-grid size-5 place-items-center rounded-full bg-blue-500 text-[0.65rem] font-medium text-white">
-                      {unreadFriendChats[friend._id]}
-                    </span>
-                  )}
-                </div>
-              );
-            })
+                );
+              },
+            )
           ) : (
             <p className="text-gray-400 dark:text-neutral-500 max-2xl:text-sm">
               No friends yet
@@ -175,11 +173,7 @@ export default function RightSidebar() {
               >
                 <div className="mb-2 flex gap-2 2xl:gap-4">
                   <Link to={`/user/${pendingRequest.sender.username}`}>
-                    <img
-                      className="inline-block size-9 rounded-full object-cover object-center"
-                      src={pendingRequest.sender.avatar.url}
-                      alt={pendingRequest.sender.fullname}
-                    />
+                    <Avatar size="xsmall" user={pendingRequest.sender} />
                   </Link>
                   <div className="max-2xl:text-sm">
                     <h4>{pendingRequest.sender.username}</h4>
@@ -193,21 +187,21 @@ export default function RightSidebar() {
                 </div>
 
                 <div className="flex items-center gap-2 text-xs 2xl:gap-4 2xl:text-sm">
-                  <button
-                    className="inline-flex items-center rounded-lg border border-transparent bg-blue-600 px-3 py-2 font-semibold text-white hover:bg-blue-700 disabled:pointer-events-none disabled:opacity-50"
+                  <Button
+                    size="small"
                     onClick={() => acceptRequest(pendingRequest._id)}
                     disabled={isSubmitting}
                   >
                     Accept
-                  </button>
-                  <button
-                    // className="inline-flex items-center rounded-lg border border-gray-200 bg-white px-3 py-2 font-medium text-gray-800 shadow-sm hover:bg-gray-50 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white dark:hover:bg-neutral-800"
-                    className="inline-flex items-center rounded-lg border border-transparent bg-gray-100 px-3 py-2 font-semibold text-gray-800 hover:bg-gray-200 disabled:pointer-events-none disabled:opacity-50 dark:bg-white/10 dark:text-white dark:hover:bg-white/20 dark:hover:text-white"
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="small"
                     onClick={() => rejectRequest(pendingRequest._id)}
                     disabled={isSubmitting}
                   >
                     Reject
-                  </button>
+                  </Button>
                 </div>
               </div>
             ))

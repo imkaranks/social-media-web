@@ -1,11 +1,11 @@
 import User from "../models/user.model.js";
 import Friend from "../models/friend.model.js";
 import Conversation from "../models/conversation.model.js";
-import catchAsyncError from "../utils/catchAsyncError.js";
+import handleAsyncError from "../utils/handleAsyncError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";
 
-export const sendFriendRequest = catchAsyncError(async (req, res) => {
+export const sendFriendRequest = handleAsyncError(async (req, res) => {
   const { senderId, recipientId } = req.body;
 
   if (!senderId.trim() || !recipientId.trim()) {
@@ -49,7 +49,7 @@ export const sendFriendRequest = catchAsyncError(async (req, res) => {
   res.status(200).json(new ApiResponse(200, newFriend, "Friend request sent"));
 });
 
-export const acceptFriendRequest = catchAsyncError(async (req, res) => {
+export const acceptFriendRequest = handleAsyncError(async (req, res) => {
   const { userId, requestId } = req.body;
 
   if (!userId.trim() || !requestId.trim()) {
@@ -81,7 +81,7 @@ export const acceptFriendRequest = catchAsyncError(async (req, res) => {
     .json(new ApiResponse(200, friendRequest, "Friend request accepted"));
 });
 
-export const rejectFriendRequest = catchAsyncError(async (req, res) => {
+export const rejectFriendRequest = handleAsyncError(async (req, res) => {
   const { userId, requestId } = req.body;
 
   if (!userId.trim() || !requestId.trim()) {
@@ -113,7 +113,7 @@ export const rejectFriendRequest = catchAsyncError(async (req, res) => {
     .json(new ApiResponse(200, friendRequest, "Friend request rejected"));
 });
 
-export const getFriends = catchAsyncError(async (req, res) => {
+export const getFriends = handleAsyncError(async (req, res) => {
   const { userId } = req.params;
 
   if (!userId.trim()) {
@@ -136,7 +136,7 @@ export const getFriends = catchAsyncError(async (req, res) => {
   res.status(200).json(new ApiResponse(200, friends));
 });
 
-export const getPendingFriendRequests = catchAsyncError(async (req, res) => {
+export const getPendingFriendRequests = handleAsyncError(async (req, res) => {
   const userId = req?.user?._id || req.params.userId;
 
   const pendingRequestsSent = await Friend.find({

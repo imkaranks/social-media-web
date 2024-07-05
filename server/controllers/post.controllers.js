@@ -3,13 +3,13 @@ import { v2 as cloudinary } from "cloudinary";
 import Post from "../models/post.model.js";
 import Comment from "../models/comment.model.js";
 import Like from "../models/like.model.js";
-import catchAsyncError from "../utils/catchAsyncError.js";
+import handleAsyncError from "../utils/handleAsyncError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";
 import upload from "../utils/cloudinary.js";
 import User from "../models/user.model.js";
 
-export const createPost = catchAsyncError(async (req, res) => {
+export const createPost = handleAsyncError(async (req, res) => {
   const { title, content } = req.body;
 
   if ([title, content].some((field) => field?.trim() === "")) {
@@ -50,14 +50,25 @@ export const createPost = catchAsyncError(async (req, res) => {
     .json(new ApiResponse(201, createdPost, "Post added successfully"));
 });
 
-export const getPostsByUserId = catchAsyncError(async (req, res) => {
-  const { userId } = req.params;
+export const getPosts = handleAsyncError(async (req, res) => {
+  const { username, author, withEngagement } = req.query;
+  const query = {};
 
-  if (!userId.trim()) {
-    throw new ApiError(400, "User id is required");
+  if (username?.trim()) {
+    const user = await User.findOne({ username }).select(
+      "-password -refreshToken"
+    );
+
+    if (!user) {
+      throw new ApiError(404, "No user exists by this username");
+    }
+
+    query.author = user._id;
+  } else if (author?.trim()) {
+    query.author = author.trim();
   }
 
-  const posts = await Post.find({ author: userId })
+  const posts = await Post.find(query)
     .sort({ createdAt: -1 })
     .populate({
       path: "author",
@@ -70,73 +81,62 @@ export const getPostsByUserId = catchAsyncError(async (req, res) => {
       select: "_id username fullname avatar",
     });
 
-  res
-    .status(200)
-    .json(new ApiResponse(200, posts || [], "Post fetched Successfully"));
-});
-
-export const getPostsByUsername = catchAsyncError(async (req, res) => {
-  const { username } = req.params;
-
-  if (!username.trim()) {
-    throw new ApiError(400, "Username is required");
+  let allPosts;
+  if (withEngagement === "true") {
+    allPosts = await Promise.all(
+      posts.map(async (post) => {
+        const likeCount = post.likes.length;
+        const commentCount = post.comments.length;
+        const userLikedPost = post.likes.some(
+          (like) => like?._id?.toString() === req.user._id?.toString()
+        );
+        return { ...post._doc, likeCount, commentCount, userLikedPost };
+      })
+    );
   }
 
-  const user = await User.findOne({ username });
-
-  if (!user) {
-    throw new ApiError(404, "User not found");
-  }
-
-  const posts = await Post.find({ author: user._id })
-    .sort({ createdAt: -1 })
-    .populate({
-      path: "author",
-      model: "User",
-      select: "_id username fullname avatar",
-    })
-    .populate({
-      path: "likes",
-      model: "User",
-      select: "_id username fullname avatar",
-    });
-
   res
     .status(200)
-    .json(new ApiResponse(200, posts || [], "Post fetched Successfully"));
+    .json(
+      new ApiResponse(
+        200,
+        withEngagement === "true" ? allPosts : posts || [],
+        "Post fetched Successfully"
+      )
+    );
 });
 
-export const getAllPosts = catchAsyncError(async (req, res) => {
-  const posts = await Post.find({})
-    .sort({ createdAt: -1 })
-    .populate({
-      path: "author",
-      model: "User",
-      select: "_id username fullname avatar",
-    })
-    .populate({
-      path: "likes",
-      model: "User",
-      select: "_id username fullname avatar",
-    });
+// export const getAllPosts = handleAsyncError(async (req, res) => {
+//   const posts = await Post.find({})
+//     .sort({ createdAt: -1 })
+//     .populate({
+//       path: "author",
+//       model: "User",
+//       select: "_id username fullname avatar",
+//     })
+//     .populate({
+//       path: "likes",
+//       model: "User",
+//       select: "_id username fullname avatar",
+//     });
 
-  const allPosts = await Promise.all(
-    posts.map(async (post) => {
-      const likeCount = post.likes.length;
-      const commentCount = post.comments.length;
-      const likedByYou = post.likes.some(
-        (like) => like?._id?.toString() === req.user._id?.toString()
-      );
-      return { ...post._doc, likeCount, commentCount, likedByYou };
-    })
-  );
+//   const allPosts = await Promise.all(
+//     posts.map(async (post) => {
+//       const likeCount = post.likes.length;
+//       const commentCount = post.comments.length;
+//       const userLikedPost = post.likes.some(
+//         (like) => like?._id?.toString() === req.user._id?.toString()
+//       );
+//       return { ...post._doc, likeCount, commentCount, userLikedPost };
+//     })
+//   );
 
-  res
-    .status(200)
-    .json(new ApiResponse(200, allPosts || [], "Posts fetched Successfully"));
-});
+//   res
+//     .status(200)
+//     .json(new ApiResponse(200, allPosts || [], "Posts fetched Successfully"));
+// });
 
-export const getPostById = catchAsyncError(async (req, res) => {
+export const getPostById = handleAsyncError(async (req, res) => {
   const { postId } = req.params;
 
   if (!postId || !postId.trim()) {
@@ -161,7 +161,7 @@ export const getPostById = catchAsyncError(async (req, res) => {
 
   const likeCount = post.likes.length;
   const commentCount = post.comments.length;
-  const likedByYou = post.likes.some(
+  const userLikedPost = post.likes.some(
     (like) => like?._id?.toString() === req.user._id?.toString()
   );
 
@@ -170,13 +170,13 @@ export const getPostById = catchAsyncError(async (req, res) => {
     .json(
       new ApiResponse(
         200,
-        { ...post._doc, likeCount, likedByYou, commentCount } || {},
+        { ...post._doc, likeCount, userLikedPost, commentCount } || {},
         "Post fetched Successfully"
       )
     );
 });
 
-export const updatePost = catchAsyncError(async (req, res) => {
+export const updatePost = handleAsyncError(async (req, res) => {
   const { postId } = req.params;
   const { title, content } = req.body;
 
@@ -230,7 +230,7 @@ export const updatePost = catchAsyncError(async (req, res) => {
   res.status(200).json(new ApiResponse(200, post, "Post updated successfully"));
 });
 
-export const deletePost = catchAsyncError(async (req, res) => {
+export const deletePost = handleAsyncError(async (req, res) => {
   const { postId } = req.params;
 
   const post = await Post.findById(postId);

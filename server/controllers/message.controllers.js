@@ -1,11 +1,11 @@
 import Message from "../models/message.model.js";
 import Conversation from "../models/conversation.model.js";
-import catchAsyncError from "../utils/catchAsyncError.js";
+import handleAsyncError from "../utils/handleAsyncError.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import { getSocketId, io } from "../socket/socket.js";
 
-export const sendMessage = catchAsyncError(async (req, res) => {
+export const sendMessage = handleAsyncError(async (req, res) => {
   const { message } = req.body;
   const sender = req.user._id;
   const { id: receiver } = req.params;
@@ -45,7 +45,7 @@ export const sendMessage = catchAsyncError(async (req, res) => {
   return res.status(201).json(new ApiResponse(201, newMessage));
 });
 
-export const getMessages = catchAsyncError(async (req, res) => {
+export const getMessages = handleAsyncError(async (req, res) => {
   const sender = req.user._id;
   const { id: receiver } = req.params;
   const { page = 1, limit = 10 } = req.query;
@@ -60,7 +60,7 @@ export const getMessages = catchAsyncError(async (req, res) => {
   }).populate({
     path: "messages",
     options: {
-      sort: { createdAt: -1 },
+      // sort: { createdAt: -1 },
       skip,
       limit: parseInt(limit),
     },

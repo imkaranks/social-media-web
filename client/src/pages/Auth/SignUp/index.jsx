@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import useSignup from "@/hooks/useSignup";
 import useMultistepForm from "@/hooks/useMultistepForm";
+import FirstStep from "@/components/SignUp/FirstStep";
+import SecondStep from "@/components/SignUp/SecondStep";
 import styles from "./index.module.css";
 
 const initialState = {
@@ -13,136 +15,15 @@ const initialState = {
   avatar: null,
 };
 
-const FirstStep = ({ email, password, updateFormFields }) => {
-  return (
-    <>
-      <div className="grid">
-        <label
-          htmlFor="email"
-          className="mb-2 block text-sm font-medium dark:text-white"
-        >
-          Email
-        </label>
-        <input
-          type="email"
-          name="email"
-          id="email"
-          value={email}
-          onChange={(e) => updateFormFields({ email: e.target.value })}
-          className="block w-full rounded-lg border-2 border-gray-200 bg-transparent px-4 py-3 text-sm focus:border-blue-500 focus:ring-0 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:border-neutral-600 dark:focus:ring-neutral-600"
-          placeholder="you@site.com"
-        />
-      </div>
-      <div className="grid">
-        <label
-          htmlFor="password"
-          className="mb-2 block text-sm font-medium dark:text-white"
-        >
-          Password
-        </label>
-        <input
-          type="password"
-          name="password"
-          id="password"
-          value={password}
-          onChange={(e) => updateFormFields({ password: e.target.value })}
-          placeholder="••••••••"
-          className="block w-full rounded-lg border-2 border-gray-200 bg-transparent px-4 py-3 text-sm focus:border-blue-500 focus:ring-0 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:border-neutral-600 dark:focus:ring-neutral-600"
-        />
-      </div>
-    </>
-  );
-};
-
-const SecondStep = ({ fullname, username, updateFormFields }) => {
-  const [avatarPreview, setAvatarPreview] = useState(null);
-
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
-    updateFormFields({ avatar: file });
-
-    const reader = new FileReader();
-
-    reader.onload = (event) => {
-      setAvatarPreview(event.target.result);
-    };
-
-    reader.readAsDataURL(file);
-  };
-
-  return (
-    <>
-      <div className="grid">
-        <label
-          htmlFor="avatar"
-          className="mb-2 block text-sm font-medium dark:text-white"
-        >
-          Choose your avatar
-        </label>
-        <div className="flex items-center gap-2 2xl:gap-4">
-          <img
-            className="inline-block size-12 flex-shrink-0 rounded-full bg-white/5 object-cover"
-            src={
-              avatarPreview ||
-              "https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg"
-            }
-          />
-          <input
-            type="file"
-            name="avatar"
-            id="avatar"
-            onChange={handleFileChange}
-            className="flex-1 rounded-full bg-black/5 text-sm file:m-2 file:inline-flex file:items-center file:rounded-full file:border file:border-transparent file:bg-blue-600 file:px-3 file:py-2 file:text-xs file:font-semibold file:text-white file:hover:bg-blue-700 file:disabled:pointer-events-none file:disabled:opacity-50 dark:bg-white/5"
-            placeholder="John Doe"
-          />
-        </div>
-      </div>
-      <div className="grid">
-        <label
-          htmlFor="fullname"
-          className="mb-2 block text-sm font-medium dark:text-white"
-        >
-          Fullname
-        </label>
-        <input
-          type="text"
-          name="fullname"
-          id="fullname"
-          value={fullname}
-          onChange={(e) => updateFormFields({ fullname: e.target.value })}
-          className="block w-full rounded-lg border-2 border-gray-200 bg-transparent px-4 py-3 text-sm focus:border-blue-500 focus:ring-0 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:border-neutral-600 dark:focus:ring-neutral-600"
-          placeholder="John Doe"
-        />
-      </div>
-      <div className="grid">
-        <label
-          htmlFor="username"
-          className="mb-2 block text-sm font-medium dark:text-white"
-        >
-          Username
-        </label>
-        <input
-          type="text"
-          name="username"
-          id="username"
-          value={username}
-          onChange={(e) => updateFormFields({ username: e.target.value })}
-          className="block w-full rounded-lg border-2 border-gray-200 bg-transparent px-4 py-3 text-sm focus:border-blue-500 focus:ring-0 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:border-neutral-600 dark:focus:ring-neutral-600"
-          placeholder="im_johnboi"
-        />
-      </div>
-    </>
-  );
-};
-
 export default function SignUp() {
   const [data, setData] = useState(initialState);
+  const [avatarPreview, setAvatarPreview] = useState(null);
   const [success, setSuccess] = useState(false);
 
-  const updateFormFields = useCallback((fields) => {
+  const updateFormData = useCallback((newData) => {
     setData((prevData) => ({
       ...prevData,
-      ...fields,
+      ...newData,
     }));
   }, []);
 
@@ -156,8 +37,14 @@ export default function SignUp() {
     prevStep,
     jumpToStep,
   } = useMultistepForm([
-    <FirstStep key={1} {...data} updateFormFields={updateFormFields} />,
-    <SecondStep key={2} {...data} updateFormFields={updateFormFields} />,
+    <FirstStep key={1} {...data} updateFormData={updateFormData} />,
+    <SecondStep
+      key={2}
+      {...data}
+      avatarPreview={avatarPreview}
+      setAvatarPreview={setAvatarPreview}
+      updateFormData={updateFormData}
+    />,
   ]);
   const { signup, isSubmitting } = useSignup();
 
@@ -172,7 +59,6 @@ export default function SignUp() {
       for (const field in data) {
         formData.set(field, data[field]);
       }
-      console.log(formData);
 
       await signup(formData);
       setData(initialState);

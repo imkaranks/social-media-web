@@ -1,10 +1,8 @@
 import express from "express";
 import {
   createPost,
-  getAllPosts,
-  getPostsByUserId,
+  getPosts,
   getPostById,
-  getPostsByUsername,
   updatePost,
   deletePost,
 } from "../controllers/post.controllers.js";
@@ -17,11 +15,7 @@ router
   .route("/create")
   .post(isAuthenticated, upload.array("images", 5), createPost);
 
-router.route("/").get(isAuthenticated, getAllPosts);
-
-router.route("/id/:userId").get(isAuthenticated, getPostsByUserId);
-
-router.route("/user/:username").get(isAuthenticated, getPostsByUsername);
+router.route("/").get(isAuthenticated, getPosts);
 
 router
   .route("/:postId")

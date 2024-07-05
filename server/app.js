@@ -43,6 +43,7 @@ import postRouter from "./routes/post.routes.js";
 import likeRouter from "./routes/like.routes.js";
 import commentRouter from "./routes/comment.routes.js";
 import messageRouter from "./routes/message.routes.js";
+import healthRouter from "./routes/health.routes.js";
 import errorHandler from "./middlewares/errorHandler.middleware.js";
 
 app.use("/api/v1/auth", authRouter);
@@ -52,6 +53,7 @@ app.use("/api/v1/post", postRouter);
 app.use("/api/v1/like", likeRouter);
 app.use("/api/v1/comment", commentRouter);
 app.use("/api/v1/message", messageRouter);
+app.use("/api/v1/health", healthRouter);
 
 // Route to serve index.html for SPA
 app.get("*", (req, res) => {

@@ -3,13 +3,13 @@ import Post from "../models/post.model.js";
 import Comment from "../models/comment.model.js";
 import Like from "../models/like.model.js";
 import Follow from "../models/follow.model.js";
-import catchAsyncError from "../utils/catchAsyncError.js";
+import handleAsyncError from "../utils/handleAsyncError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";
 import upload from "../utils/cloudinary.js";
 import { v2 as cloudinary } from "cloudinary";
 
-export const getUsers = catchAsyncError(async (req, res) => {
+export const getUsers = handleAsyncError(async (req, res) => {
   const users = await User.find({}).select("-password -refreshToken");
 
   res
@@ -17,7 +17,33 @@ export const getUsers = catchAsyncError(async (req, res) => {
     .json(new ApiResponse(200, users || [], "Users fetch successfully"));
 });
 
-export const getUserById = catchAsyncError(async (req, res) => {
+export const getUser = handleAsyncError(async (req, res) => {
+  const { username, fullname, email, id } = req.query;
+  const query = {};
+
+  if (username?.trim()) {
+    query.username = username.trim();
+  }
+  if (fullname?.trim()) {
+    query.fullname = fullname.trim();
+  }
+  if (email?.trim()) {
+    query.email = email.trim();
+  }
+  if (id?.trim()) {
+    query._id = id.trim();
+  }
+
+  const user = await User.findOne(query).select("-password -refreshToken");
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  res.status(200).json(new ApiResponse(200, user, "User fetched successfully"));
+});
+
+export const getUserById = handleAsyncError(async (req, res) => {
   const { userId } = req.params;
 
   if (!userId.trim()) {
@@ -35,7 +61,7 @@ export const getUserById = catchAsyncError(async (req, res) => {
     .json(new ApiResponse(200, user || {}, "User fetched successfully"));
 });
 
-export const getUserByUsername = catchAsyncError(async (req, res) => {
+export const getUserByUsername = handleAsyncError(async (req, res) => {
   const { username } = req.params;
 
   if (!username.trim()) {
@@ -55,7 +81,7 @@ export const getUserByUsername = catchAsyncError(async (req, res) => {
     .json(new ApiResponse(200, user || {}, "User fetched successfully"));
 });
 
-export const searchUsers = catchAsyncError(async (req, res) => {
+export const searchUsers = handleAsyncError(async (req, res) => {
   const { keyword } = req.query;
 
   if (!keyword.trim()) {
@@ -76,7 +102,7 @@ export const searchUsers = catchAsyncError(async (req, res) => {
     .json(new ApiResponse(200, users || [], "Users fetched successfully"));
 });
 
-export const changeAvatar = catchAsyncError(async (req, res) => {
+export const changeAvatar = handleAsyncError(async (req, res) => {
   const file = req?.file;
   const { userId } = req.params;
 
@@ -101,7 +127,7 @@ export const changeAvatar = catchAsyncError(async (req, res) => {
   res.status(200).json(new ApiResponse(200, user, "Avatar changed"));
 });
 
-export const updateUser = catchAsyncError(async (req, res) => {
+export const updateUser = handleAsyncError(async (req, res) => {
   if (!req.user?._id) {
     throw new ApiError(
       401,
@@ -144,7 +170,7 @@ export const updateUser = catchAsyncError(async (req, res) => {
   res.status(200).json(new ApiResponse(200, {}));
 });
 
-export const updateUserLastSeen = catchAsyncError(async (req, res) => {
+export const updateUserLastSeen = handleAsyncError(async (req, res) => {
   const userId = req.user._id;
 
   if (!userId.toString().trim()) {
@@ -163,8 +189,8 @@ export const updateUserLastSeen = catchAsyncError(async (req, res) => {
   res.status(response.status).json(response);
 });
 
-export const changeEmail = catchAsyncError(async (req, res) => {});
+export const changeEmail = handleAsyncError(async (req, res) => {});
 
-export const forgotPassword = catchAsyncError(async (req, res) => {});
+export const forgotPassword = handleAsyncError(async (req, res) => {});
 
-export const changePassword = catchAsyncError(async (req, res) => {});
+export const changePassword = handleAsyncError(async (req, res) => {});

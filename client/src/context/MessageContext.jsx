@@ -1,7 +1,7 @@
 import { createContext, useCallback, useEffect, useState } from "react";
 import useAuth from "@/hooks/useAuth";
 import useSocket from "@/hooks/useSocket";
-import useFriend from "@/hooks/useFriend";
+import useFriendshipHandler from "@/hooks/useFriendshipHandler";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 import useStore from "@/app/store";
 
@@ -11,7 +11,7 @@ export const MessageProvider = ({ children }) => {
   const { auth } = useAuth();
   const axiosPrivate = useAxiosPrivate();
   const { socket } = useSocket();
-  const { friends } = useFriend();
+  const { friends } = useFriendshipHandler();
 
   const chats = useStore((state) => state.chats);
   const addFriendChat = useStore((state) => state.addFriendChat);

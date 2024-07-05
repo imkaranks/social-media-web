@@ -1,9 +1,9 @@
 import jwt from "jsonwebtoken";
-import catchAsyncError from "../utils/catchAsyncError.js";
+import handleAsyncError from "../utils/handleAsyncError.js";
 import User from "../models/user.model.js";
 import ApiError from "../utils/ApiError.js";
 
-export const isAuthenticated = catchAsyncError(async (req, _, next) => {
+export const isAuthenticated = handleAsyncError(async (req, _, next) => {
   try {
     const cookies = req?.cookies;
     const incomingAccessToken =

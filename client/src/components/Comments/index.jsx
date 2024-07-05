@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import useAuth from "@/hooks/useAuth";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
+import Avatar from "@/components/ui/Avatar";
 
 const CommentInput = ({ handleAddComment, postId, parentId = null }) => {
   const axiosPrivate = useAxiosPrivate();
@@ -127,17 +128,7 @@ const CommentsItem = ({ postId, comment, onUpdateComments, lvl = 0 }) => {
         }`}
       >
         <Link to={`/user/${user?.username}`}>
-          {user?.avatar?.url ? (
-            <img
-              className="inline-block size-8 rounded-full object-cover ring-2 ring-gray-100 dark:ring-neutral-700/20"
-              src={user.avatar.url}
-              alt={user.username}
-            />
-          ) : (
-            <span className="inline-flex size-8 items-center justify-center rounded-full bg-gray-100 text-sm font-semibold leading-none text-gray-800 dark:bg-white/10 dark:text-white">
-              {user?.fullname?.split(" ").map((word) => word[0].toUpperCase())}
-            </span>
-          )}
+          <Avatar className="size-8" user={user} />
         </Link>
 
         <div className="flex-1">

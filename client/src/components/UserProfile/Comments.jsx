@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import useAxiosPrivate from "@/hooks/useAxiosPrivate";
+import useComments from "@/hooks/useComments";
 import Comment from "@/components/ui/Comment";
 
 function CommentSkeleton() {
@@ -24,49 +23,34 @@ function CommentSkeleton() {
 
 export default function Comments() {
   const { username } = useParams();
-  const axiosPrivate = useAxiosPrivate();
-  const [comments, setComments] = useState([]);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    async function getComments() {
-      try {
-        setLoading(true);
-        const response = await axiosPrivate.get(`/comment/user/u/${username}`);
-        // console.log(response?.data?.data);
-        setComments(response?.data?.data);
-      } catch (error) {
-        console.log(error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    getComments();
-  }, [axiosPrivate, username]);
+  const { comments, isLoading, error } = useComments({ username });
 
   return (
     <div className="space-y-6">
-      {loading ? (
+      {isLoading ? (
         <div className="space-y-2">
           <CommentSkeleton />
           <CommentSkeleton />
           <CommentSkeleton />
         </div>
-      ) : comments.length ? (
-        comments.map((comment, idx) => (
-          <div
-            key={idx}
-            className="space-y-2 rounded-xl bg-black/5 p-4 dark:bg-white/5"
-          >
-            <p className="mb-2">
-              From the post: <strong>{comment?.post?.title}</strong>
-            </p>
-            <Comment {...comment} />
-          </div>
-        ))
+      ) : !error ? (
+        comments.length ? (
+          comments.map((comment, idx) => (
+            <div
+              key={idx}
+              className="space-y-2 rounded-xl bg-black/5 p-4 dark:bg-white/5"
+            >
+              <p className="mb-2">
+                From the post: <strong>{comment?.post?.title}</strong>
+              </p>
+              <Comment {...comment} />
+            </div>
+          ))
+        ) : (
+          <p>No Comments</p>
+        )
       ) : (
-        <p>No Comments</p>
+        <p>{error}</p>
       )}
     </div>
   );

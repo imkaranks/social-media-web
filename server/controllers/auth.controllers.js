@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import User from "../models/user.model.js";
-import catchAsyncError from "../utils/catchAsyncError.js";
+import handleAsyncError from "../utils/handleAsyncError.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import VerificationToken from "../models/verificationToken.model.js";
@@ -157,7 +157,7 @@ const sendVerificationEmail = async (email, token) => {
   }
 };
 
-export const signup = catchAsyncError(async (req, res) => {
+export const signup = handleAsyncError(async (req, res) => {
   const { fullname, username, email, password } = req.body;
   const file = req?.file;
 
@@ -229,7 +229,7 @@ export const signup = catchAsyncError(async (req, res) => {
     );
 });
 
-export const verifyEmail = catchAsyncError(async (req, res) => {
+export const verifyEmail = handleAsyncError(async (req, res) => {
   const { email, token } = req.params;
 
   if (!token?.trim()) {
@@ -271,7 +271,7 @@ export const verifyEmail = catchAsyncError(async (req, res) => {
     .json(new ApiResponse(200, {}, "Email verified successfully."));
 });
 
-export const resendVerificationToken = catchAsyncError(async (req, res) => {
+export const resendVerificationToken = handleAsyncError(async (req, res) => {
   const { email } = req.params;
 
   const user = await User.findOne({ email });
@@ -312,7 +312,7 @@ export const resendVerificationToken = catchAsyncError(async (req, res) => {
     );
 });
 
-export const signin = catchAsyncError(async (req, res) => {
+export const signin = handleAsyncError(async (req, res) => {
   const { username, email, password } = req.body;
 
   if (!username && !email) {
@@ -372,7 +372,7 @@ export const signin = catchAsyncError(async (req, res) => {
     );
 });
 
-export const signout = catchAsyncError(async (req, res) => {
+export const signout = handleAsyncError(async (req, res) => {
   if (!req.user) {
     throw new ApiError(401);
   }
@@ -402,7 +402,7 @@ export const signout = catchAsyncError(async (req, res) => {
   return res.status(200).json(new ApiResponse(200, {}, "User logged out"));
 });
 
-export const refreshAccessToken = catchAsyncError(async (req, res) => {
+export const refreshAccessToken = handleAsyncError(async (req, res) => {
   const cookies = req.cookies;
   const incomingRefreshToken = cookies?.refreshToken;
 

@@ -12,6 +12,10 @@ const useStore = create((set) => ({
   addPost: (newPost) => set((state) => ({ posts: [newPost, ...state.posts] })),
   addMorePosts: (newPosts) =>
     set((state) => ({ posts: [...state.posts, ...newPosts] })),
+  removePost: (postId) =>
+    set((state) => ({
+      posts: state.posts.filter((post) => post._id !== postId),
+    })),
   setFriends: (newFriends) => set(() => ({ friends: newFriends })),
   addFriend: (newFriend) =>
     set((state) => ({ friends: [...state.friends, newFriend] })),

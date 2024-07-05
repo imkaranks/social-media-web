@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
-import useAxiosPrivate from "@/hooks/useAxiosPrivate";
+import toast from "react-hot-toast";
 import useAuth from "@/hooks/useAuth";
+import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 import useStore from "@/app/store";
 
-export default function useFriend() {
+export default function useFriendshipHandler() {
   const axiosPrivate = useAxiosPrivate();
   const { auth } = useAuth();
 
@@ -21,9 +22,9 @@ export default function useFriend() {
   );
 
   const [pendingRequestsLoading, setPendingRequestsLoading] = useState(false);
-  const [friendsLoading, setFriendsLoading] = useState(false);
-  // const [pendingRequests, setPendingRequests] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [sendingFriendRequest, setSendingFriendRequest] = useState(false);
 
   const acceptRequest = useCallback(
     async (requestId) => {
@@ -35,7 +36,9 @@ export default function useFriend() {
         });
         acceptPendingRequest(response?.data?.data?._id);
       } catch (error) {
-        console.log(error);
+        toast.error(
+          error?.response?.data?.message || "Failed to accept friend request",
+        );
       } finally {
         setIsSubmitting(false);
       }
@@ -53,7 +56,9 @@ export default function useFriend() {
         });
         rejectPendingRequest(response?.data?.data?._id);
       } catch (error) {
-        console.log(error);
+        toast.error(
+          error?.response?.data?.message || "Failed to reject friend request",
+        );
       } finally {
         setIsSubmitting(false);
       }
@@ -61,22 +66,71 @@ export default function useFriend() {
     [axiosPrivate, auth, rejectPendingRequest],
   );
 
+  const sendFriendRequest = useCallback(
+    async (recipientId) => {
+      if (recipientId === auth?.user?._id) return;
+
+      setSendingFriendRequest(true);
+
+      try {
+        await axiosPrivate.post("/friend/send", {
+          senderId: auth?.user?._id,
+          recipientId,
+        });
+      } catch (error) {
+        toast.error(
+          error?.response?.data?.message ||
+            "Error occur while sending friend request",
+        );
+      } finally {
+        setSendingFriendRequest(false);
+      }
+    },
+    [auth, axiosPrivate],
+  );
+
+  const isExistingFriend = useCallback(
+    (userId) =>
+      !isLoading &&
+      !!friends.length &&
+      friends.find((friend) => friend._id === userId),
+    [friends, isLoading],
+  );
+
+  const didSentRequest = useCallback(
+    (userId) =>
+      !pendingRequestsLoading &&
+      pendingRequests?.sent?.find(
+        (request) => request?.receiver?._id === userId,
+      ),
+    [pendingRequests, pendingRequestsLoading],
+  );
+
+  const didReceivedRequest = useCallback(
+    (userId) =>
+      !pendingRequestsLoading &&
+      pendingRequests?.received?.find(
+        (request) => request?.sender?._id === userId,
+      ),
+    [pendingRequests, pendingRequestsLoading],
+  );
+
   useEffect(() => {
-    async function getFriends() {
-      setFriendsLoading(true);
+    const getFriends = async () => {
+      setIsLoading(true);
 
       try {
         const response = await axiosPrivate.get(`/friend/${auth?.user?._id}`);
 
         setFriends(response?.data?.data);
       } catch (error) {
-        console.log(error);
+        toast.error(error?.response?.data?.message || "Failed to get friends");
       } finally {
-        setFriendsLoading(false);
+        setIsLoading(false);
       }
-    }
+    };
 
-    async function getPendingRequests() {
+    const getPendingRequests = async () => {
       setPendingRequestsLoading(true);
 
       try {
@@ -86,11 +140,14 @@ export default function useFriend() {
 
         setPendingRequests(response?.data?.data);
       } catch (error) {
-        console.log(error);
+        toast.error(
+          error?.response?.data?.message ||
+            "Failed to get pending friend requests",
+        );
       } finally {
         setPendingRequestsLoading(false);
       }
-    }
+    };
 
     if (auth) {
       Promise.all([getFriends(), getPendingRequests()]);
@@ -99,11 +156,16 @@ export default function useFriend() {
 
   return {
     friends,
-    friendsLoading,
+    isLoading,
     pendingRequests,
     pendingRequestsLoading,
     acceptRequest,
     rejectRequest,
+    sendFriendRequest,
+    sendingFriendRequest,
+    isExistingFriend,
+    didSentRequest,
+    didReceivedRequest,
     isSubmitting,
   };
 }

@@ -3,18 +3,20 @@ import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 import useStore from "@/app/store";
 
 export default function useCreatePost() {
-  const addPost = useStore((state) => state.addPost);
   const axiosPrivate = useAxiosPrivate();
+  const addPost = useStore((state) => state.addPost);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const createPost = async (data, selectedFiles) => {
     setIsSubmitting(true);
+
     try {
       const formData = new FormData();
 
       for (const key in data) {
         formData.set(key, data[key]);
       }
+
       for (const file of selectedFiles) {
         formData.append("images", file);
       }

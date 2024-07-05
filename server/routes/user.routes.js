@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  getUser,
   getUsers,
   getUserById,
   getUserByUsername,
@@ -16,13 +17,15 @@ const router = express.Router();
 router.route("/").get(isAuthenticated, getUsers);
 
 router
+  .route("/avatar/:userId")
+  .patch(isAuthenticated, upload.single("avatar"), changeAvatar);
+
+router.route("/profile").get(isAuthenticated, getUser);
+
+router
   .route("/:userId")
   .get(isAuthenticated, getUserById)
   .patch(isAuthenticated, updateUser);
-
-router
-  .route("/avatar/:userId")
-  .patch(isAuthenticated, upload.single("avatar"), changeAvatar);
 
 router.route("/u/:username").get(isAuthenticated, getUserByUsername);
 

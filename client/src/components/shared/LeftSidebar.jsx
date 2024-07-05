@@ -2,6 +2,8 @@ import { Link, NavLink, useLocation } from "react-router-dom";
 import useLogout from "@/hooks/useLogout";
 import useAuth from "@/hooks/useAuth";
 import useStore from "@/app/store";
+import Button from "@/components/ui/Button";
+import Avatar from "@/components/ui/Avatar";
 
 export default function LeftSidebar() {
   const { auth } = useAuth();
@@ -20,19 +22,8 @@ export default function LeftSidebar() {
       <Link className="max-xl:hidden" to={`/user/${auth?.user?.username}`}>
         <div className="group">
           <div className="flex items-center">
-            {auth?.user?.avatar?.url ? (
-              <img
-                className="inline-block size-14 flex-shrink-0 rounded-full object-cover"
-                src={auth.user.avatar.url}
-                alt={auth?.user?.fullname}
-              />
-            ) : (
-              <span className="inline-flex size-14 items-center justify-center rounded-full bg-gray-100 text-sm font-semibold leading-none text-gray-800 dark:bg-white/10 dark:text-white">
-                {auth?.user?.fullname
-                  .split(" ")
-                  .map((word) => word[0].toUpperCase())}
-              </span>
-            )}
+            <Avatar size="large" user={auth?.user} />
+
             <div className="ms-3 truncate">
               <h3 className="font-semibold text-gray-800 dark:text-white">
                 {auth?.user?.fullname}
@@ -184,7 +175,7 @@ export default function LeftSidebar() {
           </li>
           <li>
             <NavLink
-              to="/bookmarks"
+              to="/saved"
               className={({ isActive }) =>
                 `${isActive ? "bg-gray-100 text-gray-700 dark:bg-neutral-700 dark:text-white " : "text-gray-700 hover:bg-gray-100 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-300 "}group relative flex items-center gap-x-3.5 rounded-lg px-2.5 py-2 max-2xl:text-sm max-xl:p-2`
               }
@@ -204,7 +195,7 @@ export default function LeftSidebar() {
                 />
               </svg>
               <span className="max-xl:invisible max-xl:absolute max-xl:left-[calc(100%+0.25rem)] max-xl:z-50 max-xl:inline-block max-xl:rounded max-xl:bg-gray-900 max-xl:px-2 max-xl:py-1 max-xl:text-xs max-xl:font-medium max-xl:text-white max-xl:opacity-0 max-xl:shadow-sm max-xl:transition-opacity max-xl:group-hover:visible max-xl:group-hover:opacity-100 max-xl:dark:bg-neutral-700">
-                Bookmarks
+                Saved
               </span>
             </NavLink>
           </li>
@@ -268,12 +259,14 @@ export default function LeftSidebar() {
       </nav>
 
       <div className="max-xl:hidden">
-        <label
-          className="inline-flex w-full items-center justify-center gap-x-2 rounded-lg border border-transparent bg-blue-600 px-4 py-3 text-center font-semibold text-white hover:bg-blue-700 disabled:pointer-events-none disabled:opacity-50 max-2xl:text-sm"
+        <Button
+          as="label"
+          size="large"
+          className="w-full justify-center"
           htmlFor="create-post"
         >
           Create
-        </label>
+        </Button>
       </div>
     </aside>
   );

@@ -1,11 +1,11 @@
 import Like from "../models/like.model.js";
 import Post from "../models/post.model.js";
 import Comment from "../models/comment.model.js";
-import catchAsyncError from "../utils/catchAsyncError.js";
+import handleAsyncError from "../utils/handleAsyncError.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 
-export const toggleLike = catchAsyncError(async (req, res) => {
+export const toggleLike = handleAsyncError(async (req, res) => {
   const { type, id } = req.body;
 
   if ([type, id].some((field) => field?.trim() === "")) {

@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import useAuth from "@/hooks/useAuth";
+import Button from "@/components/ui/Button";
+import Avatar from "@/components/ui/Avatar";
 
 export default function Topbar() {
   const { auth } = useAuth();
@@ -36,12 +38,9 @@ export default function Topbar() {
         </div>
 
         <div className="flex items-center gap-2.5 md:gap-4 lg:gap-6 2xl:gap-8">
-          <label
-            className="inline-flex items-center gap-x-2 rounded-lg border border-transparent bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:pointer-events-none disabled:opacity-50"
-            htmlFor="create-post"
-          >
+          <Button as="label" htmlFor="create-post">
             Create
-          </label>
+          </Button>
 
           <div className="hs-dropdown relative inline-flex">
             <button
@@ -50,19 +49,7 @@ export default function Topbar() {
               className="bg-transparent"
               onClick={() => setIsOpen((prevState) => !prevState)}
             >
-              {auth?.user?.avatar?.url ? (
-                <img
-                  className="inline-block size-9 rounded-full object-cover"
-                  src={auth.user.avatar.url}
-                  alt="My Profile"
-                />
-              ) : (
-                <span className="inline-flex size-9 items-center justify-center rounded-full bg-gray-100 text-sm font-semibold leading-none text-gray-800 dark:bg-white/10 dark:text-white">
-                  {auth?.user?.fullname
-                    .split(" ")
-                    .map((word) => word[0].toUpperCase())}
-                </span>
-              )}
+              <Avatar size="xsmall" user={auth?.user} />
             </button>
             <div
               className={`${isOpen ? "mt-0 opacity-100 " : "pointer-events-none mt-2 opacity-0 "}absolute right-0 top-12 z-50 min-w-60 rounded-lg bg-white p-2 shadow-md transition-[opacity,margin] focus-within:opacity-100 dark:border dark:border-neutral-700 dark:bg-neutral-800`}

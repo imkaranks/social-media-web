@@ -12,6 +12,8 @@
   "dependencies": {
     "@hookform/resolvers": "^3.4.2",
     "axios": "^1.7.2",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.1",
     "quiet-sphere-server": "file:..",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -19,6 +21,7 @@
     "react-hot-toast": "^2.4.1",
     "react-router-dom": "^6.22.1",
     "socket.io-client": "^4.7.5",
+    "tailwind-merge": "^2.3.0",
     "zod": "^3.23.8",
     "zustand": "^4.5.2"
   },

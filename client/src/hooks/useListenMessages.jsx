@@ -6,7 +6,7 @@ const notifySound = new Audio(
   "https://cdn.pixabay.com/audio/2022/03/15/audio_17cba0354b.mp3",
 );
 
-export default function useListenChats() {
+export default function useListenMessages() {
   const { socket } = useSocket();
   const { setMessages } = useMessages();
 

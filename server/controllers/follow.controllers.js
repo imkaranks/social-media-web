@@ -1,10 +1,10 @@
 import User from "../models/user.model.js";
 import Follow from "../models/follow.model.js";
-import catchAsyncError from "../utils/catchAsyncError.js";
+import handleAsyncError from "../utils/handleAsyncError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";
 
-export const follow = catchAsyncError(async (req, res) => {
+export const follow = handleAsyncError(async (req, res) => {
   const { userId } = req.params;
 
   if (!userId.trim()) {
@@ -36,7 +36,7 @@ export const follow = catchAsyncError(async (req, res) => {
     .json(new ApiResponse(201, follow, "Followed user successfully"));
 });
 
-export const unfollow = catchAsyncError(async (req, res) => {
+export const unfollow = handleAsyncError(async (req, res) => {
   const { userId } = req.params;
 
   if (!userId.trim()) {

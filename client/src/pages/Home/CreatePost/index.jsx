@@ -2,6 +2,7 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import useAuth from "@/hooks/useAuth";
 import useCreatePost from "@/hooks/useCreatePost";
+import Button from "../../../components/ui/Button";
 
 const INITIAL_DATA = {
   title: "",
@@ -80,7 +81,7 @@ export default function CreatePost() {
           id="create-post"
           className="flex w-full justify-self-start bg-transparent pl-4 outline-none"
         />
-        <button className="inline-flex items-center gap-x-2 rounded-lg border border-transparent bg-blue-600 p-2 text-center text-sm font-semibold text-white hover:bg-blue-700 disabled:pointer-events-none disabled:opacity-50">
+        <Button className="p-2">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -96,7 +97,7 @@ export default function CreatePost() {
             />
           </svg>
           <span className="sr-only">Post</span>
-        </button>
+        </Button>
       </div>
 
       {/* main modal */}
@@ -231,8 +232,10 @@ export default function CreatePost() {
             </div>
             <div className="flex items-center justify-end gap-x-2 border-t px-4 py-3 dark:border-neutral-700">
               <button
+                disabled={isSubmitting}
+                onClick={() => setIsOpen(false)}
                 type="button"
-                className="inline-flex items-center gap-x-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-800 shadow-sm hover:bg-gray-50 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white dark:hover:bg-neutral-800"
+                className="inline-flex items-center gap-x-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-800 shadow-sm hover:bg-gray-50 disabled:pointer-events-none disabled:cursor-wait disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white dark:hover:bg-neutral-800"
                 data-hs-overlay="#hs-medium-modal"
               >
                 Close
@@ -240,10 +243,23 @@ export default function CreatePost() {
               <button
                 disabled={isSubmitting}
                 type="button"
-                className="inline-flex items-center gap-x-2 rounded-lg border border-transparent bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:pointer-events-none disabled:opacity-50"
+                className="inline-flex min-w-[3.52625rem] items-center justify-center gap-x-2 rounded-lg border border-transparent bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:pointer-events-none disabled:cursor-wait disabled:opacity-50"
                 onClick={handleSubmit}
               >
-                Post
+                {isSubmitting ? (
+                  <>
+                    <span
+                      className="inline-block size-5 animate-spin rounded-full border-[3px] border-white border-t-transparent text-blue-600"
+                      role="status"
+                      aria-labelledby="delete-label"
+                    ></span>
+                    <span id="delete-label" className="sr-only">
+                      Posting
+                    </span>
+                  </>
+                ) : (
+                  "Post"
+                )}
               </button>
             </div>
           </div>

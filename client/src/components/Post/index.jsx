@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import useToggleLike from "@/hooks/useToggleLike";
+import useLikeHandler from "@/hooks/useLikeHandler";
 import useAuth from "@/hooks/useAuth";
-// import useAxiosPrivate from "@/hooks/useAxiosPrivate";
+import Button from "@/components/ui/Button";
+import Avatar from "@/components/ui/Avatar";
 
 export default function Post({
   _id,
@@ -12,52 +13,53 @@ export default function Post({
   author,
   likes,
   likeCount,
-  likedByYou,
+  userLikedPost,
+  isAuthor,
   commentCount,
   friendsWhoLiked,
-  isBeingDeleted = false,
-  deletePost = () => {},
+  deletePost,
 }) {
-  // const axiosPrivate = useAxiosPrivate();
   const { auth } = useAuth();
-  const { toggleLike, isSubmitting } = useToggleLike();
+  const { toggleLike, isSubmitting: toggleLikePending } = useLikeHandler();
 
   const [isOpen, setIsOpen] = useState(false);
-  const [isLiked, setIsLiked] = useState(likedByYou || false);
-  const [likesCount, setLikesCount] = useState(likeCount || 0);
+  const [isLiked, setIsLiked] = useState(userLikedPost ?? false);
+  const [likesCount, setLikesCount] = useState(likeCount ?? 0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [action, setAction] = useState(null);
 
-  const isAuthor = auth?.user?._id === author?._id;
+  const removePost = async () => {
+    setIsSubmitting(true);
+    try {
+      setAction("deletePost");
+      await deletePost(_id);
+      setIsOpen(false);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsSubmitting(false);
+      setAction(null);
+    }
+  };
 
   return (
     <>
       <article className="my-4 rounded-xl bg-gray-100 p-4 text-sm leading-normal dark:bg-neutral-700/20">
         <header className="flex w-full items-start gap-4">
           <div className="flex items-start gap-2 max-sm:flex-col md:gap-4">
-            {author?.avatar?.url ? (
-              <img
-                className="inline-block size-8 rounded-full object-cover sm:size-9 md:size-10"
-                src={author.avatar.url}
-                alt="Me"
-              />
-            ) : (
-              <span className="inline-flex size-8 items-center justify-center rounded-full bg-gray-100 text-sm font-semibold leading-none text-gray-800 dark:bg-white/10 dark:text-white">
-                {author?.fullname
-                  ?.split(" ")
-                  .map((word) => word[0].toUpperCase())}
-              </span>
-            )}
+            <Avatar className="size-8 sm:size-9 md:size-10" user={author} />
             <div>
-              <p>{author?.username || "lorem ipsum"}</p>
+              <p>{author?.username}</p>
               <p>{title}</p>
             </div>
           </div>
 
           <div className="relative ml-auto mt-2">
-            <button
-              className="cursor-pointer disabled:cursor-wait"
+            <Button
+              size="small"
+              variant="ghost"
+              className="aspect-square p-1"
               onClick={() => setIsOpen((prev) => !prev)}
-              // disabled={isBeingDeleted}
-              // onClick={() => deletePost(_id)}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -73,29 +75,83 @@ export default function Post({
                   d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
                 />
               </svg>
-            </button>
+            </Button>
 
             <div
               className={`${isOpen ? "mt-0 opacity-100 " : "pointer-events-none mt-2 opacity-0 "}absolute right-0 top-full grid min-w-40 rounded-lg bg-white p-2 shadow-md transition-[opacity,margin] before:absolute before:-top-4 before:start-0 before:h-4 before:w-full after:absolute after:-bottom-4 after:start-0 after:h-4 after:w-full dark:divide-neutral-700 dark:border dark:border-neutral-700 dark:bg-neutral-800`}
             >
-              <button className="flex items-center gap-x-3.5 rounded-lg px-3 py-2 text-sm text-gray-800 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-300 dark:focus:bg-neutral-700">
-                Save
-              </button>
-              {isAuthor && (
+              <Button
+                size="small"
+                variant="ghost"
+                disabled={isSubmitting}
+                onClick={() => setAction("savePost")}
+                className={
+                  action === "savePost" && isSubmitting ? "animate-pulse" : ""
+                }
+              >
+                {action === "savePost" && isSubmitting ? (
+                  <>
+                    <span
+                      className="inline-block size-5 animate-spin rounded-full border-[3px] border-white border-t-transparent text-blue-600"
+                      role="status"
+                      aria-labelledby="save-label"
+                    ></span>
+                    <span id="save-label">Saving</span>
+                  </>
+                ) : (
+                  "Save"
+                )}
+              </Button>
+              {isAuthor && deletePost && (
                 <>
-                  <button className="flex items-center gap-x-3.5 rounded-lg px-3 py-2 text-sm text-gray-800 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-300 dark:focus:bg-neutral-700">
-                    Edit
-                  </button>
-                  <button
-                    className="flex items-center gap-x-3.5 rounded-lg px-3 py-2 text-sm text-gray-800 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-300 dark:focus:bg-neutral-700"
-                    disabled={isBeingDeleted}
-                    onClick={async () => {
-                      await deletePost();
-                      setIsOpen(false);
-                    }}
+                  <Button
+                    size="small"
+                    variant="ghost"
+                    disabled={isSubmitting}
+                    onClick={() => setAction("editPost")}
+                    className={
+                      action === "editPost" && isSubmitting
+                        ? "animate-pulse"
+                        : ""
+                    }
                   >
-                    Delete
-                  </button>
+                    {action === "editPost" && isSubmitting ? (
+                      <>
+                        <span
+                          className="inline-block size-5 animate-spin rounded-full border-[3px] border-white border-t-transparent text-blue-600"
+                          role="status"
+                          aria-labelledby="edit-label"
+                        ></span>
+                        <span id="edit-label">Editing</span>
+                      </>
+                    ) : (
+                      "Edit"
+                    )}
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="ghost"
+                    disabled={isSubmitting}
+                    onClick={removePost}
+                    className={
+                      action === "deletePost" && isSubmitting
+                        ? "animate-pulse"
+                        : ""
+                    }
+                  >
+                    {action === "deletePost" && isSubmitting ? (
+                      <>
+                        <span
+                          className="inline-block size-5 animate-spin rounded-full border-[3px] border-white border-t-transparent text-blue-600"
+                          role="status"
+                          aria-labelledby="delete-label"
+                        ></span>
+                        <span id="delete-label">deleting</span>
+                      </>
+                    ) : (
+                      "Delete"
+                    )}
+                  </Button>
                 </>
               )}
             </div>
@@ -113,14 +169,16 @@ export default function Post({
         )}
 
         <div className="my-1.5 flex items-center">
-          <button
-            disabled={isSubmitting}
+          <Button
+            size="small"
+            variant="ghost"
+            disabled={toggleLikePending}
             onClick={async () => {
               await toggleLike("post", _id);
               setLikesCount(isLiked ? likesCount - 1 : likesCount + 1);
               setIsLiked(!isLiked);
             }}
-            className={`inline-flex items-center gap-x-2 rounded-lg border border-transparent p-2 text-sm font-semibold text-blue-600 hover:bg-blue-100 hover:text-blue-800 disabled:pointer-events-none disabled:opacity-50 dark:text-blue-500 dark:hover:bg-blue-800/30 dark:hover:text-blue-400`}
+            className="p-2 text-blue-600 hover:bg-blue-100 hover:text-blue-800 dark:text-blue-500 dark:hover:bg-blue-800/30 dark:hover:text-blue-400"
           >
             <span className="sr-only">like</span>
             {isLiked ? (
@@ -147,10 +205,13 @@ export default function Post({
               </svg>
             )}
             {!!likesCount && <span>{likesCount}</span>}
-          </button>
-          <Link
+          </Button>
+          <Button
+            as={Link}
             to={`/post/${_id}`}
-            className="inline-flex items-center gap-x-2 rounded-lg border border-transparent p-2 text-sm font-semibold text-blue-600 hover:bg-blue-100 hover:text-blue-800 disabled:pointer-events-none disabled:opacity-50 dark:text-blue-500 dark:hover:bg-blue-800/30 dark:hover:text-blue-400"
+            size="small"
+            variant="ghost"
+            className="p-2 text-blue-600 hover:bg-blue-100 hover:text-blue-800 dark:text-blue-500 dark:hover:bg-blue-800/30 dark:hover:text-blue-400"
           >
             <span className="sr-only">Comment</span>
             <svg
@@ -168,8 +229,12 @@ export default function Post({
               />
             </svg>
             {!!commentCount && <span>{commentCount}</span>}
-          </Link>
-          <button className="inline-flex items-center gap-x-2 rounded-lg border border-transparent p-2 text-sm font-semibold text-blue-600 hover:bg-blue-100 hover:text-blue-800 disabled:pointer-events-none disabled:opacity-50 dark:text-blue-500 dark:hover:bg-blue-800/30 dark:hover:text-blue-400">
+          </Button>
+          <Button
+            size="small"
+            variant="ghost"
+            className="p-2 text-blue-600 hover:bg-blue-100 hover:text-blue-800 dark:text-blue-500 dark:hover:bg-blue-800/30 dark:hover:text-blue-400"
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -184,8 +249,12 @@ export default function Post({
                 d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z"
               />
             </svg>
-          </button>
-          <button className="ml-auto inline-flex items-center gap-x-2 rounded-lg border border-transparent p-2 text-sm font-semibold text-blue-600 hover:bg-blue-100 hover:text-blue-800 disabled:pointer-events-none disabled:opacity-50 dark:text-blue-500 dark:hover:bg-blue-800/30 dark:hover:text-blue-400">
+          </Button>
+          <Button
+            size="small"
+            variant="ghost"
+            className="ml-auto p-2 text-blue-600 hover:bg-blue-100 hover:text-blue-800 dark:text-blue-500 dark:hover:bg-blue-800/30 dark:hover:text-blue-400"
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -200,74 +269,45 @@ export default function Post({
                 d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z"
               />
             </svg>
-          </button>
+          </Button>
         </div>
 
         {/* Liked by */}
         {!!likes?.length && (
           <div className="mb-1 flex gap-2 max-sm:flex-col sm:items-center">
             <div className="flex items-center -space-x-2">
-              {(likes.length > 3 ? likes.slice(0, 3) : likes)
+              {(likes.length > 5 ? likes.slice(0, 5) : likes)
                 .filter((likedBy) => likedBy?._id !== auth?.user?._id)
-                .map((likedBy, idx) =>
-                  likedBy?.avatar?.url ? (
-                    <img
-                      key={idx}
-                      className="inline-block size-8 rounded-full object-cover ring-2 ring-gray-100 dark:ring-neutral-700/20"
-                      src={likedBy.avatar.url}
-                      alt={likedBy.username}
-                    />
-                  ) : (
-                    <span
-                      key={idx}
-                      className="inline-flex size-8 items-center justify-center rounded-full bg-gray-100 text-sm font-semibold leading-none text-gray-800 ring-2 ring-gray-100 dark:bg-neutral-700 dark:text-white dark:ring-neutral-700/20"
-                    >
-                      {likedBy?.fullname
-                        .split(" ")
-                        .map((word) => word[0].toUpperCase())}
-                    </span>
-                  ),
-                )}
+                .map((likedBy, idx) => (
+                  <Avatar key={idx} className="size-8" user={likedBy} />
+                ))}
             </div>
-            {/* <p className="text-xs sm:text-sm">
-            Liked by{" "}
-            {!!friendsWhoLiked?.length &&
-              friendsWhoLiked.map((friendWhoLiked, idx) => (
-                <>
-                  <strong key={idx}>{friendWhoLiked.username}</strong>
-                  {idx !== friendsWhoLiked?.length - 1 ? ", " : " "}
-                </>
-              ))}
-            {!!likes.length - friendsWhoLiked?.length <= 0
-              ? `and ${likes.length - friendsWhoLiked.length} others`
-              : `${likes?.length} people`}
-          </p> */}
-            {friendsWhoLiked && friendsWhoLiked.length ? (
+            {friendsWhoLiked?.length > 0 ? (
               <p className="text-xs sm:text-sm">
                 Liked by{" "}
-                {!!friendsWhoLiked?.length &&
+                {friendsWhoLiked?.length >= 1 &&
                   friendsWhoLiked.map((friendWhoLiked, idx) => (
-                    <span key={friendWhoLiked.username}>
-                      <strong>{friendWhoLiked.username}</strong>
-                      {idx !== friendsWhoLiked.length - 1
-                        ? idx === friendsWhoLiked.length - 2
-                          ? " and "
-                          : ", "
-                        : " "}
-                    </span>
+                    <>
+                      <strong key={idx}>{friendWhoLiked.username}</strong>
+                      {idx !== friendsWhoLiked?.length - 1
+                        ? idx !== friendsWhoLiked.length - 2
+                          ? ", "
+                          : !(likes.length - friendsWhoLiked?.length)
+                            ? " and "
+                            : ", "
+                        : likes.length - friendsWhoLiked?.length
+                          ? " and"
+                          : ""}
+                    </>
                   ))}
-                {!!likes?.length > friendsWhoLiked?.length
-                  ? friendsWhoLiked.length === 0
-                    ? `${likes.length} ${likes.length === 1 ? "person" : "people"}`
-                    : `and ${likes.length - friendsWhoLiked.length} ${likes.length - friendsWhoLiked.length === 1 ? "other" : "others"}`
-                  : ""}
+                {!!(likes.length - friendsWhoLiked?.length) &&
+                  ` ${likes.length - friendsWhoLiked.length} others`}
               </p>
-            ) : (
+            ) : likes?.length ? (
               <p className="text-xs sm:text-sm">
-                Liked by{" "}
-                {`${likes.length} ${likes.length === 1 ? "person" : "people"}`}
+                Liked by {likes?.length} people.
               </p>
-            )}
+            ) : null}
           </div>
         )}
 

@@ -1,20 +1,20 @@
 import express from "express";
 import {
   createComment,
-  getAllComments,
-  getCommentsByUserId,
-  getCommentsByUsername,
+  getComments,
+  getCommentsByUser,
+  getCommentsByPostId,
   deleteComment,
 } from "../controllers/comment.controllers.js";
 import { isAuthenticated } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
-router.route("/:postId").get(isAuthenticated, getAllComments);
+router.route("/").get(isAuthenticated, getComments);
 
-router.route("/user/:userId").get(isAuthenticated, getCommentsByUserId);
+router.route("/user").get(isAuthenticated, getCommentsByUser);
 
-router.route("/user/u/:username").get(isAuthenticated, getCommentsByUsername);
+router.route("/:postId").get(isAuthenticated, getCommentsByPostId);
 
 router.route("/create/:postId").post(isAuthenticated, createComment);
 

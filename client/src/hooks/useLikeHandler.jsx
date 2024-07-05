@@ -1,7 +1,7 @@
 import { useState } from "react";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 
-export default function useToggleLike() {
+export default function useLikeHandler() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const axiosPrivate = useAxiosPrivate();
 
