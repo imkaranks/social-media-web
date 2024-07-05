@@ -12,7 +12,8 @@ export const SocketProvider = ({ children }) => {
 
   useEffect(() => {
     if (auth) {
-      const socket = io(import.meta.env.VITE_API_BASE_URL, {
+      // const socket = io(import.meta.env.VITE_API_BASE_URL, { // development
+      const socket = io("https://quietsphere.onrender.com", {
         query: {
           userId: auth?.user?._id,
         },
