@@ -84,7 +84,13 @@ const CommentInput = ({ handleAddComment, postId, parentId = null }) => {
   );
 };
 
-const CommentsItem = ({ postId, comment, onUpdateComments, lvl = 0 }) => {
+const CommentsItem = ({
+  postId,
+  comment,
+  onUpdateComments,
+  handleDeleteComment,
+  lvl = 0,
+}) => {
   const { auth } = useAuth();
 
   const [show, setShow] = useState(true);
@@ -113,6 +119,15 @@ const CommentsItem = ({ postId, comment, onUpdateComments, lvl = 0 }) => {
     onUpdateComments(updatedChildren);
   };
 
+  // const handleLike = async () => {
+  //   try {
+  //     // await axiosPrivate.post(`/comment/${_id}/like`);
+  //     // Optionally update UI or state to reflect the like
+  //   } catch (error) {
+  //     toast.error("Failed to like comment");
+  //   }
+  // };
+
   return (
     <div
       className="pl-[--nested-lvl]"
@@ -127,13 +142,13 @@ const CommentsItem = ({ postId, comment, onUpdateComments, lvl = 0 }) => {
             : ""
         }`}
       >
-        <Link to={`/user/${user?.username}`}>
+        <Link to={`/user/${user?._id}`}>
           <Avatar className="size-8" user={user} />
         </Link>
 
         <div className="flex-1">
           <div className="flex items-center gap-6">
-            <Link to={`/user/${user?.username}`} className="font-semibold">
+            <Link to={`/user/${user?._id}`} className="font-semibold">
               {user.username}
             </Link>
             <span className="list-item list-disc pl-0 text-xs text-gray-400 dark:text-neutral-500">
@@ -180,7 +195,10 @@ const CommentsItem = ({ postId, comment, onUpdateComments, lvl = 0 }) => {
               <span>Reply</span>
             </button>
             {isAuthor && (
-              <button className="inline-flex items-center gap-x-1 rounded-full border border-transparent px-2 py-1 text-xs font-medium text-gray-800 hover:bg-gray-100 disabled:pointer-events-none disabled:opacity-50 dark:text-white dark:hover:bg-neutral-700 2xl:text-sm">
+              <button
+                onClick={() => handleDeleteComment(_id, lvl)}
+                className="inline-flex items-center gap-x-1 rounded-full border border-transparent px-2 py-1 text-xs font-medium text-gray-800 hover:bg-gray-100 disabled:pointer-events-none disabled:opacity-50 dark:text-white dark:hover:bg-neutral-700 2xl:text-sm"
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
@@ -225,7 +243,7 @@ const CommentsItem = ({ postId, comment, onUpdateComments, lvl = 0 }) => {
           "--row-2": show ? "1fr" : "0fr",
         }}
       >
-        {comment.children.length > 0 && (
+        {comment?.children?.length > 0 && (
           <div className="pl-8">
             <button
               className="inline-flex items-center gap-x-1 rounded-full border border-transparent px-2 py-1 text-sm font-medium text-gray-800 hover:bg-gray-100 disabled:pointer-events-none disabled:opacity-50 dark:text-white dark:hover:bg-neutral-700 max-2xl:text-xs"
@@ -253,17 +271,21 @@ const CommentsItem = ({ postId, comment, onUpdateComments, lvl = 0 }) => {
           </div>
         )}
         <div className="overflow-hidden">
-          {comment.children.map((child, index) => (
-            <CommentsItem
-              key={index}
-              postId={postId}
-              comment={child}
-              onUpdateComments={(updatedComments) =>
-                handleUpdateChildComments(index, updatedComments)
-              }
-              lvl={lvl + 1}
-            />
-          ))}
+          {comment &&
+            comment?.children &&
+            comment.children?.length > 0 &&
+            comment.children.map((child, index) => (
+              <CommentsItem
+                key={index}
+                lvl={lvl + 1}
+                postId={postId}
+                comment={child}
+                onUpdateComments={(updatedComments) =>
+                  handleUpdateChildComments(index, updatedComments)
+                }
+                handleDeleteComment={handleDeleteComment}
+              />
+            ))}
         </div>
       </div>
     </div>
@@ -271,6 +293,7 @@ const CommentsItem = ({ postId, comment, onUpdateComments, lvl = 0 }) => {
 };
 
 const CommentComp = ({ initialComments }) => {
+  const axiosPrivate = useAxiosPrivate();
   const { postId } = useParams();
   const [comments, setComments] = useState(initialComments);
 
@@ -282,6 +305,31 @@ const CommentComp = ({ initialComments }) => {
     const updatedCommentsArray = [...comments];
     updatedCommentsArray[index].children = updatedComments;
     setComments(updatedCommentsArray);
+  };
+
+  const handleDeleteComment = async (commentId, lvl = 0) => {
+    try {
+      await axiosPrivate.delete(`/comment/${commentId}`);
+
+      const removeComment = (commentsArray, id, level) => {
+        return commentsArray.reduce((acc, comment) => {
+          if (comment._id === id) return acc;
+          if (comment.children) {
+            comment.children = removeComment(comment.children, id, level + 1);
+          }
+          acc.push(comment);
+          return acc;
+        }, []);
+      };
+
+      setComments((prevComments) =>
+        removeComment(prevComments, commentId, lvl),
+      );
+
+      toast.success("Comment deleted successfully");
+    } catch (error) {
+      toast.error("Failed to delete comment");
+    }
   };
 
   return (
@@ -298,6 +346,7 @@ const CommentComp = ({ initialComments }) => {
               onUpdateComments={(updatedComments) =>
                 handleUpdateComments(index, updatedComments)
               }
+              handleDeleteComment={handleDeleteComment}
             />
           ))}
         </div>

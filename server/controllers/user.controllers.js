@@ -128,46 +128,86 @@ export const changeAvatar = handleAsyncError(async (req, res) => {
 });
 
 export const updateUser = handleAsyncError(async (req, res) => {
-  if (!req.user?._id) {
+  if (!req?.user?._id) {
     throw new ApiError(
       401,
       "You must be authenticated to perform this action."
     );
   }
+
   const { userId } = req.params;
   const { fullname, username, bio } = req.body;
-  // const { avatar, banner } = req.files;
+  const avatar = req?.files?.avatar;
+  const banner = req?.files?.banner;
 
-  // if (
-  //   [fullname, username, bio].some((field) => !field || field.trim() === "")
-  // ) {
-  //   throw new ApiError(
-  //     400,
-  //     "Please provide valid values for fullname, username, and bio."
-  //   );
-  // }
+  if (userId !== String(req.user._id)) {
+    throw new ApiError(403, "You are not permitted to change other's details");
+  }
 
-  // const updatedFields = {
-  //   fullname,
-  //   username,
-  //   bio,
-  // };
-  // if (avatar) {
-  //   updatedFields.avatar = avatar;
-  // }
-  // if (banner) {
-  //   updatedFields.banner = banner;
-  // }
+  if (
+    [fullname, username, bio].some((field) => !field || field.trim() === "")
+  ) {
+    throw new ApiError(
+      400,
+      "Please provide valid values for fullname, username, and bio."
+    );
+  }
 
-  // const user = await User.findByIdAndUpdate(userId, updatedFields, {
-  //   new: true,
-  // });
+  const user = await User.findById(userId).select("-password -refreshToken");
 
-  // if (!user) {
-  //   throw new ApiError(404, "User not found");
-  // }
+  const files = [];
 
-  res.status(200).json(new ApiResponse(200, {}));
+  if (avatar) files.push(avatar);
+
+  if (banner) files.push(banner);
+
+  const results = await Promise.all(
+    files.map(async (file) => {
+      const b64 = Buffer.from(file[0].buffer).toString("base64");
+      let dataURI = "data:" + file[0].mimetype + ";base64," + b64;
+      const result = await upload(dataURI);
+      return result;
+    })
+  );
+
+  const updatedFields = {
+    fullname,
+    username,
+    bio,
+  };
+
+  if (avatar) {
+    if (user?.avatar?.public_id) {
+      await cloudinary.uploader.destroy(user.avatar.public_id);
+    }
+
+    updatedFields.avatar = {
+      url: results[0].url,
+      public_id: results[0].public_id,
+    };
+  }
+  if (banner) {
+    if (user?.banner?.public_id) {
+      await cloudinary.uploader.destroy(user.banner.public_id);
+    }
+
+    updatedFields.banner = {
+      url: (results.length === 2 ? results[1] : results[0]).url,
+      public_id: (results.length === 2 ? results[1] : results[0]).public_id,
+    };
+  }
+
+  const updatedUser = await User.findByIdAndUpdate(user._id, updatedFields, {
+    new: true,
+  }).select("-password -refreshToken");
+
+  if (!updatedUser) {
+    throw new ApiError(404, "User not found");
+  }
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, updatedUser, "Updated user successfully"));
 });
 
 export const updateUserLastSeen = handleAsyncError(async (req, res) => {

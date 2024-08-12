@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import useLikeHandler from "@/hooks/useLikeHandler";
 import useAuth from "@/hooks/useAuth";
@@ -46,9 +46,11 @@ export default function Post({
     <>
       <article className="my-4 rounded-xl bg-gray-100 p-4 text-sm leading-normal dark:bg-neutral-700/20">
         <header className="flex w-full items-start gap-4">
-          <div className="flex items-start gap-2 max-sm:flex-col md:gap-4">
-            <Avatar className="size-8 sm:size-9 md:size-10" user={author} />
-            <div>
+          <div className="flex flex-1 flex-wrap items-start gap-2 md:gap-4">
+            <Avatar className="size-9 md:size-10" user={author} />
+            <div
+              className="min-w-[min(10rem,_100%)]" /* min-width: min(10rem, 100%); */
+            >
               <p>{author?.username}</p>
               <p>{title}</p>
             </div>
@@ -158,11 +160,12 @@ export default function Post({
           </div>
         </header>
 
-        {!!images?.length && (
+        {images?.length > 0 && (
           <div className="mt-3 overflow-hidden rounded-xl">
             <img
               src={images[0]?.url}
-              className="h-96 w-full object-cover object-center"
+              // className="h-96 w-full object-cover object-center"
+              className="h-[60vw] max-h-96 w-full object-cover object-center" /* min(60vw, 24rem) */
               alt={title}
             />
           </div>
@@ -287,8 +290,8 @@ export default function Post({
                 Liked by{" "}
                 {friendsWhoLiked?.length >= 1 &&
                   friendsWhoLiked.map((friendWhoLiked, idx) => (
-                    <>
-                      <strong key={idx}>{friendWhoLiked.username}</strong>
+                    <React.Fragment key={idx}>
+                      <strong>{friendWhoLiked.username}</strong>
                       {idx !== friendsWhoLiked?.length - 1
                         ? idx !== friendsWhoLiked.length - 2
                           ? ", "
@@ -298,7 +301,7 @@ export default function Post({
                         : likes.length - friendsWhoLiked?.length
                           ? " and"
                           : ""}
-                    </>
+                    </React.Fragment>
                   ))}
                 {!!(likes.length - friendsWhoLiked?.length) &&
                   ` ${likes.length - friendsWhoLiked.length} others`}

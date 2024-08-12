@@ -23,7 +23,7 @@ const tabs = [
   },
 ];
 
-export default function Tabs() {
+export default function Tabs({ username }) {
   const [currentTab, setCurrentTab] = useState(0);
 
   const showActiveTabpanel = (idx) => {
@@ -65,7 +65,7 @@ export default function Tabs() {
             role="tabpanel"
             aria-labelledby={`profile-tab-item-${idx + 1}`}
           >
-            <Component />
+            <Component username={username} />
           </div>
         ))}
       </div>

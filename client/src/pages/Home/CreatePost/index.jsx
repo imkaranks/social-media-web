@@ -79,7 +79,7 @@ export default function CreatePost() {
           type="text"
           placeholder={`What's on your mind, ${auth?.user?.fullname?.split(" ")[0]}?`}
           id="create-post"
-          className="flex w-full justify-self-start bg-transparent pl-4 outline-none"
+          className="flex w-full justify-self-start truncate bg-transparent pl-4 text-sm outline-none"
         />
         <Button className="p-2">
           <svg

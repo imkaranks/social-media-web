@@ -1,6 +1,9 @@
-import useFriendshipHandler from "@/hooks/useFriendshipHandler";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import useFriendshipHandler from "@/hooks/useFriendshipHandler";
 import useSocket from "@/hooks/useSocket";
+import useAuth from "@/hooks/useAuth";
+import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 import Button from "@/components/ui/Button";
 import Avatar from "@/components/ui/Avatar";
 import useStore from "@/app/store";
@@ -25,6 +28,8 @@ function RequestSkeleton() {
 }
 
 export default function RightSidebar() {
+  const axiosPrivate = useAxiosPrivate();
+  const { auth } = useAuth();
   const {
     friends,
     isLoading: friendsLoading,
@@ -38,6 +43,25 @@ export default function RightSidebar() {
 
   const chats = useStore((state) => state.chats);
   const unreadFriendChats = useStore((state) => state.unreadFriendChats);
+
+  const [suggestions, setSuggestions] = useState(null);
+
+  useEffect(() => {
+    const getFriendSuggestions = async () => {
+      try {
+        const response = await axiosPrivate.get(
+          `/friend/mutual-suggestion/${auth?.user?._id}`,
+        );
+        setSuggestions(response?.data?.data);
+      } catch (error) {
+        console.log(error?.response?.data?.message);
+      }
+    };
+
+    // if (!suggestions) {
+    // }
+    getFriendSuggestions();
+  }, [auth, axiosPrivate, friends]);
 
   return (
     <div className="sticky top-[4.5625rem] h-[calc(100vh-4.5625rem)] w-[calc(100%-0.5rem)] overflow-y-auto p-4 pr-2 max-md:hidden">
@@ -172,7 +196,7 @@ export default function RightSidebar() {
                 className="rounded-xl bg-gray-200 p-4 dark:bg-neutral-700"
               >
                 <div className="mb-2 flex gap-2 2xl:gap-4">
-                  <Link to={`/user/${pendingRequest.sender.username}`}>
+                  <Link to={`/user/${pendingRequest.sender._id}`}>
                     <Avatar size="xsmall" user={pendingRequest.sender} />
                   </Link>
                   <div className="max-2xl:text-sm">
@@ -208,6 +232,46 @@ export default function RightSidebar() {
           ) : (
             <p className="text-gray-400 dark:text-neutral-500 max-2xl:text-sm">
               No friend requests
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* friend suggestions */}
+      <div className="mt-4">
+        <h3 className="mb-4">Suggestions</h3>
+        <div className="space-y-4">
+          {!suggestions ? (
+            <>
+              <RequestSkeleton />
+              <RequestSkeleton />
+            </>
+          ) : suggestions?.length ? (
+            suggestions.map((suggestions, idx) => (
+              <div
+                key={idx}
+                className="rounded-xl bg-gray-200 p-4 dark:bg-neutral-700"
+              >
+                <div className="mb-2 flex gap-2 2xl:gap-4">
+                  <Link to={`/user/${suggestions._id}`}>
+                    <Avatar size="small" user={suggestions} />
+                  </Link>
+                  <div className="max-2xl:text-sm">
+                    <h4>{suggestions.fullname}</h4>
+                    <p className="text-gray-400 dark:text-neutral-500">
+                      {suggestions.username}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 text-xs 2xl:gap-4 2xl:text-sm">
+                  <Button size="small">Add Friend</Button>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className="text-gray-400 dark:text-neutral-500 max-2xl:text-sm">
+              No friend suggestions
             </p>
           )}
         </div>

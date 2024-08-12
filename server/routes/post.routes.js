@@ -5,6 +5,7 @@ import {
   getPostById,
   updatePost,
   deletePost,
+  searchPosts,
 } from "../controllers/post.controllers.js";
 import { isAuthenticated } from "../middlewares/auth.middleware.js";
 import upload from "../middlewares/multer.middleware.js";
@@ -16,6 +17,8 @@ router
   .post(isAuthenticated, upload.array("images", 5), createPost);
 
 router.route("/").get(isAuthenticated, getPosts);
+
+router.route("/search").get(isAuthenticated, searchPosts);
 
 router
   .route("/:postId")

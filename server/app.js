@@ -40,9 +40,11 @@ import authRouter from "./routes/auth.routes.js";
 import userRouter from "./routes/user.routes.js";
 import friendRouter from "./routes/friend.routes.js";
 import postRouter from "./routes/post.routes.js";
+import savedPostRouter from "./routes/savedPost.routes.js";
 import likeRouter from "./routes/like.routes.js";
 import commentRouter from "./routes/comment.routes.js";
 import messageRouter from "./routes/message.routes.js";
+import notificationRouter from "./routes/notification.routes.js";
 import healthRouter from "./routes/health.routes.js";
 import errorHandler from "./middlewares/errorHandler.middleware.js";
 
@@ -50,9 +52,11 @@ app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/friend", friendRouter);
 app.use("/api/v1/post", postRouter);
+app.use("/api/v1/saved-post", savedPostRouter);
 app.use("/api/v1/like", likeRouter);
 app.use("/api/v1/comment", commentRouter);
 app.use("/api/v1/message", messageRouter);
+app.use("/api/v1/notification", notificationRouter);
 app.use("/api/v1/health", healthRouter);
 
 // Route to serve index.html for SPA

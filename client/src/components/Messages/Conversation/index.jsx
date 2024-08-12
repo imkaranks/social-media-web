@@ -1,6 +1,11 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import useAuth from "@/hooks/useAuth";
+import useAxiosPrivate from "@/hooks/useAxiosPrivate";
+import useMessages from "@/hooks/useMessages";
+import useSocket from "@/hooks/useSocket";
 import Avatar from "@/components/ui/Avatar";
 import { cn } from "@/utils/cn";
+import useStore from "@/app/store";
 import styles from "./index.module.css";
 
 export const ConversationPlaceholder = ({ children }) => {
@@ -27,8 +32,15 @@ export const ConversationPlaceholder = ({ children }) => {
   );
 };
 
-export default function Conversation({ messages, auth, friend }) {
+export default function Conversation({ messages, friend }) {
   const messagesRef = useRef();
+  const { auth } = useAuth();
+  const axiosPrivate = useAxiosPrivate();
+  const { socket } = useSocket();
+  const { currentChatUserId, unreadChatIds, setUnreadChatIds } = useMessages();
+  // const setFriendChat = useStore((state) => state.setFriendChat);
+  // const [page, setPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     messagesRef?.current?.scrollTo(0, messagesRef.current.scrollHeight);
@@ -39,6 +51,11 @@ export default function Conversation({ messages, auth, friend }) {
       className="h-[calc(100%-9rem)] space-y-2 overflow-y-auto overflow-x-hidden p-4"
       ref={messagesRef}
     >
+      {isLoading && (
+        <div className="flex justify-center">
+          <span className="inline-block size-5 animate-spin rounded-full border-[3px] border-white border-t-transparent text-blue-600"></span>
+        </div>
+      )}
       {messages?.length > 0 ? (
         messages.map((message, idx) => {
           const isSender = message.sender === auth?.user?._id;
@@ -80,9 +97,23 @@ export default function Conversation({ messages, auth, friend }) {
                 >
                   <p className="ml-[--margin-start]">{message?.message}</p>
                   {isLastMessage && (
-                    <span className="ml-[--margin-start] block w-fit text-xs opacity-50 2xl:text-sm">
-                      {new Date(message?.createdAt).toLocaleTimeString()}
-                    </span>
+                    <div className="ml-[--margin-start] block w-fit text-xs 2xl:text-sm">
+                      <span className="opacity-50">
+                        {new Date(message?.createdAt).toLocaleTimeString()}
+                      </span>
+                      {isSender && (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          height="24px"
+                          viewBox="0 -960 960 960"
+                          width="24px"
+                          fill="currentColor"
+                          className={`ml-auto size-[1.6ch] ${!unreadChatIds?.sent[friend._id]?.find((chatId) => message._id === chatId) ? "text-blue-400" : ""}`}
+                        >
+                          <path d="M268-240 42-466l57-56 170 170 56 56-57 56Zm226 0L268-466l56-57 170 170 368-368 56 57-424 424Zm0-226-57-56 198-198 57 56-198 198Z" />
+                        </svg>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>

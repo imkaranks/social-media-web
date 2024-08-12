@@ -1,28 +1,20 @@
 import { useState } from "react";
 import useAuth from "@/hooks/useAuth";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
+import useImageInput from "@/hooks/useImageInput";
 
 export default function Accounts() {
   const { auth, setAuth } = useAuth();
   const axiosPrivate = useAxiosPrivate();
-  const [avatar, setAvatar] = useState(null);
-  const [avatarPreview, setAvatarPreview] = useState(null);
+  const {
+    image: avatar,
+    imagePreview: avatarPreview,
+    handleChange: onAvatarChange,
+    resetImage: resetAvatar,
+  } = useImageInput();
+
   const [isAvatarEditing, setIsAvatarEditing] = useState(false);
   const [isAvatarSubmitting, setIsAvatarSubmitting] = useState(false);
-
-  const onAvatarChange = (e) => {
-    const file = e.target.files[0];
-
-    setAvatar(file);
-
-    const reader = new FileReader();
-
-    reader.onload = (e) => {
-      setAvatarPreview(e.target.result);
-    };
-
-    reader.readAsDataURL(file);
-  };
 
   const changeAvatar = async () => {
     setIsAvatarSubmitting(true);
@@ -44,8 +36,7 @@ export default function Accounts() {
         },
       );
 
-      setAvatar(null);
-      setAvatarPreview(null);
+      resetAvatar();
       setIsAvatarEditing(false);
 
       setAuth((prevAuth) => ({
@@ -112,8 +103,7 @@ export default function Accounts() {
               <button
                 disabled={isAvatarSubmitting}
                 onClick={() => {
-                  setAvatar(null);
-                  setAvatarPreview(null);
+                  resetAvatar();
                   setIsAvatarEditing(false);
                 }}
                 className="inline-flex items-center gap-x-2 rounded-lg border border-transparent bg-gray-100 px-3 py-2 text-sm font-semibold text-gray-800 hover:bg-gray-200 disabled:pointer-events-none disabled:opacity-50 dark:bg-white/10 dark:text-white dark:hover:bg-white/20 dark:hover:text-white"

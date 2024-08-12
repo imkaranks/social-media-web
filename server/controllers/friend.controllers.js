@@ -215,3 +215,82 @@ async function getAcceptedFriends(userId) {
     return friendId;
   });
 }
+
+// ################################
+
+export const getMutualFriends = handleAsyncError(async (req, res) => {
+  const { user1, user2 } = req.params;
+
+  const user1Friendships = await Friend.find({
+    $or: [
+      { user1, status: "accepted" },
+      { user2: user1, status: "accepted" },
+    ],
+  });
+
+  const user2Friendships = await Friend.find({
+    $or: [
+      { user1: user2, status: "accepted" },
+      { user2, status: "accepted" },
+    ],
+  });
+
+  const user1Friends = user1Friendships
+    .map((friendship) =>
+      friendship.user1 === user1 ? friendship.user2 : friendship.user1
+    )
+    .filter((friend) => String(friend) !== user1);
+
+  const user2Friends = user2Friendships
+    .map((friendship) =>
+      friendship.user1 === user2 ? friendship.user2 : friendship.user1
+    )
+    .filter((friend) => String(friend) !== user2);
+
+  const mutualFriends = user1Friends.filter((user1Friend) =>
+    user2Friends.some(
+      (user2Friend) => String(user1Friend) === String(user2Friend)
+    )
+  );
+
+  const users = await Promise.all(
+    mutualFriends.map(
+      async (id) => await User.findById(id).select("-password -refreshToken")
+    )
+  );
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, users || [], "Mutual friends found"));
+});
+
+export const getFriendRecommendations = handleAsyncError(async (req, res) => {
+  const { user } = req.params;
+  const { limit = 5 } = req.query;
+
+  const friends = await Friend.find({
+    $or: [
+      { user1: user, status: "accepted" },
+      { user2: user, status: "accepted" },
+    ],
+  });
+
+  const friendIds = friends.map((friend) =>
+    friend.user1.toString() === user
+      ? friend.user2.toString()
+      : friend.user1.toString()
+  );
+
+  const suggestedUsers = await User.find({
+    _id: { $nin: [...friendIds, user] },
+    isVerified: true,
+  })
+    .select("-password -refreshToken")
+    .limit(limit);
+
+  res
+    .status(200)
+    .json(
+      new ApiResponse(200, suggestedUsers || [], "Friend suggestions found")
+    );
+});

@@ -1,8 +1,8 @@
-import PropTypes from "prop-types";
-import { AuthProvider } from "./AuthContext";
-import { SocketProvider } from "./SocketContext";
-import { MessageProvider } from "./MessageContext";
-import useHealthCheck from "../hooks/useHealthCheck";
+import { AuthProvider } from "@/context/AuthContext";
+import { SocketProvider } from "@/context/SocketContext";
+import { MessageProvider } from "@/context/MessageContext";
+import { NotificationProvider } from "@/context/NotificationContext";
+import useHealthCheck from "@/hooks/useHealthCheck";
 
 export default function AppProvider({ children }) {
   const { error } = useHealthCheck();
@@ -12,11 +12,10 @@ export default function AppProvider({ children }) {
   ) : (
     <AuthProvider>
       <SocketProvider>
-        <MessageProvider>{children}</MessageProvider>
+        <MessageProvider>
+          <NotificationProvider>{children}</NotificationProvider>
+        </MessageProvider>
       </SocketProvider>
     </AuthProvider>
   );
 }
-AppProvider.propTypes = {
-  children: PropTypes.node.isRequired,
-};

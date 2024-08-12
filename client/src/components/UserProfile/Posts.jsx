@@ -1,4 +1,3 @@
-import { useParams } from "react-router-dom";
 import useAuth from "@/hooks/useAuth";
 import usePosts from "@/hooks/usePosts";
 import useDeletePost from "@/hooks/useDeletePost";
@@ -6,9 +5,8 @@ import useFriendshipHandler from "@/hooks/useFriendshipHandler";
 import Post from "@/components/Post";
 import PostSkeleton from "@/components/ui/PostSkeleton";
 
-export default function Posts() {
+export default function Posts({ username }) {
   const { auth } = useAuth();
-  const { username } = useParams();
   const { friends } = useFriendshipHandler();
   const { deletePost } = useDeletePost();
   const { posts, isLoading, error } = usePosts({

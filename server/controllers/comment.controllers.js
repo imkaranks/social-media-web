@@ -4,10 +4,27 @@ import Comment from "../models/comment.model.js";
 import handleAsyncError from "../utils/handleAsyncError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";
+import Notification from "../models/notification.model.js";
+import { getSocketId, io } from "../socket/socket.js";
+
+const emitNotificationEvent = (userId, payload) => {
+  const socketId = getSocketId(userId?.toString());
+  if (!socketId) {
+    console.error(`Socket ID not found for user ${userId}`);
+  } else {
+    const socket = io.sockets.sockets.get(socketId);
+    if (socket) {
+      socket.emit("notification", payload);
+    } else {
+      console.error(`Socket not found for ID ${socketId}`);
+    }
+  }
+};
 
 export const createComment = handleAsyncError(async (req, res) => {
   const { postId } = req.params;
   const { content, parentId } = req.body;
+  const user = req.user._id;
 
   if ([postId, content].some((field) => field?.trim() === "")) {
     throw new ApiError(400, "postId and content must be provided");
@@ -16,7 +33,7 @@ export const createComment = handleAsyncError(async (req, res) => {
   const post = await Post.findById(postId);
 
   const comment = await Comment.create({
-    user: req.user._id,
+    user,
     post: post._id,
     content,
   });
@@ -32,6 +49,13 @@ export const createComment = handleAsyncError(async (req, res) => {
     await comment.save();
     parentComment.children.unshift(comment._id);
     await parentComment.save();
+    const notification = await Notification.create({
+      user: parentComment.user,
+      type: "REPLY",
+      relatedComment: comment._id,
+    });
+
+    emitNotificationEvent(parentComment.user, notification);
   } else {
     if (!post) {
       throw new ApiError(404, "No post found with provided id");
@@ -39,6 +63,13 @@ export const createComment = handleAsyncError(async (req, res) => {
 
     post.comments.unshift(comment);
     await post.save();
+    const notification = await Notification.create({
+      user: post.author,
+      type: "COMMENT",
+      relatedComment: comment._id,
+    });
+
+    emitNotificationEvent(post.author, notification);
   }
 
   const createdComment = await Comment.findById(comment._id).populate({
@@ -214,12 +245,28 @@ export const deleteComment = handleAsyncError(async (req, res) => {
   }
 
   if (comment.children && comment.children.length > 0) {
-    // Delete child comments in parallel
-    await Promise.all(
-      comment.children.map(async (childId) => {
-        await Comment.findByIdAndDelete(childId);
-      })
-    );
+    // await Promise.all(
+    //   comment.children.map(async () => {
+    //     return await Notification.deleteOne({
+    //       user: req?.user?._id,
+    //       relatedComment: commentId,
+    //     });
+    //   })
+    // );
+
+    // // Delete child comments in parallel
+    // await Promise.all(
+    //   comment.children.map(async (childId) => {
+    //     return await Comment.findByIdAndDelete(childId);
+    //   })
+    // );
+
+    await deleteNestedComments(commentId, req?.user?._id);
+  } else {
+    await Notification.deleteOne({
+      user: req?.user?._id,
+      relatedComment: commentId,
+    });
   }
 
   await Comment.findByIdAndDelete(commentId);
@@ -228,3 +275,30 @@ export const deleteComment = handleAsyncError(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, comment, "Comment removed successfully"));
 });
+
+async function deleteNestedComments(commentId, userId) {
+  try {
+    const comment = await Comment.findById(commentId);
+
+    if (!comment) {
+      throw new Error("Comment not found");
+    }
+
+    await Notification.deleteMany({
+      // user: userId,
+      relatedComment: commentId,
+    });
+
+    if (comment.children && comment.children.length > 0) {
+      await Promise.all(
+        comment.children.map(async (childId) => {
+          await deleteNestedComments(childId, userId);
+        })
+      );
+    }
+
+    await Comment.findByIdAndDelete(commentId);
+  } catch (error) {
+    console.log(error instanceof Error ? error.message : error);
+  }
+}

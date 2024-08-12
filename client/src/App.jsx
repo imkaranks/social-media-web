@@ -17,6 +17,7 @@ import Messages from "@/pages/Messages";
 import Saved from "@/pages/Saved";
 import Settings from "@/pages/Settings";
 import PostDetails from "@/pages/PostDetails";
+import Search from "@/pages/Search";
 
 export default function App() {
   return (
@@ -42,8 +43,9 @@ export default function App() {
               <Route path="explore" element={<Explore />} />
               <Route path="notification" element={<Notification />} />
               <Route path="saved" element={<Saved />} />
-              <Route path="user/:username" element={<UserProfile />} />
+              <Route path="user/:userId" element={<UserProfile />} />
               <Route path="post/:postId" element={<PostDetails />} />
+              <Route path="search" element={<Search />} />
             </Route>
 
             <Route

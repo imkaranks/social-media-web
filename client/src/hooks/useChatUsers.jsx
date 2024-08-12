@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import useAuth from "./useAuth";
-import useAxiosPrivate from "./useAxiosPrivate";
+import useAuth from "@/hooks/useAuth";
+import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 
 export default function useChatUsers() {
   const { auth } = useAuth();

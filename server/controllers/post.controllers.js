@@ -262,3 +262,29 @@ export const deletePost = handleAsyncError(async (req, res) => {
 
   res.status(200).json(new ApiResponse(200, post, "Post removed successfully"));
 });
+
+export const searchPosts = handleAsyncError(async (req, res) => {
+  const { keyword } = req.query;
+
+  const posts = await Post.find({
+    title: { $regex: keyword, $options: "i" },
+  }).populate({
+    path: "author",
+    model: "User",
+    select: "_id username fullname avatar",
+  });
+
+  const postsWithEngagement = posts.map((post) => {
+    const likeCount = post.likes.length;
+    const commentCount = post.comments.length;
+    const userLikedPost = post.likes.some(
+      (like) => like?._id?.toString() === req.user._id?.toString()
+    );
+
+    return { ...post._doc, likeCount, commentCount, userLikedPost };
+  });
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, postsWithEngagement || [], "Success"));
+});

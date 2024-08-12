@@ -1,7 +1,7 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 import useAuth from "@/hooks/useAuth";
-import { useNavigate } from "react-router-dom";
 
 export default function useLogout() {
   const navigate = useNavigate();

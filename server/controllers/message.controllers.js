@@ -10,7 +10,6 @@ export const sendMessage = handleAsyncError(async (req, res) => {
   const sender = req.user._id;
   const { id: receiver } = req.params;
 
-  // Validate fields
   if (![message, sender, receiver].every(Boolean)) {
     throw new ApiError(400, "Please fill in all fields");
   }
@@ -46,12 +45,12 @@ export const sendMessage = handleAsyncError(async (req, res) => {
 });
 
 export const getMessages = handleAsyncError(async (req, res) => {
-  const sender = req.user._id;
+  const sender = String(req.user._id);
   const { id: receiver } = req.params;
   const { page = 1, limit = 10 } = req.query;
   const skip = (page - 1) * limit;
 
-  if (![sender, receiver].every(Boolean)) {
+  if ([sender, receiver].some((field) => !field || !field?.trim())) {
     throw new ApiError(400, "Please send both sender and receiver");
   }
 
@@ -66,9 +65,24 @@ export const getMessages = handleAsyncError(async (req, res) => {
     },
   });
 
-  if (!conversation) return res.status(200).json(new ApiResponse(200, []));
+  // if (!conversation) {
+  //   return res
+  //     .status(200)
+  //     .json(new ApiResponse(200, [], "No conversation found"));
+  // }
+  if (!conversation) {
+    throw new ApiError(404, "No conversation found");
+  }
 
   const messages = conversation.messages;
 
   res.status(200).json(new ApiResponse(200, messages));
+});
+
+export const markAsRead = handleAsyncError(async (req, res) => {
+  const { id } = req.params;
+
+  const message = await Message.findByIdAndUpdate(id, { read: true });
+
+  res.status(200).json(new ApiResponse(200, {}));
 });

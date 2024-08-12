@@ -22,8 +22,9 @@ export const MessageProvider = ({ children }) => {
     (state) => state.initUnreadFriendChats,
   );
 
-  const [currentChatUserId, setCurrentChatUserId] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [currentChatUserId, setCurrentChatUserId] = useState(null);
+  const [unreadChatIds, setUnreadChatIds] = useState({});
 
   const setCurrentParticipant = useCallback(
     (id) => {
@@ -38,18 +39,94 @@ export const MessageProvider = ({ children }) => {
     if (!auth) return;
 
     async function getAllMessages() {
-      const responses = await Promise.all(
-        friends.map((friend) => axiosPrivate.get(`/message/${friend._id}`)),
-      );
-      const chats = responses.reduce(
-        (acc, response, idx) => ({
-          ...acc,
-          [friends[idx]._id]: response?.data?.data,
-        }),
-        {},
-      );
-      setChats(chats);
-      initUnreadFriendChats(friends.map((friend) => ({ user: friend._id })));
+      setLoading(true);
+      try {
+        // const responses = await Promise.all(
+        //   friends.map((friend) => axiosPrivate.get(`/message/${friend._id}`)),
+        // );
+        // const chats = responses.reduce(
+        //   (acc, response, idx) => ({
+        //     ...acc,
+        //     [friends[idx]._id]: response?.data?.data,
+        //   }),
+        //   {},
+        // );
+        const responses = await Promise.allSettled(
+          friends.map((friend) => axiosPrivate.get(`/message/${friend._id}`)),
+        );
+        const chats = responses.reduce(
+          (acc, response, idx) => ({
+            ...acc,
+            [friends[idx]._id]:
+              response.status === "fulfilled"
+                ? response?.value?.data?.data
+                : [],
+          }),
+          {},
+        );
+        setChats(chats);
+        initUnreadFriendChats(friends.map((friend) => ({ user: friend._id })));
+        const unreadChats = responses.reduce(
+          (acc, response, idx) => {
+            // return {
+            //   ...acc,
+            //   [friends[idx]._id]:
+            //     (
+            //       response.status === "fulfilled" &&
+            //       response?.value?.data?.data?.filter((chat) => !chat?.read)
+            //     ).map((chat) => chat._id) || [],
+            // };
+            if (response.status === "fulfilled") {
+              const unreadChats = response?.value?.data?.data?.filter(
+                (chat) => !chat?.read,
+              );
+              const unreadSentChats = unreadChats
+                ?.filter((chat) => chat.sender === auth?.user?._id)
+                .map((chat) => chat._id);
+              const unreadReceivedChats = unreadChats
+                ?.filter((chat) => chat.sender !== auth?.user?._id)
+                .map((chat) => chat._id);
+
+              return {
+                ...acc,
+                sent: {
+                  ...acc.sent,
+                  [friends[idx]._id]: acc.sent[friends[idx]._id]?.length
+                    ? [...acc.sent[friends[idx]._id], ...unreadSentChats]
+                    : [...unreadSentChats],
+                },
+                received: {
+                  ...acc.received,
+                  [friends[idx]._id]: acc.received[friends[idx]._id]?.length
+                    ? [
+                        ...acc.received[friends[idx]._id],
+                        ...unreadReceivedChats,
+                      ]
+                    : [...unreadReceivedChats],
+                },
+              };
+            } else {
+              return {
+                ...acc,
+                sent: { ...acc.sent, [friends[idx]._id]: [] },
+                received: { ...acc.received, [friends[idx]._id]: [] },
+              };
+            }
+          },
+          { sent: {}, received: {} },
+        );
+        // console.log(unreadChats);
+        setUnreadChatIds(
+          // friends.reduce((acc, friend) => {
+          //   return { ...acc, [friend._id]: [] };
+          // }, {}),
+          unreadChats,
+        );
+      } catch (error) {
+        console.log(error instanceof Error ? error.message : error);
+      } finally {
+        setLoading(false);
+      }
     }
 
     if (!Object.keys(chats)?.length) {
@@ -66,19 +143,38 @@ export const MessageProvider = ({ children }) => {
         chat: payload,
       });
 
+      // add to unread ids
+      setUnreadChatIds((prev) => ({
+        ...prev,
+        [payload.sender]: (prev[payload.sender] || []).push(payload._id),
+      }));
+
       currentChatUserId !== payload.sender &&
         addUnreadFriendChat(payload.sender);
     });
 
-    return () => socket.off("new-message");
+    socket.on("messagesRead", (userId) => {
+      console.log(userId);
+      setUnreadChatIds((prevUnreadChatIds) => ({
+        ...prevUnreadChatIds,
+        sent: { ...prevUnreadChatIds.sent, [userId]: [] },
+      }));
+    });
+
+    return () => {
+      socket.off("new-message");
+      socket.off("messagesRead");
+    };
   }, [socket, addFriendChat, auth, addUnreadFriendChat, currentChatUserId]);
 
   return (
     <MessageContext.Provider
       value={{
+        loading,
         currentChatUserId,
         setCurrentParticipant,
-        loading,
+        unreadChatIds,
+        setUnreadChatIds,
       }}
     >
       {children}

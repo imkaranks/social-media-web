@@ -9,8 +9,9 @@ const notificationSchema = new mongoose.Schema(
     },
     type: {
       type: String,
+      enum: ["LIKE", "COMMENT", "REPLY", "FRIEND"],
       required: true,
-    }, // e.g., like, comment, follow
+    },
     relatedPost: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Post",

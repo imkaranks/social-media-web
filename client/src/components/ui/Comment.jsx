@@ -28,7 +28,7 @@ export default function Comment({
 
   return (
     <>
-      <Link to={`/user/${user?.username}`}>
+      <Link to={`/user/${user?._id}`}>
         {user?.avatar?.url ? (
           <img
             className="inline-block size-8 rounded-full object-cover ring-2 ring-gray-100 dark:ring-neutral-700/20"
@@ -43,7 +43,7 @@ export default function Comment({
       </Link>
       <div className="flex-1">
         <div className="flex items-center gap-6">
-          <Link to={`/user/${user?.username}`} className="font-semibold">
+          <Link to={`/user/${user?._id}`} className="font-semibold">
             {user.username}
           </Link>
           <span className="list-item list-disc pl-0 text-xs text-gray-400 dark:text-neutral-500">

@@ -23,6 +23,13 @@ io.on("connection", (socket) => {
 
   socket.emit("online-users", Array.from(userSocketMap.keys()));
 
+  socket.on("markAsRead", (payload) => {
+    console.log(userSocketMap.get(payload.receiver));
+    const receiver = getSocketId(payload.receiver);
+    console.log(typeof payload, receiver);
+    io.to(receiver).emit("messagesRead", payload.sender);
+  });
+
   socket.on("disconnect", () => {
     console.log("user disconnected with id: ", socket.id);
     userSocketMap.delete(userId);

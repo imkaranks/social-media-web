@@ -22,14 +22,21 @@ router
 
 router.route("/profile").get(isAuthenticated, getUser);
 
+router.route("/search").get(isAuthenticated, searchUsers);
+
 router
   .route("/:userId")
   .get(isAuthenticated, getUserById)
-  .patch(isAuthenticated, updateUser);
+  .patch(
+    isAuthenticated,
+    upload.fields([
+      { name: "avatar", maxCount: 1 },
+      { name: "banner", maxCount: 1 },
+    ]),
+    updateUser
+  );
 
 router.route("/u/:username").get(isAuthenticated, getUserByUsername);
-
-router.route("/search").get(isAuthenticated, searchUsers);
 
 router.route("/update-last-seen").post(isAuthenticated, updateUserLastSeen);
 

@@ -1,35 +1,34 @@
-import { useState } from "react";
-import Accounts from "./Accounts";
+import { useState, useEffect } from "react";
+import { useLocation, useSearchParams } from "react-router-dom";
+import Accounts from "@/components/Settings/Accounts";
 import Security from "./Security";
 import Notifications from "./Notifications";
 import Appearance from "./Appearance";
 
 const tabs = [
-  {
-    title: "Accounts",
-    Component: Accounts,
-  },
-  {
-    title: "Security",
-    Component: Security,
-  },
-  {
-    title: "Notifications",
-    Component: Notifications,
-  },
-  {
-    title: "Appearance",
-    Component: Appearance,
-  },
+  { title: "Accounts", key: "accounts", Component: Accounts },
+  { title: "Security", key: "security", Component: Security },
+  { title: "Notifications", key: "notifications", Component: Notifications },
+  { title: "Appearance", key: "appearance", Component: Appearance },
 ];
 
 export default function Settings() {
-  const [currentTab, setCurrentTab] = useState(0);
+  const location = useLocation();
+  // const history = useHistory()
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [currentTab, setCurrentTab] = useState("accounts");
 
-  const showTabpanelWithIdx = (idx) => {
-    if (idx !== currentTab) {
-      setCurrentTab(idx);
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const tabParam = searchParams.get("tab");
+    if (tabParam) {
+      setCurrentTab(tabParam);
     }
+  }, [location.search]);
+
+  const showTabpanelWithKey = (key) => {
+    setCurrentTab(key);
+    setSearchParams(new URLSearchParams({ tab: key }));
   };
 
   return (
@@ -44,11 +43,15 @@ export default function Settings() {
             <button
               key={idx}
               type="button"
-              className={`${idx === currentTab ? "bg-gray-100 text-gray-700 dark:bg-neutral-700 dark:text-white " : "text-gray-700 hover:bg-gray-100 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-300 "}max-md:flex-1 flex items-center gap-x-3.5 rounded-lg px-2.5 py-2 max-2xl:text-sm max-xl:p-2 max-md:justify-center`}
-              id={`setting-tab-item-${idx + 1}`}
-              aria-controls={`setting-tab-${idx + 1}`}
+              className={`${
+                currentTab === tab.key
+                  ? "bg-gray-100 text-gray-700 dark:bg-neutral-700 dark:text-white"
+                  : "text-gray-700 hover:bg-gray-100 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-300"
+              } flex items-center gap-x-3.5 rounded-lg px-2.5 py-2 max-2xl:text-sm max-xl:p-2 max-md:flex-1 max-md:justify-center`}
+              id={`setting-tab-item-${tab.key}`}
+              aria-controls={`setting-tab-${tab.key}`}
               role="tab"
-              onClick={() => showTabpanelWithIdx(idx)}
+              onClick={() => showTabpanelWithKey(tab.key)}
             >
               {tab.title}
             </button>
@@ -56,13 +59,13 @@ export default function Settings() {
         </nav>
       </div>
       <div className="flex-1 overflow-y-auto p-4 md:h-full">
-        {tabs.map(({ Component }, idx) => (
+        {tabs.map(({ Component, key }) => (
           <div
-            key={idx}
-            id={`setting-tab-${idx + 1}`}
-            className={currentTab !== idx ? "hidden" : ""}
+            key={key}
+            id={`setting-tab-${key}`}
+            className={currentTab !== key ? "hidden" : ""}
             role="tabpanel"
-            aria-labelledby={`setting-tab-item-${idx + 1}`}
+            aria-labelledby={`setting-tab-item-${key}`}
           >
             <Component />
           </div>

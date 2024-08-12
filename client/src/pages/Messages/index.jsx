@@ -15,7 +15,7 @@ export default function Messages() {
   const { auth } = useAuth();
   const { friends, friendsLoading } = useFriendshipHandler();
   const { onlineUsers } = useSocket();
-  const { currentChatUserId, setCurrentParticipant } = useMessages();
+  const { loading, currentChatUserId, setCurrentParticipant } = useMessages();
 
   const chats = useStore((state) => state.chats);
   const unreadFriendChats = useStore((state) => state.unreadFriendChats);
@@ -70,20 +70,16 @@ export default function Messages() {
         </div>
 
         {/* Display friends list */}
-        {friendsLoading ? (
+        {friendsLoading || loading ? (
           <p>Loading</p>
         ) : friends.length ? (
           friends.map((friend, idx) => (
             <ChatUser
               key={idx}
               index={idx}
-              loggedUserId={auth?.user?._id}
               openChatbox={openChatbox}
               currentConversation={currentConversation}
-              setCurrentParticipant={setCurrentParticipant}
               friend={friend}
-              onlineUsers={onlineUsers}
-              chats={chats}
               unreadFriendChats={unreadFriendChats}
             />
           ))
@@ -113,7 +109,6 @@ export default function Messages() {
           (messages?.length > 0 ? (
             <Conversation
               messages={messages}
-              auth={auth}
               friend={friends[currentConversation]}
             />
           ) : (

@@ -1,5 +1,5 @@
-import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 import { useEffect, useState } from "react";
+import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 
 export default function useComments(query) {
   const axiosPrivate = useAxiosPrivate();
