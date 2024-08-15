@@ -1,11 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import useAuth from "@/hooks/useAuth";
-import useAxiosPrivate from "@/hooks/useAxiosPrivate";
-import useMessages from "@/hooks/useMessages";
-import useSocket from "@/hooks/useSocket";
 import Avatar from "@/components/ui/Avatar";
 import { cn } from "@/utils/cn";
-import useStore from "@/app/store";
+import formatDate from "@/utils/formatDate";
+import formatTime from "@/utils/formatTime";
 import styles from "./index.module.css";
 
 export const ConversationPlaceholder = ({ children }) => {
@@ -32,19 +30,27 @@ export const ConversationPlaceholder = ({ children }) => {
   );
 };
 
+const groupMessagesByDate = (messages) => {
+  return messages.reduce((groups, message) => {
+    const date = formatDate(message.createdAt);
+    if (!groups[date]) {
+      groups[date] = [];
+    }
+    groups[date].push(message);
+    return groups;
+  }, {});
+};
+
 export default function Conversation({ messages, friend }) {
   const messagesRef = useRef();
   const { auth } = useAuth();
-  const axiosPrivate = useAxiosPrivate();
-  const { socket } = useSocket();
-  const { currentChatUserId, unreadChatIds, setUnreadChatIds } = useMessages();
-  // const setFriendChat = useStore((state) => state.setFriendChat);
-  // const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     messagesRef?.current?.scrollTo(0, messagesRef.current.scrollHeight);
   });
+
+  const groupedMessages = groupMessagesByDate(messages);
 
   return (
     <div
@@ -56,70 +62,68 @@ export default function Conversation({ messages, friend }) {
           <span className="inline-block size-5 animate-spin rounded-full border-[3px] border-white border-t-transparent text-blue-600"></span>
         </div>
       )}
-      {messages?.length > 0 ? (
-        messages.map((message, idx) => {
-          const isSender = message.sender === auth?.user?._id;
-          const isLastMessage =
-            idx === messages.length - 1 ||
-            messages[idx + 1]?.sender !== message.sender;
-          return (
-            <div
-              key={idx}
-              className="space-y-2 [&>*]:max-w-[85%] [&_*]:w-fit"
-              style={{
-                "--margin-start": isSender ? "auto" : "0",
-                "--clr-chat": isSender ? "rgb(59 130 246)" : "rgb(64 64 64)",
-              }}
-            >
-              <div
-                className="ml-[--margin-start] flex w-fit max-w-[90%] items-end gap-2.5"
-                style={{ flexDirection: isSender ? "row-reverse" : "row" }}
-              >
-                {isLastMessage ? (
-                  <Avatar
-                    user={isSender ? auth?.user : friend}
-                    size="xsmall"
-                    className="!size-9 flex-shrink-0 max-sm:hidden"
-                  />
-                ) : (
-                  <div className="!size-9 max-sm:hidden"></div>
-                )}
+      {Object.keys(groupedMessages).length > 0 ? (
+        Object.keys(groupedMessages).map((date, idx) => (
+          <div className="space-y-2" key={idx}>
+            <div className="my-4 text-center text-xs text-gray-500 dark:text-gray-400 2xl:text-sm">
+              <span>{date}</span>
+            </div>
+            {groupedMessages[date].map((message, messageIdx) => {
+              const isSender = message.sender === auth?.user?._id;
+              const isLastMessage =
+                messageIdx === groupedMessages[date].length - 1 ||
+                groupedMessages[date][messageIdx + 1]?.sender !==
+                  message.sender;
+              return (
                 <div
-                  className={
-                    isLastMessage
-                      ? cn(
-                          "w-full space-y-1 rounded-lg bg-[--clr-chat] px-3 py-2 text-white",
-                          styles.lastMessage,
-                        )
-                      : "w-full space-y-1 rounded-lg bg-[--clr-chat] px-3 py-2 text-white"
-                  }
-                  data-sender={isSender}
+                  key={messageIdx}
+                  className="space-y-2 [&>*]:max-w-[85%] [&_*]:w-fit"
+                  style={{
+                    "--margin-start": isSender ? "auto" : "0",
+                    "--clr-chat": isSender
+                      ? "rgb(59 130 246)"
+                      : "rgb(64 64 64)",
+                  }}
                 >
-                  <p className="ml-[--margin-start]">{message?.message}</p>
-                  {isLastMessage && (
-                    <div className="ml-[--margin-start] block w-fit text-xs 2xl:text-sm">
-                      <span className="opacity-50">
-                        {new Date(message?.createdAt).toLocaleTimeString()}
-                      </span>
-                      {isSender && (
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          height="24px"
-                          viewBox="0 -960 960 960"
-                          width="24px"
-                          fill="currentColor"
-                          className={`ml-auto size-[1.6ch] ${!unreadChatIds?.sent[friend._id]?.find((chatId) => message._id === chatId) ? "text-blue-400" : ""}`}
-                        >
-                          <path d="M268-240 42-466l57-56 170 170 56 56-57 56Zm226 0L268-466l56-57 170 170 368-368 56 57-424 424Zm0-226-57-56 198-198 57 56-198 198Z" />
-                        </svg>
+                  <div
+                    className="ml-[--margin-start] flex w-fit max-w-[90%] items-end gap-2.5"
+                    style={{ flexDirection: isSender ? "row-reverse" : "row" }}
+                  >
+                    {isLastMessage ? (
+                      <Avatar
+                        user={isSender ? auth?.user : friend}
+                        size="xsmall"
+                        className="!size-9 flex-shrink-0 max-sm:hidden"
+                      />
+                    ) : (
+                      <div className="!size-9 max-sm:hidden"></div>
+                    )}
+                    <div
+                      className={
+                        isLastMessage
+                          ? cn(
+                              "w-full space-y-1 rounded-lg bg-[--clr-chat] px-3 py-2 text-white",
+                              styles.lastMessage,
+                            )
+                          : "w-full space-y-1 rounded-lg bg-[--clr-chat] px-3 py-2 text-white"
+                      }
+                      data-sender={isSender}
+                    >
+                      <p className="ml-[--margin-start]">{message?.message}</p>
+                      {isLastMessage && (
+                        <div className="ml-[--margin-start] block w-fit text-xs 2xl:text-sm">
+                          <time className="opacity-50">
+                            {formatTime(message?.createdAt)}
+                          </time>
+                        </div>
                       )}
                     </div>
-                  )}
+                  </div>
                 </div>
-              </div>
-            </div>
-          );
-        })
+              );
+            })}
+          </div>
+        ))
       ) : (
         <p>No conversation yet.</p>
       )}

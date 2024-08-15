@@ -40,7 +40,7 @@ export default function Profile() {
   const receivedRequest = didReceivedRequest(user?._id);
 
   return userLoading || friendsLoading ? (
-    <Skeleton isAuthUser={user?._id === auth?.user?._id} />
+    <Skeleton isSignedInUser={user?._id === auth?.user?._id} />
   ) : !userError && !friendsError ? (
     <div className="p-4 md:pr-0">
       <ProfileBanner

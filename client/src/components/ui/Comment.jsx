@@ -1,6 +1,7 @@
 import { useState } from "react";
-import useAuth from "@/hooks/useAuth";
 import { Link } from "react-router-dom";
+import useAuth from "@/hooks/useAuth";
+import formatDate from "@/utils/formatDate";
 
 export default function Comment({
   _id,
@@ -47,9 +48,7 @@ export default function Comment({
             {user.username}
           </Link>
           <span className="list-item list-disc pl-0 text-xs text-gray-400 dark:text-neutral-500">
-            <time className="relative -left-1">
-              {new Date(createdAt).toLocaleTimeString()}
-            </time>
+            <time className="relative -left-1">{formatDate(createdAt)}</time>
           </span>
         </div>
 

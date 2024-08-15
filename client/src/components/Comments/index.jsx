@@ -4,6 +4,9 @@ import toast from "react-hot-toast";
 import useAuth from "@/hooks/useAuth";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 import Avatar from "@/components/ui/Avatar";
+import formatDate from "@/utils/formatDate";
+import formatTime from "@/utils/formatTime";
+import isToday from "@/utils/isToday";
 
 const CommentInput = ({ handleAddComment, postId, parentId = null }) => {
   const axiosPrivate = useAxiosPrivate();
@@ -153,7 +156,9 @@ const CommentsItem = ({
             </Link>
             <span className="list-item list-disc pl-0 text-xs text-gray-400 dark:text-neutral-500">
               <time className="relative -left-1">
-                {new Date(createdAt).toLocaleTimeString()}
+                {isToday(createdAt)
+                  ? formatTime(createdAt)
+                  : formatDate(createdAt)}
               </time>
             </span>
           </div>
