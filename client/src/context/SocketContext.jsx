@@ -5,8 +5,7 @@ import useAuth from "@/hooks/useAuth";
 const SocketContext = createContext(null);
 
 const SOCKET_URI =
-  import.meta.env.VITE_API_BASE_URL ||
-  "https://quietsphere.onrender.com/api/v1";
+  import.meta.env.VITE_API_BASE_URL || "https://quietsphere.onrender.com";
 
 export const SocketProvider = ({ children }) => {
   const { auth } = useAuth();
