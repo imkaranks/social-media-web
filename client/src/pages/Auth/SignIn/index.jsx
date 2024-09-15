@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import useLogin from "@/hooks/useLogin";
 import useAuth from "@/hooks/useAuth";
+import Input from "@/components/ui/Input";
+import Button from "@/components/ui/Button";
 
 const INITIAL_DATA = {
   email: "",
@@ -46,40 +48,22 @@ export default function SignIn() {
           Sign in to your account
         </h1>
         <form className="space-y-4 md:space-y-6" onSubmit={handleSubmit}>
-          <div className="grid">
-            <label
-              htmlFor="email"
-              className="mb-2 block text-sm font-medium dark:text-white"
-            >
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={data.email}
-              onChange={handleInputChange}
-              className="block w-full rounded-lg border-2 border-gray-200 bg-transparent px-4 py-3 text-sm focus:border-blue-500 focus:ring-0 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:border-neutral-600 dark:focus:ring-neutral-600"
-              placeholder="you@site.com"
-            />
-          </div>
-          <div className="grid">
-            <label
-              htmlFor="password"
-              className="mb-2 block text-sm font-medium dark:text-white"
-            >
-              Password
-            </label>
-            <input
-              type="password"
-              name="password"
-              id="password"
-              value={data.password}
-              onChange={handleInputChange}
-              placeholder="••••••••"
-              className="block w-full rounded-lg border-2 border-gray-200 bg-transparent px-4 py-3 text-sm focus:border-blue-500 focus:ring-0 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:border-neutral-600 dark:focus:ring-neutral-600"
-            />
-          </div>
+          <Input
+            label="Email"
+            type="email"
+            name="email"
+            value={data.email}
+            onChange={handleInputChange}
+            placeholder="you@site.com"
+          />
+          <Input
+            label="Password"
+            type="password"
+            name="password"
+            value={data.password}
+            onChange={handleInputChange}
+            placeholder="••••••••"
+          />
           <div className="flex items-center justify-between">
             <div className="flex">
               <input
@@ -104,10 +88,12 @@ export default function SignIn() {
               Forgot password?
             </Link>
           </div>
-          <button
+
+          <Button
+            size="large"
             type="submit"
             disabled={isSubmitting}
-            className="inline-flex w-full items-center justify-center gap-x-2 rounded-lg border border-transparent bg-blue-600 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-700 disabled:pointer-events-none disabled:opacity-50"
+            className="w-full justify-center"
           >
             {isSubmitting ? (
               <div
@@ -120,7 +106,7 @@ export default function SignIn() {
             ) : (
               <span>Sign in</span>
             )}
-          </button>
+          </Button>
           <p className="text-sm font-light text-gray-500 dark:text-gray-400">
             Don’t have an account yet?{" "}
             <Link

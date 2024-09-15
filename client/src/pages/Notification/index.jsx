@@ -1,4 +1,15 @@
+import useNotifications from "@/hooks/useNotifications";
+import {
+  generateNotificationMessage,
+  generateNotificationAuthorAvatar,
+} from "@/utils/notificationUtils";
+import isToday from "@/utils/isToday";
+import formatDate from "@/utils/formatDate";
+import formatTime from "@/utils/formatTime";
+
 export default function Notification() {
+  const { notifications } = useNotifications();
+
   return (
     <div className="bg-gray-20 dark:bg-neutral-70 rounded-xl p-4 md:pr-0">
       <div className="flex items-center justify-between border-b-2 border-gray-100 p-4 dark:border-white/5 md:px-6">
@@ -25,48 +36,38 @@ export default function Notification() {
       </div>
 
       <div>
-        {new Array(10).fill(0).map((_, idx) => (
-          <div
-            key={idx}
-            className="flex items-start gap-4 border-b-2 border-gray-100 p-4 text-[var(--clr-notification)] dark:border-white/5 dark:text-[var(--clr-notification-dark)] md:px-6"
-            style={{
-              "--clr-notification":
-                idx % 2 === 0 ? "rgb(0 0 0)" : "rgb(0 0 0 / 0.6)",
-              "--clr-notification-dark":
-                idx % 2 === 0 ? "rgb(255 255 255)" : "rgb(255 255 255 / 0.6)",
-            }}
-          >
-            <img
-              className="inline-block size-8 rounded-full sm:size-9 md:size-10"
-              src={`https://i.pravatar.cc/150?img=${idx + 10}`}
-              alt="Someone"
-            />
-            <div className="flex-1">
-              <h3>
-                <strong>Lorem ipsum</strong> did something awesome
-              </h3>
-              <p className="text-sm text-gray-400 dark:text-neutral-500">
-                3 minutes ago
-              </p>
+        {notifications.map((notification, idx) => {
+          const [avatar, alt] = generateNotificationAuthorAvatar(notification);
+
+          return (
+            <div
+              key={idx}
+              className="flex items-start gap-4 border-b-2 border-gray-100 p-4 text-[var(--clr-notification)] dark:border-white/5 dark:text-[var(--clr-notification-dark)] md:px-6"
+              style={{
+                "--clr-notification":
+                  idx % 2 === 0 ? "rgb(0 0 0)" : "rgb(0 0 0 / 0.6)",
+                "--clr-notification-dark":
+                  idx % 2 === 0 ? "rgb(255 255 255)" : "rgb(255 255 255 / 0.6)",
+              }}
+            >
+              <img
+                className="inline-block size-8 rounded-full sm:size-9 md:size-10"
+                src={avatar}
+                alt={alt}
+              />
+              <div className="flex-1">
+                <h3>{generateNotificationMessage(notification)}</h3>
+                <p className="text-sm text-gray-400 dark:text-neutral-500">
+                  {notification?.createdAt
+                    ? isToday(notification.createdAt)
+                      ? formatTime(notification.createdAt)
+                      : formatDate(notification.createdAt)
+                    : "now"}
+                </p>
+              </div>
             </div>
-            {idx % 2 === 0 &&
-              (Math.round(Math.random()) ? (
-                <span className="mt-[0.75ch] inline-block size-2.5 rounded-full bg-orange-400"></span>
-              ) : Math.round(Math.random()) ? (
-                <button className="inline-flex items-center gap-x-2 rounded-lg border border-transparent bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:pointer-events-none disabled:opacity-50">
-                  Follow back
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  className="inline-flex items-center gap-x-2 rounded-lg border border-gray-200 px-3 py-2 text-sm font-semibold text-gray-500 hover:border-blue-600 hover:text-blue-600 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:text-neutral-400 dark:hover:border-blue-600 dark:hover:text-blue-500"
-                  disabled={true}
-                >
-                  Followed
-                </button>
-              ))}
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

@@ -1,9 +1,44 @@
+import User from "../models/user.model.js";
 import Like from "../models/like.model.js";
 import Post from "../models/post.model.js";
 import Comment from "../models/comment.model.js";
 import handleAsyncError from "../utils/handleAsyncError.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
+
+export const getLikes = handleAsyncError(async (req, res) => {
+  const { user, username, post } = req.query;
+  const query = {};
+
+  if (user?.trim() || username?.trim()) {
+    const existingUser = await User.findOne({
+      $or: [{ _id: user }, { username }],
+    });
+
+    if (!existingUser) {
+      throw new ApiError(404, "No user found with provided field");
+    }
+
+    query.user = existingUser._id;
+  }
+  if (post?.trim()) {
+    query.post = post;
+  }
+
+  const likes = await Like.find(query)
+    .populate({
+      path: "user",
+      select: "username fullname avatar",
+    })
+    .populate({ path: "post", select: "title content author" })
+    .populate({ path: "comment", select: "content user" });
+
+  // const usersWhoLiked = likes.map((like) => like.user);
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, likes || [], "Successfully get likes"));
+});
 
 export const toggleLike = handleAsyncError(async (req, res) => {
   const { type, id } = req.body;

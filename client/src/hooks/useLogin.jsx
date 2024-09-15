@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import useAuth from "./useAuth";
+import useAuth from "@/hooks/useAuth";
 import axios from "@/app/axios";
 
 export default function useLogin() {
@@ -10,7 +10,9 @@ export default function useLogin() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const from = location?.state?.from?.pathname || "/";
+  const from =
+    (location?.state?.from?.pathname || "/") +
+    (location?.state?.from?.search ? `${location.state.from.search}` : "");
 
   const login = useCallback(
     async (data) => {

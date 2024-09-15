@@ -11,24 +11,25 @@ import FriendRequestControls from "@/components/UserProfile/FriendRequestControl
 import Skeleton from "@/components/UserProfile/Skeleton";
 
 export default function Profile() {
-  const { username } = useParams();
+  const { userId } = useParams();
   const { auth } = useAuth();
   const {
     user,
     isLoading: userLoading,
     error: userError,
-  } = useUserInformation({ username });
+  } = useUserInformation({ id: userId });
   const {
     mutualFriends,
     isLoading: friendsLoading,
     error: friendsError,
   } = useUserFriends({
-    username,
+    id: userId,
   });
   const {
     isSubmitting,
     acceptRequest,
     rejectRequest,
+    removeFriend,
     isExistingFriend,
     didSentRequest,
     didReceivedRequest,
@@ -36,17 +37,18 @@ export default function Profile() {
     sendingFriendRequest,
   } = useFriendshipHandler();
 
+  const isSignedInUser = user?._id === auth?.user?._id;
   const alreadyFriend = isExistingFriend(user?._id);
   const receivedRequest = didReceivedRequest(user?._id);
 
   return userLoading || friendsLoading ? (
-    <Skeleton isAuthUser={user?._id === auth?.user?._id} />
+    <Skeleton isSignedInUser={isSignedInUser} />
   ) : !userError && !friendsError ? (
     <div className="p-4 md:pr-0">
       <ProfileBanner
-        avatar={user?.avatar}
+        avatar={user?.avatar?.url}
         name={user?.fullname}
-        banner="https://images.unsplash.com/photo-1636955840493-f43a02bfa064?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+        banner={user?.banner?.url}
       />
 
       <div className="mt-14 px-4">
@@ -60,17 +62,18 @@ export default function Profile() {
             isSubmitting={isSubmitting}
             acceptRequest={acceptRequest}
             rejectRequest={rejectRequest}
+            removeFriend={removeFriend}
             didSentRequest={didSentRequest}
             sendingFriendRequest={sendingFriendRequest}
             sendFriendRequest={sendFriendRequest}
           />
         )}
 
-        {mutualFriends.length > 0 && (
+        {!isSignedInUser && mutualFriends.length > 0 && (
           <MutualFriends mutualFriends={mutualFriends} />
         )}
 
-        <Tabs />
+        <Tabs username={user?.username} />
       </div>
     </div>
   ) : (

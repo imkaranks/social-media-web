@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuth from "@/hooks/useAuth";
+import useSocket from "@/hooks/useSocket";
 import useMessages from "@/hooks/useMessages";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 import Avatar from "@/components/ui/Avatar";
@@ -8,11 +9,14 @@ import useStore from "@/app/store";
 
 export default function MessageInput() {
   const { auth } = useAuth();
+  const { socket } = useSocket();
   const { currentChatUserId } = useMessages();
   const addFriendChat = useStore((state) => state.addFriendChat);
   const axiosPrivate = useAxiosPrivate();
   const navigate = useNavigate();
   const [message, setMessage] = useState("");
+  const isTypingRef = useRef(false);
+  const timeoutRef = useRef(null);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -39,6 +43,41 @@ export default function MessageInput() {
     }
   };
 
+  const handleOnChange = (e) => {
+    setMessage(e.target.value);
+  };
+
+  const handleOnInput = () => {
+    clearTimeout(timeoutRef.current);
+
+    if (
+      message.length > 0 &&
+      currentChatUserId !== null &&
+      auth?.user?._id &&
+      isTypingRef.current === false
+    ) {
+      isTypingRef.current = true;
+      socket.emit("user-start-typing", {
+        sender: auth.user._id,
+        receiver: currentChatUserId,
+      });
+    }
+
+    timeoutRef.current = setTimeout(() => {
+      if (
+        currentChatUserId !== null &&
+        auth?.user?._id &&
+        isTypingRef.current === true
+      ) {
+        isTypingRef.current = false;
+        socket.emit("user-stop-typing", {
+          sender: auth.user._id,
+          receiver: currentChatUserId,
+        });
+      }
+    }, 500);
+  };
+
   return (
     <form
       className="absolute bottom-4 left-4 flex w-[calc(100%-2rem)] items-center justify-between rounded-xl bg-gray-200 p-2 dark:bg-neutral-700 md:px-4"
@@ -50,7 +89,8 @@ export default function MessageInput() {
         placeholder="Say Hi 👋"
         className="flex w-full justify-self-start bg-transparent pl-2 outline-none sm:pl-4"
         value={message}
-        onChange={(e) => setMessage(e.target.value)}
+        onChange={handleOnChange}
+        onInput={handleOnInput}
       />
       <button className="inline-flex items-center gap-x-2 rounded-lg border border-transparent bg-blue-600 p-2 text-center text-sm font-semibold text-white hover:bg-blue-700 disabled:pointer-events-none disabled:opacity-50">
         <svg

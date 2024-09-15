@@ -1,6 +1,9 @@
 import { useState } from "react";
-import useAuth from "@/hooks/useAuth";
 import { Link } from "react-router-dom";
+import useAuth from "@/hooks/useAuth";
+import formatTime from "@/utils/formatTime";
+import formatDate from "@/utils/formatDate";
+import isToday from "@/utils/isToday";
 
 export default function Comment({
   _id,
@@ -28,7 +31,7 @@ export default function Comment({
 
   return (
     <>
-      <Link to={`/user/${user?.username}`}>
+      <Link to={`/user/${user?._id}`}>
         {user?.avatar?.url ? (
           <img
             className="inline-block size-8 rounded-full object-cover ring-2 ring-gray-100 dark:ring-neutral-700/20"
@@ -43,12 +46,14 @@ export default function Comment({
       </Link>
       <div className="flex-1">
         <div className="flex items-center gap-6">
-          <Link to={`/user/${user?.username}`} className="font-semibold">
+          <Link to={`/user/${user?._id}`} className="font-semibold">
             {user.username}
           </Link>
           <span className="list-item list-disc pl-0 text-xs text-gray-400 dark:text-neutral-500">
             <time className="relative -left-1">
-              {new Date(createdAt).toLocaleTimeString()}
+              {isToday(createdAt)
+                ? formatTime(createdAt)
+                : formatDate(createdAt)}
             </time>
           </span>
         </div>

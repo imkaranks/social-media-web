@@ -1,6 +1,6 @@
 import { useEffect } from "react";
-import useSocket from "./useSocket";
-import useMessages from "./useMessages";
+import useSocket from "@/hooks/useSocket";
+import useMessages from "@/hooks/useMessages";
 
 const notifySound = new Audio(
   "https://cdn.pixabay.com/audio/2022/03/15/audio_17cba0354b.mp3",

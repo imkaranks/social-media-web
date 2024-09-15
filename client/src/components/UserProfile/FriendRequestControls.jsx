@@ -15,6 +15,7 @@ export default memo(function FriendRequestControls({
   isSubmitting,
   acceptRequest,
   rejectRequest,
+  removeFriend,
   didSentRequest,
   sendingFriendRequest,
   sendFriendRequest,
@@ -24,7 +25,11 @@ export default memo(function FriendRequestControls({
   return (
     <div className="mt-2 flex flex-wrap items-center gap-2 2xl:gap-4">
       {alreadyFriend && (
-        <button className="inline-flex items-center rounded-lg border border-transparent bg-gray-100 px-3 py-2 text-sm font-semibold text-gray-500 hover:bg-gray-200 dark:bg-white/10 dark:text-neutral-400 dark:hover:bg-white/20 dark:hover:text-neutral-300">
+        <button
+          disabled={isSubmitting}
+          className="inline-flex items-center rounded-lg border border-transparent bg-gray-100 px-3 py-2 text-sm font-semibold text-gray-500 hover:bg-gray-200 dark:bg-white/10 dark:text-neutral-400 dark:hover:bg-white/20 dark:hover:text-neutral-300"
+          onClick={() => removeFriend(userId)}
+        >
           Remove friend
         </button>
       )}

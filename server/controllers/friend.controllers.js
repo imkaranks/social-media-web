@@ -1,15 +1,19 @@
+import mongoose from "mongoose";
 import User from "../models/user.model.js";
 import Friend from "../models/friend.model.js";
 import Conversation from "../models/conversation.model.js";
+import Message from "../models/message.model.js";
+import Notification from "../models/notification.model.js";
 import handleAsyncError from "../utils/handleAsyncError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";
+import emitNotificationEvent from "../utils/emitNotificationEvent.js";
 
 export const sendFriendRequest = handleAsyncError(async (req, res) => {
   const { senderId, recipientId } = req.body;
 
   if (!senderId.trim() || !recipientId.trim()) {
-    throw new ApiError(404, "Both senderId and recipientId must be provided");
+    throw new ApiError(400, "Both senderId and recipientId must be provided");
   }
 
   if (req?.user?.id === recipientId) {
@@ -41,12 +45,34 @@ export const sendFriendRequest = handleAsyncError(async (req, res) => {
     throw new ApiError(400, "Friend request already pending");
   }
 
-  const newFriend = await Friend.create({
+  const newFriendship = await Friend.create({
     user1: senderId,
     user2: recipientId,
   });
 
-  res.status(200).json(new ApiResponse(200, newFriend, "Friend request sent"));
+  const notification = await Notification.create({
+    user: recipientId,
+    type: "FRIEND_REQUEST_SENT",
+    relatedFriend: newFriendship._id,
+  });
+
+  const notificationPayload = await Notification.findById(
+    notification._id
+  ).populate({
+    path: "relatedFriend",
+    model: "Friend",
+    select: "user1",
+    populate: {
+      path: "user1",
+      select: "username fullname avatar",
+    },
+  });
+
+  emitNotificationEvent(recipientId, notificationPayload);
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, newFriendship, "Friend request sent"));
 });
 
 export const acceptFriendRequest = handleAsyncError(async (req, res) => {
@@ -75,6 +101,26 @@ export const acceptFriendRequest = handleAsyncError(async (req, res) => {
 
   friendRequest.status = "accepted";
   await friendRequest.save();
+
+  const notification = await Notification.create({
+    user: friendRequest.user1,
+    type: "FRIEND_REQUEST_ACCEPTED",
+    relatedFriend: friendRequest._id,
+  });
+
+  const notificationPayload = await Notification.findById(
+    notification._id
+  ).populate({
+    path: "relatedFriend",
+    model: "Friend",
+    select: "user2",
+    populate: {
+      path: "user2",
+      select: "username fullname avatar",
+    },
+  });
+
+  emitNotificationEvent(friendRequest.user1, notificationPayload);
 
   res
     .status(200)
@@ -113,11 +159,50 @@ export const rejectFriendRequest = handleAsyncError(async (req, res) => {
     .json(new ApiResponse(200, friendRequest, "Friend request rejected"));
 });
 
+export const removeExistingFriend = handleAsyncError(async (req, res) => {
+  const { friendId } = req.params;
+  const userId = req.user._id;
+
+  if (!friendId.trim() || friendId === String(userId)) {
+    throw new ApiError(400, "friendId must be provided");
+  }
+
+  const friendship = await Friend.findOneAndDelete(
+    {
+      $or: [
+        { user1: userId, user2: friendId },
+        { user1: friendId, user2: userId },
+      ],
+      status: "accepted",
+    },
+    { new: true }
+  );
+
+  // Remove associated notifications
+  await Notification.deleteMany({ relatedFriend: friendship._id });
+
+  // Remove associated messages
+  const userIds = [friendship.user1, friendship.user2].map(
+    (id) => new mongoose.Types.ObjectId(id)
+  );
+  const conversation = await Conversation.findOne({
+    participants: { $in: userIds },
+  });
+  if (conversation) {
+    await Promise.all([
+      Message.deleteMany({ _id: { $in: conversation.messages } }),
+      Conversation.findByIdAndDelete(conversation._id),
+    ]);
+  }
+
+  res.status(200).json(new ApiResponse(200, {}, "Successfully removed friend"));
+});
+
 export const getFriends = handleAsyncError(async (req, res) => {
   const { userId } = req.params;
 
   if (!userId.trim()) {
-    throw new ApiError(404, "userId must be provided");
+    throw new ApiError(400, "userId must be provided");
   }
 
   const friendships = await Friend.find({
@@ -215,3 +300,80 @@ async function getAcceptedFriends(userId) {
     return friendId;
   });
 }
+
+export const getMutualFriends = handleAsyncError(async (req, res) => {
+  const { user1, user2 } = req.params;
+
+  const user1Friendships = await Friend.find({
+    $or: [
+      { user1, status: "accepted" },
+      { user2: user1, status: "accepted" },
+    ],
+  });
+
+  const user2Friendships = await Friend.find({
+    $or: [
+      { user1: user2, status: "accepted" },
+      { user2, status: "accepted" },
+    ],
+  });
+
+  const user1Friends = user1Friendships
+    .map((friendship) =>
+      friendship.user1 === user1 ? friendship.user2 : friendship.user1
+    )
+    .filter((friend) => String(friend) !== user1);
+
+  const user2Friends = user2Friendships
+    .map((friendship) =>
+      friendship.user1 === user2 ? friendship.user2 : friendship.user1
+    )
+    .filter((friend) => String(friend) !== user2);
+
+  const mutualFriends = user1Friends.filter((user1Friend) =>
+    user2Friends.some(
+      (user2Friend) => String(user1Friend) === String(user2Friend)
+    )
+  );
+
+  const users = await Promise.all(
+    mutualFriends.map(
+      async (id) => await User.findById(id).select("-password -refreshToken")
+    )
+  );
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, users || [], "Mutual friends found"));
+});
+
+export const getFriendRecommendations = handleAsyncError(async (req, res) => {
+  const { user } = req.params;
+  const { limit = 5 } = req.query;
+
+  const friends = await Friend.find({
+    $or: [
+      { user1: user, status: "accepted" },
+      { user2: user, status: "accepted" },
+    ],
+  });
+
+  const friendIds = friends.map((friend) =>
+    friend.user1.toString() === user
+      ? friend.user2.toString()
+      : friend.user1.toString()
+  );
+
+  const suggestedUsers = await User.find({
+    _id: { $nin: [...friendIds, user] },
+    isVerified: true,
+  })
+    .select("-password -refreshToken")
+    .limit(limit);
+
+  res
+    .status(200)
+    .json(
+      new ApiResponse(200, suggestedUsers || [], "Friend suggestions found")
+    );
+});

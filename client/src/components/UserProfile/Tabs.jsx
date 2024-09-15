@@ -1,4 +1,5 @@
 import Posts from "./Posts";
+import PostSkeleton from "@/components/ui/PostSkeleton";
 import Comments from "./Comments";
 import Media from "./Media";
 import Likes from "./Likes";
@@ -23,7 +24,35 @@ const tabs = [
   },
 ];
 
-export default function Tabs() {
+export const TabsSkeleton = () => {
+  return (
+    <>
+      <div className="mt-4 border-b border-gray-200 dark:border-neutral-700">
+        <div className="-mb-0.5 flex justify-around">
+          {tabs.map((tab, idx) => (
+            <div
+              key={idx}
+              className={`${idx === 0 ? "border-blue-600 " : "border-transparent "}border-b-2 px-1 py-4 text-xs sm:text-sm`}
+            >
+              <span
+                className="inline-block h-3 w-[--char-len] animate-pulse rounded-md bg-black/5 dark:bg-white/30 sm:h-4"
+                style={{ "--char-len": `${tab.title.length}ch` }}
+              ></span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="mx-auto mt-8 space-y-4 lg:w-[90%]">
+        {new Array(3).fill(0).map((_, idx) => (
+          <PostSkeleton key={idx} />
+        ))}
+      </div>
+    </>
+  );
+};
+
+export default function Tabs({ username }) {
   const [currentTab, setCurrentTab] = useState(0);
 
   const showActiveTabpanel = (idx) => {
@@ -65,7 +94,7 @@ export default function Tabs() {
             role="tabpanel"
             aria-labelledby={`profile-tab-item-${idx + 1}`}
           >
-            <Component />
+            <Component username={username} />
           </div>
         ))}
       </div>

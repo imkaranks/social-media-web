@@ -8,6 +8,7 @@ import {
   updateUser,
   changeAvatar,
   updateUserLastSeen,
+  changePassword,
 } from "../controllers/user.controllers.js";
 import upload from "../middlewares/multer.middleware.js";
 import { isAuthenticated } from "../middlewares/auth.middleware.js";
@@ -22,14 +23,23 @@ router
 
 router.route("/profile").get(isAuthenticated, getUser);
 
+router.route("/search").get(isAuthenticated, searchUsers);
+
+router.route("/change-password").patch(isAuthenticated, changePassword);
+
 router
   .route("/:userId")
   .get(isAuthenticated, getUserById)
-  .patch(isAuthenticated, updateUser);
+  .patch(
+    isAuthenticated,
+    upload.fields([
+      { name: "avatar", maxCount: 1 },
+      { name: "banner", maxCount: 1 },
+    ]),
+    updateUser
+  );
 
 router.route("/u/:username").get(isAuthenticated, getUserByUsername);
-
-router.route("/search").get(isAuthenticated, searchUsers);
 
 router.route("/update-last-seen").post(isAuthenticated, updateUserLastSeen);
 

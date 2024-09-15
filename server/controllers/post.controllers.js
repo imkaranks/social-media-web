@@ -3,11 +3,14 @@ import { v2 as cloudinary } from "cloudinary";
 import Post from "../models/post.model.js";
 import Comment from "../models/comment.model.js";
 import Like from "../models/like.model.js";
+import User from "../models/user.model.js";
+import Friend from "../models/friend.model.js";
+import Notification from "../models/notification.model.js";
 import handleAsyncError from "../utils/handleAsyncError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";
 import upload from "../utils/cloudinary.js";
-import User from "../models/user.model.js";
+import emitNotificationEvent from "../utils/emitNotificationEvent.js";
 
 export const createPost = handleAsyncError(async (req, res) => {
   const { title, content } = req.body;
@@ -39,6 +42,8 @@ export const createPost = handleAsyncError(async (req, res) => {
   post.images = images;
   await post.save();
 
+  await notifyFriendsAboutPost(post.author, post._id);
+
   const createdPost = await Post.findById(post._id).populate({
     path: "author",
     model: "User",
@@ -49,6 +54,44 @@ export const createPost = handleAsyncError(async (req, res) => {
     .status(201)
     .json(new ApiResponse(201, createdPost, "Post added successfully"));
 });
+
+async function notifyFriendsAboutPost(author, postId) {
+  try {
+    const friendships = await Friend.find({
+      $or: [{ user1: author }, { user2: author }],
+      status: "accepted",
+    });
+
+    const friendIds = friendships.map((friendship) =>
+      String(friendship.user1) === String(author)
+        ? String(friendship.user2)
+        : String(friendship.user1)
+    );
+
+    // const friends = await User.find({ _id: { $in: friendIds } }).select(
+    //   "-password -refreshToken"
+    // );
+
+    // TODO: move notification service logic away and make it a independent service
+    const notificationDocs = friendIds.map((friendId) => ({
+      user: friendId,
+      type: "POST",
+      relatedPost: postId,
+    }));
+
+    const notifications = await Notification.insertMany(notificationDocs);
+
+    notifications.map((notification) =>
+      emitNotificationEvent(notification.user, notification)
+    );
+  } catch (error) {
+    const errMessage =
+      error instanceof Error
+        ? error.message
+        : "Failed to notify friends about post";
+    throw new ApiError(400, errMessage);
+  }
+}
 
 export const getPosts = handleAsyncError(async (req, res) => {
   const { username, author, withEngagement } = req.query;
@@ -252,13 +295,42 @@ export const deletePost = handleAsyncError(async (req, res) => {
     await cloudinary.api.delete_resources(imagesPublicIds);
   }
 
-  // Delete associated comments and likes
+  // Delete associated comments, notifications and likes
   await Promise.all([
     Comment.deleteMany({ post: postId }),
     Like.deleteMany({ post: postId }),
+    Notification.deleteMany({
+      relatedPost: postId,
+    }),
   ]);
 
   await Post.findByIdAndDelete(postId);
 
   res.status(200).json(new ApiResponse(200, post, "Post removed successfully"));
+});
+
+export const searchPosts = handleAsyncError(async (req, res) => {
+  const { keyword } = req.query;
+
+  const posts = await Post.find({
+    title: { $regex: keyword, $options: "i" },
+  }).populate({
+    path: "author",
+    model: "User",
+    select: "_id username fullname avatar",
+  });
+
+  const postsWithEngagement = posts.map((post) => {
+    const likeCount = post.likes.length;
+    const commentCount = post.comments.length;
+    const userLikedPost = post.likes.some(
+      (like) => like?._id?.toString() === req.user._id?.toString()
+    );
+
+    return { ...post._doc, likeCount, commentCount, userLikedPost };
+  });
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, postsWithEngagement || [], "Success"));
 });

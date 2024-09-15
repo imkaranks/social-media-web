@@ -6,9 +6,9 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        primary: "bg-blue-600 text-white hover:bg-blue-700",
+        primary: "transition-colors bg-blue-600 text-white hover:bg-blue-700",
         outlined:
-          "border-gray-500 text-gray-500 hover:border-gray-800 hover:text-gray-800 dark:border-neutral-400 dark:text-neutral-400 dark:hover:text-neutral-300 dark:hover:border-neutral-300",
+          "border-gray-500 text-gray-500 hover:border-gray-800 hover:text-gray-800 dark:border-neutral-400 dark:text-neutral-400 dark:hover:border-neutral-300 dark:hover:text-neutral-300",
         secondary:
           "bg-gray-100 text-gray-800 hover:bg-gray-200 dark:bg-white/10 dark:text-white dark:hover:bg-white/20 dark:hover:text-white",
         ghost:

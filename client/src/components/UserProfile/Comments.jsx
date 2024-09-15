@@ -1,4 +1,3 @@
-import { useParams } from "react-router-dom";
 import useComments from "@/hooks/useComments";
 import Comment from "@/components/ui/Comment";
 
@@ -21,8 +20,7 @@ function CommentSkeleton() {
   );
 }
 
-export default function Comments() {
-  const { username } = useParams();
+export default function Comments({ username }) {
   const { comments, isLoading, error } = useComments({ username });
 
   return (

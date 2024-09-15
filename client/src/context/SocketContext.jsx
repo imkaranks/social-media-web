@@ -4,6 +4,10 @@ import useAuth from "@/hooks/useAuth";
 
 const SocketContext = createContext(null);
 
+const SOCKET_URI =
+  import.meta.env.VITE_API_BASE_URL ||
+  "https://quietsphere.onrender.com/api/v1";
+
 export const SocketProvider = ({ children }) => {
   const { auth } = useAuth();
 
@@ -12,8 +16,7 @@ export const SocketProvider = ({ children }) => {
 
   useEffect(() => {
     if (auth) {
-      // const socket = io(import.meta.env.VITE_API_BASE_URL, { // development
-      const socket = io("https://quietsphere.onrender.com", {
+      const socket = io(SOCKET_URI, {
         query: {
           userId: auth?.user?._id,
         },

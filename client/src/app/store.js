@@ -8,6 +8,10 @@ const useStore = create((set) => ({
   unreadFriendChats: {},
   friends: [],
   pendingFriendRequests: [],
+  search: {
+    users: [],
+    posts: [],
+  },
   setPosts: (newPosts) => set(() => ({ posts: newPosts })),
   addPost: (newPost) => set((state) => ({ posts: [newPost, ...state.posts] })),
   addMorePosts: (newPosts) =>
@@ -19,6 +23,12 @@ const useStore = create((set) => ({
   setFriends: (newFriends) => set(() => ({ friends: newFriends })),
   addFriend: (newFriend) =>
     set((state) => ({ friends: [...state.friends, newFriend] })),
+  removeExistingFriend: (friendshipId) =>
+    set((state) => ({
+      friends: state.friends.filter(
+        (friendship) => friendship._id !== friendshipId,
+      ),
+    })),
   setPendingFriendRequests: (newPendingFriendRequests) =>
     set(() => ({ pendingFriendRequests: newPendingFriendRequests })),
   acceptPendingFriendRequest: (pendingFriendRequestId) =>
@@ -45,7 +55,6 @@ const useStore = create((set) => ({
   setChats: (payload) => set(() => ({ chats: payload })),
   setFriendChat: (payload) =>
     set((state) => {
-      // console.log(payload);
       return {
         chats: {
           ...state.chats,
@@ -55,7 +64,6 @@ const useStore = create((set) => ({
     }),
   addFriendChat: (payload) =>
     set((state) => {
-      // console.log(state.chats);
       return {
         chats: {
           ...state.chats,
@@ -78,6 +86,10 @@ const useStore = create((set) => ({
     set((state) => ({
       unreadFriendChats: { ...state.unreadFriendChats, [username]: 0 },
     })),
+  setSearchUsers: (users) =>
+    set((state) => ({ search: { ...state.search, users } })),
+  setSearchPosts: (posts) =>
+    set((state) => ({ search: { ...state.search, posts } })),
 }));
 
 export default useStore;

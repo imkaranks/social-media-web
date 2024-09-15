@@ -4,10 +4,13 @@ import Comment from "../models/comment.model.js";
 import handleAsyncError from "../utils/handleAsyncError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";
+import Notification from "../models/notification.model.js";
+import emitNotificationEvent from "../utils/emitNotificationEvent.js";
 
 export const createComment = handleAsyncError(async (req, res) => {
   const { postId } = req.params;
   const { content, parentId } = req.body;
+  const user = req.user._id;
 
   if ([postId, content].some((field) => field?.trim() === "")) {
     throw new ApiError(400, "postId and content must be provided");
@@ -16,7 +19,7 @@ export const createComment = handleAsyncError(async (req, res) => {
   const post = await Post.findById(postId);
 
   const comment = await Comment.create({
-    user: req.user._id,
+    user,
     post: post._id,
     content,
   });
@@ -32,6 +35,32 @@ export const createComment = handleAsyncError(async (req, res) => {
     await comment.save();
     parentComment.children.unshift(comment._id);
     await parentComment.save();
+
+    if (
+      // String(post.author) !== String(user) &&
+      String(parentComment.user) !== String(user)
+    ) {
+      const notification = await Notification.create({
+        user: parentComment.user,
+        type: "REPLY",
+        relatedComment: comment._id,
+        relatedPost: post._id,
+      });
+
+      const notificationPayload = await Notification.findById(
+        notification._id
+      ).populate({
+        path: "relatedComment",
+        model: "Comment",
+        select: "user",
+        populate: {
+          path: "user",
+          select: "username fullname avatar",
+        },
+      });
+
+      emitNotificationEvent(parentComment.user, notificationPayload);
+    }
   } else {
     if (!post) {
       throw new ApiError(404, "No post found with provided id");
@@ -39,6 +68,29 @@ export const createComment = handleAsyncError(async (req, res) => {
 
     post.comments.unshift(comment);
     await post.save();
+
+    if (post.author.toString() !== user.toString()) {
+      const notification = await Notification.create({
+        user: post.author,
+        type: "COMMENT",
+        relatedComment: comment._id,
+        relatedPost: post._id,
+      });
+
+      const notificationPayload = await Notification.findById(
+        notification._id
+      ).populate({
+        path: "relatedComment",
+        model: "Comment",
+        select: "user",
+        populate: {
+          path: "user",
+          select: "username fullname avatar",
+        },
+      });
+
+      emitNotificationEvent(post.author, notificationPayload);
+    }
   }
 
   const createdComment = await Comment.findById(comment._id).populate({
@@ -175,7 +227,6 @@ export const getCommentsByUser = handleAsyncError(async (req, res) => {
 });
 
 export const deleteComment = handleAsyncError(async (req, res) => {
-  // not complete
   const { commentId } = req.params;
 
   if (commentId?.trim() === "") {
@@ -188,11 +239,11 @@ export const deleteComment = handleAsyncError(async (req, res) => {
     throw new ApiError(404, "No comment found with provided id");
   }
 
-  if (String(comment.user) !== String(req.user._id)) {
-    throw new ApiError(
-      403,
-      "You are not authorized to modify this post. Only the author can make changes."
-    );
+  if (
+    String(comment.user) !== String(req.user._id)
+    // && !req.user.isAdmin // TODO: implement Admin role
+  ) {
+    throw new ApiError(403, "You are not authorized to delete this comment");
   }
 
   if (comment.parent) {
@@ -214,17 +265,56 @@ export const deleteComment = handleAsyncError(async (req, res) => {
   }
 
   if (comment.children && comment.children.length > 0) {
-    // Delete child comments in parallel
-    await Promise.all(
-      comment.children.map(async (childId) => {
-        await Comment.findByIdAndDelete(childId);
-      })
-    );
+    await Post.findByIdAndUpdate(comment.post, {
+      $pull: {
+        comments: comment.children.map((comment) => comment._id),
+      },
+    });
+
+    await deleteNestedComments(commentId, req?.user?._id);
   }
 
-  await Comment.findByIdAndDelete(commentId);
+  // await Comment.findByIdAndDelete(commentId);
+
+  // await Notification.deleteMany({
+  //   relatedComment: commentId,
+  // });
+
+  await Promise.all([
+    Comment.findByIdAndDelete(commentId),
+    Notification.deleteMany({
+      relatedComment: commentId,
+    }),
+  ]);
 
   res
     .status(200)
     .json(new ApiResponse(200, comment, "Comment removed successfully"));
 });
+
+async function deleteNestedComments(commentId, userId) {
+  try {
+    const comment = await Comment.findById(commentId);
+
+    if (!comment) {
+      throw new Error("Comment not found");
+    }
+
+    await Notification.deleteMany({
+      // user: userId,
+      relatedComment: commentId,
+    });
+
+    if (comment.children && comment.children.length > 0) {
+      await Promise.all(
+        comment.children.map(async (childId) => {
+          await deleteNestedComments(childId, userId);
+        })
+      );
+    }
+
+    await Comment.findByIdAndDelete(commentId);
+  } catch (error) {
+    console.log(error instanceof Error ? error.message : error);
+  }
+}

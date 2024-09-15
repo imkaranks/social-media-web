@@ -8,7 +8,9 @@ const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const from = location?.state?.from?.pathname || "/";
+  const from =
+    (location?.state?.from?.pathname || "/") +
+    (location?.state?.from?.search ? `${location.state.from.search}` : "");
   const [auth, setAuth] = useState(null);
   const [remember, setRemember] = useState(
     JSON.parse(localStorage.getItem("remember")) || false,

@@ -3,8 +3,10 @@ import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import useSignup from "@/hooks/useSignup";
 import useMultistepForm from "@/hooks/useMultistepForm";
+import useImageInput from "@/hooks/useImageInput";
 import FirstStep from "@/components/SignUp/FirstStep";
 import SecondStep from "@/components/SignUp/SecondStep";
+import Button from "@/components/ui/Button";
 import styles from "./index.module.css";
 
 const initialState = {
@@ -17,7 +19,8 @@ const initialState = {
 
 export default function SignUp() {
   const [data, setData] = useState(initialState);
-  const [avatarPreview, setAvatarPreview] = useState(null);
+  const { imagePreview: avatarPreview, handleChange: handleAvatarChange } =
+    useImageInput();
   const [success, setSuccess] = useState(false);
 
   const updateFormData = useCallback((newData) => {
@@ -42,7 +45,7 @@ export default function SignUp() {
       key={2}
       {...data}
       avatarPreview={avatarPreview}
-      setAvatarPreview={setAvatarPreview}
+      handleAvatarChange={handleAvatarChange}
       updateFormData={updateFormData}
     />,
   ]);
@@ -159,8 +162,8 @@ export default function SignUp() {
 
           <div className="!mt-auto flex items-center gap-4">
             {!isFirstStep && (
-              <button
-                className="inline-flex size-12 items-center justify-center rounded-full border border-transparent bg-gray-100 font-semibold text-gray-800 hover:bg-gray-200 disabled:pointer-events-none disabled:opacity-50 dark:bg-white/10 dark:text-white dark:hover:bg-white/20 dark:hover:text-white"
+              <Button
+                className="size-12 justify-center rounded-full"
                 type="button"
                 onClick={prevStep}
                 disabled={isFirstStep || isSubmitting}
@@ -175,11 +178,11 @@ export default function SignUp() {
                 >
                   <path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z" />
                 </svg>
-              </button>
+              </Button>
             )}
-            <button
+            <Button
               disabled={isSubmitting}
-              className="ml-auto inline-flex aspect-square size-12 items-center justify-center rounded-full border border-transparent bg-blue-600 text-sm font-semibold text-white hover:bg-blue-700 disabled:pointer-events-none disabled:opacity-50"
+              className="ml-auto size-12 justify-center rounded-full"
             >
               {isSubmitting ? (
                 <div
@@ -205,7 +208,7 @@ export default function SignUp() {
                   </svg>
                 </>
               )}
-            </button>
+            </Button>
           </div>
         </form>
 

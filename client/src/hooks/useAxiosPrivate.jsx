@@ -1,6 +1,6 @@
 import { useLayoutEffect } from "react";
-import useAuth from "./useAuth";
-import useRefreshToken from "./useRefreshToken";
+import useAuth from "@/hooks/useAuth";
+import useRefreshToken from "@/hooks/useRefreshToken";
 import { axiosPrivate } from "@/app/axios";
 
 export default function useAxiosPrivate() {

@@ -21,8 +21,14 @@ export const sendMail = async (options) => {
     to: options.email,
     subject: options.subject,
     text: options.text,
-    html: options.html,
+    // html: options.html,
   };
+
+  if (options?.html) {
+    mailOptions.html = options.html;
+  } else if (options?.template) {
+    mailOptions.template = options.template;
+  }
 
   try {
     await transporter.sendMail(mailOptions);
