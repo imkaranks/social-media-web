@@ -23,3 +23,25 @@
     -webkit-text-stroke: 1px currentColor;
   }
 }
+
+.postEngagement__count {
+  overflow: hidden;
+  display: grid;
+  height: 1.5em;
+}
+
+.postEngagement__count > span {
+  display: block;
+  height: 100%;
+  transform: translateY(0%);
+  animation: slide-up 0.3s forwards;
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(0%);
+  }
+  to {
+    transform: translateY(-100%);
+  }
+}

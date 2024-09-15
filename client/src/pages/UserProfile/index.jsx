@@ -29,6 +29,7 @@ export default function Profile() {
     isSubmitting,
     acceptRequest,
     rejectRequest,
+    removeFriend,
     isExistingFriend,
     didSentRequest,
     didReceivedRequest,
@@ -36,11 +37,12 @@ export default function Profile() {
     sendingFriendRequest,
   } = useFriendshipHandler();
 
+  const isSignedInUser = user?._id === auth?.user?._id;
   const alreadyFriend = isExistingFriend(user?._id);
   const receivedRequest = didReceivedRequest(user?._id);
 
   return userLoading || friendsLoading ? (
-    <Skeleton isSignedInUser={user?._id === auth?.user?._id} />
+    <Skeleton isSignedInUser={isSignedInUser} />
   ) : !userError && !friendsError ? (
     <div className="p-4 md:pr-0">
       <ProfileBanner
@@ -60,13 +62,14 @@ export default function Profile() {
             isSubmitting={isSubmitting}
             acceptRequest={acceptRequest}
             rejectRequest={rejectRequest}
+            removeFriend={removeFriend}
             didSentRequest={didSentRequest}
             sendingFriendRequest={sendingFriendRequest}
             sendFriendRequest={sendFriendRequest}
           />
         )}
 
-        {mutualFriends.length > 0 && (
+        {!isSignedInUser && mutualFriends.length > 0 && (
           <MutualFriends mutualFriends={mutualFriends} />
         )}
 

@@ -1,4 +1,11 @@
 import useNotifications from "@/hooks/useNotifications";
+import {
+  generateNotificationMessage,
+  generateNotificationAuthorAvatar,
+} from "@/utils/notificationUtils";
+import isToday from "@/utils/isToday";
+import formatDate from "@/utils/formatDate";
+import formatTime from "@/utils/formatTime";
 
 export default function Notification() {
   const { notifications } = useNotifications();
@@ -29,37 +36,38 @@ export default function Notification() {
       </div>
 
       <div>
-        {notifications.map((notification, idx) => (
-          <div
-            key={idx}
-            className="flex items-start gap-4 border-b-2 border-gray-100 p-4 text-[var(--clr-notification)] dark:border-white/5 dark:text-[var(--clr-notification-dark)] md:px-6"
-            style={{
-              "--clr-notification":
-                idx % 2 === 0 ? "rgb(0 0 0)" : "rgb(0 0 0 / 0.6)",
-              "--clr-notification-dark":
-                idx % 2 === 0 ? "rgb(255 255 255)" : "rgb(255 255 255 / 0.6)",
-            }}
-          >
-            <img
-              className="inline-block size-8 rounded-full sm:size-9 md:size-10"
-              src={notification?.relatedComment?.user?.avatar?.url}
-              alt={notification?.relatedComment?.user?.username}
-            />
-            <div className="flex-1">
-              <h3>
-                <strong>{notification?.relatedComment?.user?.username}</strong>{" "}
-                {notification.type === "COMMENT"
-                  ? "commented on your post"
-                  : notification.type === "REPLY"
-                    ? "replied to your comment"
-                    : "did something"}
-              </h3>
-              <p className="text-sm text-gray-400 dark:text-neutral-500">
-                {notification.createdAt || "now"}
-              </p>
+        {notifications.map((notification, idx) => {
+          const [avatar, alt] = generateNotificationAuthorAvatar(notification);
+
+          return (
+            <div
+              key={idx}
+              className="flex items-start gap-4 border-b-2 border-gray-100 p-4 text-[var(--clr-notification)] dark:border-white/5 dark:text-[var(--clr-notification-dark)] md:px-6"
+              style={{
+                "--clr-notification":
+                  idx % 2 === 0 ? "rgb(0 0 0)" : "rgb(0 0 0 / 0.6)",
+                "--clr-notification-dark":
+                  idx % 2 === 0 ? "rgb(255 255 255)" : "rgb(255 255 255 / 0.6)",
+              }}
+            >
+              <img
+                className="inline-block size-8 rounded-full sm:size-9 md:size-10"
+                src={avatar}
+                alt={alt}
+              />
+              <div className="flex-1">
+                <h3>{generateNotificationMessage(notification)}</h3>
+                <p className="text-sm text-gray-400 dark:text-neutral-500">
+                  {notification?.createdAt
+                    ? isToday(notification.createdAt)
+                      ? formatTime(notification.createdAt)
+                      : formatDate(notification.createdAt)
+                    : "now"}
+                </p>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

@@ -23,11 +23,31 @@ io.on("connection", (socket) => {
 
   socket.emit("online-users", Array.from(userSocketMap.keys()));
 
-  socket.on("markAsRead", (payload) => {
-    console.log(userSocketMap.get(payload.receiver));
-    const receiver = getSocketId(payload.receiver);
-    console.log(typeof payload, receiver);
-    io.to(receiver).emit("messagesRead", payload.sender);
+  // socket.on("markAsRead", (payload) => {
+  //   console.log(userSocketMap.get(payload.receiver));
+  //   const receiver = getSocketId(payload.receiver);
+  //   console.log(typeof payload, receiver);
+  //   io.to(receiver).emit("messagesRead", payload.sender);
+  // });
+
+  socket.on("user-start-typing", (payload) => {
+    const { sender, receiver } = payload;
+    const [receiverSocket, senderSocket] = [
+      getSocketId(receiver),
+      getSocketId(sender),
+    ];
+
+    io.to(receiverSocket).emit("user-start-typing", payload);
+  });
+
+  socket.on("user-stop-typing", (payload) => {
+    const { sender, receiver } = payload;
+    const [receiverSocket, senderSocket] = [
+      getSocketId(receiver),
+      getSocketId(sender),
+    ];
+
+    io.to(receiverSocket).emit("user-stop-typing", payload);
   });
 
   socket.on("disconnect", () => {

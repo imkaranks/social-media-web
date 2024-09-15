@@ -18,6 +18,7 @@ import Saved from "@/pages/Saved";
 import Settings from "@/pages/Settings";
 import PostDetails from "@/pages/PostDetails";
 import Search from "@/pages/Search";
+import ChangePassword from "@/pages/ChangePassword";
 
 export default function App() {
   return (
@@ -31,6 +32,15 @@ export default function App() {
             </Route>
 
             <Route path="verify" element={<EmailVerification />} />
+
+            <Route
+              path="change-password"
+              element={
+                <ProtectedRoute>
+                  <ChangePassword />
+                </ProtectedRoute>
+              }
+            />
 
             <Route
               element={

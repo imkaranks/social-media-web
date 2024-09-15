@@ -6,7 +6,8 @@ import Comments from "@/components/Comments";
 
 export default function PostWithComments() {
   const { postId } = useParams();
-  const { post, comments, isLoading, error } = usePostWithComments(postId);
+  const { post, comments, isLoading, error, refetechComments } =
+    usePostWithComments(postId);
 
   return (
     <div className="p-4 md:pr-0">
@@ -16,7 +17,10 @@ export default function PostWithComments() {
         <>
           <Post {...post} />
 
-          <Comments initialComments={comments} />
+          <Comments
+            initialComments={comments}
+            refetechComments={refetechComments}
+          />
         </>
       ) : (
         <p>{error}</p>

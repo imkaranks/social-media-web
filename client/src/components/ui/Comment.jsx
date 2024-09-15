@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import useAuth from "@/hooks/useAuth";
+import formatTime from "@/utils/formatTime";
 import formatDate from "@/utils/formatDate";
+import isToday from "@/utils/isToday";
 
 export default function Comment({
   _id,
@@ -48,7 +50,11 @@ export default function Comment({
             {user.username}
           </Link>
           <span className="list-item list-disc pl-0 text-xs text-gray-400 dark:text-neutral-500">
-            <time className="relative -left-1">{formatDate(createdAt)}</time>
+            <time className="relative -left-1">
+              {isToday(createdAt)
+                ? formatTime(createdAt)
+                : formatDate(createdAt)}
+            </time>
           </span>
         </div>
 

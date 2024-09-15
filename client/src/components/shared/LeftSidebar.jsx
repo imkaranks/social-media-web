@@ -20,7 +20,7 @@ export default function LeftSidebar({ expanded, setExpanded }) {
   return (
     <>
       <button
-        className="fixed left-9 top-[4.4375rem] z-[60] inline-flex aspect-square size-8 translate-x-[--x] translate-y-[--y] rotate-[--rotate] items-center justify-center rounded-full border border-gray-200 bg-white transition-[background-color,transform,rotate,left] hover:bg-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700 md:size-9 xl:left-[--left-xl] xl:translate-x-[--x-xl]"
+        className="group fixed left-9 top-[4.4375rem] z-[60] inline-flex aspect-square size-8 translate-x-[--x] translate-y-[--y] items-center justify-center rounded-full border border-gray-200 bg-white transition-[background-color,transform,rotate,left] hover:bg-gray-200 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700 md:size-9 xl:left-[--left-xl] xl:translate-x-[--x-xl]"
         aria-expanded={expanded}
         aria-controls="left-sidebar"
         onClick={() => setExpanded((prevState) => !prevState)}
@@ -32,14 +32,16 @@ export default function LeftSidebar({ expanded, setExpanded }) {
           "--left-xl": `${expanded ? "min(18vw, 17.28rem)" : "2.25rem"}`,
         }}
       >
-        <span className="sr-only">{expanded ? "Close Menu" : "Open Menu"}</span>
+        <span className="invisible absolute left-[calc(100%+0.25rem)] z-50 inline-block w-max rounded bg-gray-900 px-2 py-1 text-xs font-medium text-white opacity-0 shadow-sm transition-opacity group-hover:visible group-hover:opacity-100 dark:bg-neutral-700">
+          {expanded ? "Close Menu" : "Open Menu"}
+        </span>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"
           strokeWidth={1.5}
           stroke="currentColor"
-          className="size-4"
+          className="size-4 rotate-[--rotate] transition-[rotate]"
         >
           <path
             strokeLinecap="round"

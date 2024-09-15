@@ -1,7 +1,9 @@
 import { createContext, useCallback, useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import useAuth from "@/hooks/useAuth";
 import useSocket from "@/hooks/useSocket";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
+import generateNotificationMessage from "../utils/notificationUtils";
 
 const NotificationContext = createContext(null);
 
@@ -13,8 +15,8 @@ export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
 
   const handleNotification = useCallback((payload) => {
-    // console.log(payload);
-
+    const notificationMessage = generateNotificationMessage(payload);
+    toast(notificationMessage, { icon: "🔔", position: "bottom-right" });
     setNotifications((prevNotifications) => [...prevNotifications, payload]);
   }, []);
 

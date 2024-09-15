@@ -1,6 +1,10 @@
+import useMessages from "@/hooks/useMessages";
 import Avatar from "@/components/ui/Avatar";
 
 export default function ChatHeader({ closeChatbox, friend }) {
+  const { typingUsers } = useMessages();
+  const isTyping = typingUsers.includes(friend._id);
+
   return (
     <div className="flex items-center gap-2 border-b border-b-gray-200 p-4 px-2 dark:border-b-neutral-700 sm:gap-4 md:px-4">
       <button
@@ -25,6 +29,9 @@ export default function ChatHeader({ closeChatbox, friend }) {
 
       <Avatar user={friend} size="xsmall" />
       <h3>{friend?.username}</h3>
+      {isTyping && (
+        <span className="text-xs text-green-500 2xl:text-sm">typing...</span>
+      )}
 
       {/* <div>
         <h3>{friend?.username}</h3>

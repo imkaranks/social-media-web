@@ -38,6 +38,8 @@ export default function RightSidebar() {
     pendingRequestsLoading,
     acceptRequest,
     rejectRequest,
+    sendFriendRequest,
+    sendingFriendRequest,
   } = useFriendshipHandler();
   const { onlineUsers } = useSocket();
 
@@ -53,6 +55,7 @@ export default function RightSidebar() {
           `/friend/mutual-suggestion/${auth?.user?._id}`,
         );
         setSuggestions(response?.data?.data);
+        // console.log(response.data.data);
       } catch (error) {
         console.log(error?.response?.data?.message);
       }
@@ -265,7 +268,19 @@ export default function RightSidebar() {
                 </div>
 
                 <div className="flex items-center gap-2 text-xs 2xl:gap-4 2xl:text-sm">
-                  <Button size="small">Add Friend</Button>
+                  <Button
+                    size="small"
+                    disabled={sendingFriendRequest}
+                    onClick={async () => {
+                      try {
+                        await sendFriendRequest(suggestions._id);
+                      } catch (error) {
+                        console.error("Failed to send friend request");
+                      }
+                    }}
+                  >
+                    Add Friend
+                  </Button>
                 </div>
               </div>
             ))

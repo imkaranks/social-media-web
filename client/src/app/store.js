@@ -23,6 +23,12 @@ const useStore = create((set) => ({
   setFriends: (newFriends) => set(() => ({ friends: newFriends })),
   addFriend: (newFriend) =>
     set((state) => ({ friends: [...state.friends, newFriend] })),
+  removeExistingFriend: (friendshipId) =>
+    set((state) => ({
+      friends: state.friends.filter(
+        (friendship) => friendship._id !== friendshipId,
+      ),
+    })),
   setPendingFriendRequests: (newPendingFriendRequests) =>
     set(() => ({ pendingFriendRequests: newPendingFriendRequests })),
   acceptPendingFriendRequest: (pendingFriendRequestId) =>

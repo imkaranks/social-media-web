@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import useAuth from "@/hooks/useAuth";
+// import useSocket from "@/hooks/useSocket";
 import Avatar from "@/components/ui/Avatar";
 import { cn } from "@/utils/cn";
 import formatDate from "@/utils/formatDate";
@@ -44,13 +45,35 @@ const groupMessagesByDate = (messages) => {
 export default function Conversation({ messages, friend }) {
   const messagesRef = useRef();
   const { auth } = useAuth();
+  // const { socket } = useSocket();
   const [isLoading, setIsLoading] = useState(false);
+
+  // TODO: Implement pagination for previous messages to load more when the user scrolls to the top
+  // TODO: Add a loading indicator to show progress while previous messages are being fetched
+
+  const groupedMessages = groupMessagesByDate(messages);
 
   useEffect(() => {
     messagesRef?.current?.scrollTo(0, messagesRef.current.scrollHeight);
   });
 
-  const groupedMessages = groupMessagesByDate(messages);
+  // TODO: Move this logic upwards so that others user's can also be seen typing
+  // useEffect(() => {
+  //   socket.on("user-start-typing", (payload) => {
+  //     const { sender, receiver } = payload;
+  //     console.log(`${sender} started typing to ${receiver}`);
+  //   });
+
+  //   socket.on("user-stop-typing", (payload) => {
+  //     const { sender, receiver } = payload;
+  //     console.log(`${sender} stopped typing to ${receiver}`);
+  //   });
+
+  //   return () => {
+  //     socket.off("user-start-typing");
+  //     socket.on("user-stop-typing");
+  //   };
+  // }, [socket]);
 
   return (
     <div
@@ -74,6 +97,7 @@ export default function Conversation({ messages, friend }) {
                 messageIdx === groupedMessages[date].length - 1 ||
                 groupedMessages[date][messageIdx + 1]?.sender !==
                   message.sender;
+
               return (
                 <div
                   key={messageIdx}

@@ -20,6 +20,7 @@ export default function useFriendshipHandler() {
   const rejectPendingRequest = useStore(
     (state) => state.rejectPendingFriendRequest,
   );
+  const removeExistingFriend = useStore((state) => state.removeExistingFriend);
 
   const [pendingRequestsLoading, setPendingRequestsLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -64,6 +65,23 @@ export default function useFriendshipHandler() {
       }
     },
     [axiosPrivate, auth, rejectPendingRequest],
+  );
+
+  const removeFriend = useCallback(
+    async (friendId) => {
+      setIsSubmitting(true);
+      try {
+        await axiosPrivate.post(`/friend/remove/${friendId}`);
+        removeExistingFriend(friendId);
+      } catch (error) {
+        toast.error(
+          error?.response?.data?.message || "Failed to reject friend request",
+        );
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [axiosPrivate, removeExistingFriend],
   );
 
   const sendFriendRequest = useCallback(
@@ -124,7 +142,9 @@ export default function useFriendshipHandler() {
 
         setFriends(response?.data?.data);
       } catch (error) {
-        toast.error(error?.response?.data?.message || "Failed to get friends");
+        toast.error(
+          error?.response?.data?.message || "Failed to fetch friend list",
+        );
       } finally {
         setIsLoading(false);
       }
@@ -161,6 +181,7 @@ export default function useFriendshipHandler() {
     pendingRequestsLoading,
     acceptRequest,
     rejectRequest,
+    removeFriend,
     sendFriendRequest,
     sendingFriendRequest,
     isExistingFriend,

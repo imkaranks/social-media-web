@@ -25,6 +25,7 @@ export const MessageProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [currentChatUserId, setCurrentChatUserId] = useState(null);
   const [unreadChatIds, setUnreadChatIds] = useState({});
+  const [typingUsers, setTypingUsers] = useState([]);
 
   const setCurrentParticipant = useCallback(
     (id) => {
@@ -153,17 +154,35 @@ export const MessageProvider = ({ children }) => {
         addUnreadFriendChat(payload.sender);
     });
 
-    socket.on("messagesRead", (userId) => {
-      console.log(userId);
-      setUnreadChatIds((prevUnreadChatIds) => ({
-        ...prevUnreadChatIds,
-        sent: { ...prevUnreadChatIds.sent, [userId]: [] },
-      }));
+    // socket.on("messagesRead", (userId) => {
+    //   console.log(userId);
+    //   setUnreadChatIds((prevUnreadChatIds) => ({
+    //     ...prevUnreadChatIds,
+    //     sent: { ...prevUnreadChatIds.sent, [userId]: [] },
+    //   }));
+    // });
+
+    socket.on("user-start-typing", (payload) => {
+      const { sender, receiver } = payload;
+      // const prevUsers = [...new Set(typingUsers)];
+      // setTypingUsers([...prevUsers, sender]);
+      setTypingUsers((prevUsers) => [...new Set([...prevUsers, sender])]);
+    });
+
+    socket.on("user-stop-typing", (payload) => {
+      const { sender, receiver } = payload;
+      // const idx = typingUsers.findIndex((user) => user === sender);
+      // console.log(typingUsers, idx, sender, receiver);
+      setTypingUsers((prevUsers) =>
+        prevUsers.filter((user) => user !== sender),
+      );
     });
 
     return () => {
       socket.off("new-message");
-      socket.off("messagesRead");
+      // socket.off("messagesRead");
+      socket.off("user-start-typing");
+      socket.off("user-stop-typing");
     };
   }, [socket, addFriendChat, auth, addUnreadFriendChat, currentChatUserId]);
 
@@ -175,6 +194,7 @@ export const MessageProvider = ({ children }) => {
         setCurrentParticipant,
         unreadChatIds,
         setUnreadChatIds,
+        typingUsers,
       }}
     >
       {children}

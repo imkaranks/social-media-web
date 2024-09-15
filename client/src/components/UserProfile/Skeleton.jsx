@@ -15,7 +15,7 @@ export default function Skeleton({ isSignedInUser }) {
 
         {!isSignedInUser && <FriendRequestControlsSkeleton />}
 
-        <MutualFriendsSkeleton />
+        {!isSignedInUser && <MutualFriendsSkeleton />}
 
         <TabsSkeleton />
       </div>

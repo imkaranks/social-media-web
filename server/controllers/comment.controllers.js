@@ -5,21 +5,7 @@ import handleAsyncError from "../utils/handleAsyncError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";
 import Notification from "../models/notification.model.js";
-import { getSocketId, io } from "../socket/socket.js";
-
-const emitNotificationEvent = (userId, payload) => {
-  const socketId = getSocketId(userId?.toString());
-  if (!socketId) {
-    console.error(`Socket ID not found for user ${userId}`);
-  } else {
-    const socket = io.sockets.sockets.get(socketId);
-    if (socket) {
-      socket.emit("notification", payload);
-    } else {
-      console.error(`Socket not found for ID ${socketId}`);
-    }
-  }
-};
+import emitNotificationEvent from "../utils/emitNotificationEvent.js";
 
 export const createComment = handleAsyncError(async (req, res) => {
   const { postId } = req.params;
@@ -49,13 +35,32 @@ export const createComment = handleAsyncError(async (req, res) => {
     await comment.save();
     parentComment.children.unshift(comment._id);
     await parentComment.save();
-    const notification = await Notification.create({
-      user: parentComment.user,
-      type: "REPLY",
-      relatedComment: comment._id,
-    });
 
-    emitNotificationEvent(parentComment.user, notification);
+    if (
+      // String(post.author) !== String(user) &&
+      String(parentComment.user) !== String(user)
+    ) {
+      const notification = await Notification.create({
+        user: parentComment.user,
+        type: "REPLY",
+        relatedComment: comment._id,
+        relatedPost: post._id,
+      });
+
+      const notificationPayload = await Notification.findById(
+        notification._id
+      ).populate({
+        path: "relatedComment",
+        model: "Comment",
+        select: "user",
+        populate: {
+          path: "user",
+          select: "username fullname avatar",
+        },
+      });
+
+      emitNotificationEvent(parentComment.user, notificationPayload);
+    }
   } else {
     if (!post) {
       throw new ApiError(404, "No post found with provided id");
@@ -63,13 +68,29 @@ export const createComment = handleAsyncError(async (req, res) => {
 
     post.comments.unshift(comment);
     await post.save();
-    const notification = await Notification.create({
-      user: post.author,
-      type: "COMMENT",
-      relatedComment: comment._id,
-    });
 
-    emitNotificationEvent(post.author, notification);
+    if (post.author.toString() !== user.toString()) {
+      const notification = await Notification.create({
+        user: post.author,
+        type: "COMMENT",
+        relatedComment: comment._id,
+        relatedPost: post._id,
+      });
+
+      const notificationPayload = await Notification.findById(
+        notification._id
+      ).populate({
+        path: "relatedComment",
+        model: "Comment",
+        select: "user",
+        populate: {
+          path: "user",
+          select: "username fullname avatar",
+        },
+      });
+
+      emitNotificationEvent(post.author, notificationPayload);
+    }
   }
 
   const createdComment = await Comment.findById(comment._id).populate({
@@ -206,7 +227,6 @@ export const getCommentsByUser = handleAsyncError(async (req, res) => {
 });
 
 export const deleteComment = handleAsyncError(async (req, res) => {
-  // not complete
   const { commentId } = req.params;
 
   if (commentId?.trim() === "") {
@@ -219,11 +239,11 @@ export const deleteComment = handleAsyncError(async (req, res) => {
     throw new ApiError(404, "No comment found with provided id");
   }
 
-  if (String(comment.user) !== String(req.user._id)) {
-    throw new ApiError(
-      403,
-      "You are not authorized to modify this post. Only the author can make changes."
-    );
+  if (
+    String(comment.user) !== String(req.user._id)
+    // && !req.user.isAdmin // TODO: implement Admin role
+  ) {
+    throw new ApiError(403, "You are not authorized to delete this comment");
   }
 
   if (comment.parent) {
@@ -245,31 +265,27 @@ export const deleteComment = handleAsyncError(async (req, res) => {
   }
 
   if (comment.children && comment.children.length > 0) {
-    // await Promise.all(
-    //   comment.children.map(async () => {
-    //     return await Notification.deleteOne({
-    //       user: req?.user?._id,
-    //       relatedComment: commentId,
-    //     });
-    //   })
-    // );
-
-    // // Delete child comments in parallel
-    // await Promise.all(
-    //   comment.children.map(async (childId) => {
-    //     return await Comment.findByIdAndDelete(childId);
-    //   })
-    // );
+    await Post.findByIdAndUpdate(comment.post, {
+      $pull: {
+        comments: comment.children.map((comment) => comment._id),
+      },
+    });
 
     await deleteNestedComments(commentId, req?.user?._id);
-  } else {
-    await Notification.deleteOne({
-      user: req?.user?._id,
-      relatedComment: commentId,
-    });
   }
 
-  await Comment.findByIdAndDelete(commentId);
+  // await Comment.findByIdAndDelete(commentId);
+
+  // await Notification.deleteMany({
+  //   relatedComment: commentId,
+  // });
+
+  await Promise.all([
+    Comment.findByIdAndDelete(commentId),
+    Notification.deleteMany({
+      relatedComment: commentId,
+    }),
+  ]);
 
   res
     .status(200)

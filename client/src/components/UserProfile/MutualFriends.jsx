@@ -43,7 +43,7 @@ export default function MutualFriends({ mutualFriends }) {
             {mutualFriends.length - 1} others
           </>
         )}{" "}
-        you know
+        that you know
       </p>
     </div>
   );

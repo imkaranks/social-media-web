@@ -233,4 +233,37 @@ export const changeEmail = handleAsyncError(async (req, res) => {});
 
 export const forgotPassword = handleAsyncError(async (req, res) => {});
 
-export const changePassword = handleAsyncError(async (req, res) => {});
+export const resetPassword = handleAsyncError(async (req, res) => {});
+
+export const changePassword = handleAsyncError(async (req, res) => {
+  if (!req?.user?._id) {
+    throw new ApiError(401, "Unauthorized request");
+  }
+
+  const { oldPassword, newPassword } = req.body;
+
+  if (
+    [oldPassword, newPassword].some((field) => !field || field.trim() === "")
+  ) {
+    throw new ApiError(400, "Both old and new password are required");
+  }
+
+  const user = await User.findById(req.user._id).select("+password");
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  const isValidPassword = await user.didPasswordMatch(oldPassword);
+  if (!isValidPassword) {
+    throw new ApiError(400, "Invalid password");
+  }
+
+  user.password = newPassword;
+
+  await user.save();
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, {}, "Password updated successfully"));
+});

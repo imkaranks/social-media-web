@@ -6,6 +6,7 @@ import {
   getMutualFriends,
   getPendingFriendRequests,
   rejectFriendRequest,
+  removeExistingFriend,
   sendFriendRequest,
 } from "../controllers/friend.controllers.js";
 import { isAuthenticated } from "../middlewares/auth.middleware.js";
@@ -17,6 +18,8 @@ router.route("/send").post(isAuthenticated, sendFriendRequest);
 router.route("/accept").post(isAuthenticated, acceptFriendRequest);
 
 router.route("/reject").post(isAuthenticated, rejectFriendRequest);
+
+router.route("/remove/:friendId").post(isAuthenticated, removeExistingFriend);
 
 router.route("/pending").get(isAuthenticated, getPendingFriendRequests);
 

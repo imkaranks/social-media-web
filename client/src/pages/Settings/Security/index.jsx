@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 export default function Security() {
   return (
     <>
@@ -33,7 +35,9 @@ export default function Security() {
 
       <ul>
         <li>
-          <strong>Change password</strong>
+          <Link to="/change-password">
+            <strong>Change password</strong>
+          </Link>
         </li>
         <li>
           <strong>App Permissions:</strong> [Manage App Permissions]

@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import useAuth from "@/hooks/useAuth";
@@ -297,7 +297,7 @@ const CommentsItem = ({
   );
 };
 
-const CommentComp = ({ initialComments }) => {
+const CommentComp = ({ initialComments, refetechComments }) => {
   const axiosPrivate = useAxiosPrivate();
   const { postId } = useParams();
   const [comments, setComments] = useState(initialComments);
@@ -336,6 +336,27 @@ const CommentComp = ({ initialComments }) => {
       toast.error("Failed to delete comment");
     }
   };
+
+  useEffect(() => {
+    const updateComment = async () => {
+      try {
+        const comments = await refetechComments();
+        setComments(comments);
+      } catch (error) {
+        const errMessage = error?.message || "Failed to refresh comments";
+        console.log(errMessage);
+        toast.error(errMessage);
+      }
+    };
+
+    const interval = setInterval(() => {
+      updateComment();
+    }, 3000);
+
+    // updateComment();
+
+    return () => clearInterval(interval);
+  }, [refetechComments]);
 
   return (
     <main>

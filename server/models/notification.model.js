@@ -9,16 +9,31 @@ const notificationSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ["LIKE", "COMMENT", "REPLY", "FRIEND"],
+      enum: [
+        "POST",
+        "LIKE",
+        "COMMENT",
+        "REPLY",
+        "FRIEND_REQUEST_SENT",
+        "FRIEND_REQUEST_ACCEPTED",
+      ],
       required: true,
     },
     relatedPost: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Post",
     },
+    relatedLike: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Like",
+    },
     relatedComment: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Comment",
+    },
+    relatedFriend: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Friend",
     },
   },
   { timestamps: true }

@@ -33,16 +33,19 @@ export default function ChatUser({
   const {
     // unreadChatIds,
     setCurrentParticipant,
+    typingUsers,
   } = useMessages();
   const { onlineUsers } = useSocket();
   const chats = useStore((state) => state.chats);
   const userId = auth?.user?._id;
+  const isTyping = typingUsers.includes(friend._id);
+  // const isTyping = true;
 
   return (
     <div
       className={`${
         index === currentConversation ? "bg-gray-200 dark:bg-neutral-700 " : ""
-      }flex group cursor-pointer items-center gap-2 rounded-xl p-2 py-2 transition-colors hover:bg-gray-200 dark:hover:bg-neutral-700 md:py-3 2xl:gap-4`}
+      }flex group h-full max-h-[4.5rem] cursor-pointer items-center gap-2 rounded-xl p-2 py-2 transition-colors hover:bg-gray-200 dark:hover:bg-neutral-700 md:py-3 2xl:max-h-[4.75rem] 2xl:gap-4`}
       onClick={() => {
         openChatbox(index);
         setCurrentParticipant(friend._id);
@@ -64,7 +67,7 @@ export default function ChatUser({
       </div>
 
       {/* Friend username and last message */}
-      <div className="flex-1 truncate">
+      <div className="h-full flex-1 truncate">
         <div className="flex flex-wrap items-center gap-2">
           <h4 className="flex-1 text-base 2xl:text-lg">{friend.username}</h4>
           {chats[friend?._id]?.length > 0 &&
@@ -76,17 +79,23 @@ export default function ChatUser({
               />
             )}
         </div>
-        {!!chats[friend?._id]?.length && (
-          <div className="flex flex-wrap items-center gap-2 text-sm 2xl:text-base">
-            <p className="flex truncate opacity-35">
-              {`${
-                chats[friend?._id][chats[friend?._id].length - 1].sender ===
-                userId
-                  ? "me: "
-                  : ""
-              }${chats[friend?._id][chats[friend?._id].length - 1].message}`}
-            </p>
-          </div>
+        {isTyping ? (
+          <span className="truncate text-xs text-green-500 2xl:text-sm">
+            typing...
+          </span>
+        ) : (
+          !!chats[friend?._id]?.length && (
+            <div className="flex flex-wrap items-center gap-2 text-sm 2xl:text-base">
+              <p className="flex truncate opacity-35">
+                {`${
+                  chats[friend?._id][chats[friend?._id].length - 1].sender ===
+                  userId
+                    ? "me: "
+                    : ""
+                }${chats[friend?._id][chats[friend?._id].length - 1].message}`}
+              </p>
+            </div>
+          )
         )}
       </div>
     </div>
