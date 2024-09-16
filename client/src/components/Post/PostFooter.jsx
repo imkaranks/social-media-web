@@ -1,13 +1,10 @@
 import React from "react";
+import { usePostContext } from "./Post.hooks";
 import useAuth from "@/hooks/useAuth";
 import Avatar from "@/components/ui/Avatar";
 
-export default function PostFooter({
-  author,
-  content,
-  likes,
-  friendsWhoLiked,
-}) {
+export default function PostFooter() {
+  const { author, content, likes, friendsWhoLiked } = usePostContext();
   const { auth } = useAuth();
 
   return (

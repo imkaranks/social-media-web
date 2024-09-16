@@ -1,11 +1,11 @@
 import useAuth from "@/hooks/useAuth";
 import useSocket from "@/hooks/useSocket";
 import useMessages from "@/hooks/useMessages";
+import { useMessagesContext } from "./Messages.hooks";
 import Avatar from "@/components/ui/Avatar";
 import formatDate from "@/utils/formatDate";
 import formatTime from "@/utils/formatTime";
 import isToday from "@/utils/isToday";
-import useStore from "@/app/store";
 
 const LastMessageTimestamp = ({ createdAt }) => {
   if (!createdAt) return null;
@@ -22,24 +22,14 @@ const LastMessageTimestamp = ({ createdAt }) => {
   );
 };
 
-export default function ChatUser({
-  index,
-  openChatbox,
-  currentConversation,
-  friend,
-  // unreadFriendChats,
-}) {
+export default function MessageLeftPanelUser({ index, friend }) {
   const { auth } = useAuth();
-  const {
-    // unreadChatIds,
-    setCurrentParticipant,
-    typingUsers,
-  } = useMessages();
+  const { setActiveConversation } = useMessages();
   const { onlineUsers } = useSocket();
-  const chats = useStore((state) => state.chats);
+  const { chats, typingUsers, currentConversation, openUserConversation } =
+    useMessagesContext();
   const userId = auth?.user?._id;
   const isTyping = typingUsers.includes(friend._id);
-  // const isTyping = true;
 
   return (
     <div
@@ -47,8 +37,8 @@ export default function ChatUser({
         index === currentConversation ? "bg-gray-200 dark:bg-neutral-700 " : ""
       }flex group h-full max-h-[4.5rem] cursor-pointer items-center gap-2 rounded-xl p-2 py-2 transition-colors hover:bg-gray-200 dark:hover:bg-neutral-700 md:py-3 2xl:max-h-[4.75rem] 2xl:gap-4`}
       onClick={() => {
-        openChatbox(index);
-        setCurrentParticipant(friend._id);
+        openUserConversation(index);
+        setActiveConversation(friend._id);
       }}
     >
       <div className="relative inline-block">

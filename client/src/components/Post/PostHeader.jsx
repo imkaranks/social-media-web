@@ -1,28 +1,21 @@
 import { useState } from "react";
-// import useAuth from "@/hooks/useAuth";
+import { Link } from "react-router-dom";
+import { usePostContext } from "./Post.hooks";
 import Button from "@/components/ui/Button";
 import Avatar from "@/components/ui/Avatar";
 
-export default function PostHeader({
-  postId,
-  title,
-  isAuthor,
-  author,
-  deletePost,
-}) {
-  // const { auth } = useAuth();
+export default function PostHeader() {
+  const { _id, title, isAuthor, author, deletePost } = usePostContext();
 
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [action, setAction] = useState(null);
 
-  // const isAuthor = auth?.user?.id === author?._id;
-
   const removePost = async () => {
     setIsSubmitting(true);
     try {
       setAction("deletePost");
-      await deletePost(postId);
+      await deletePost(_id);
       setIsOpen(false);
     } catch (error) {
       console.log(error);
@@ -34,13 +27,16 @@ export default function PostHeader({
 
   return (
     <header className="flex w-full items-start gap-4">
-      <div className="flex flex-1 flex-wrap items-start gap-2 md:gap-4">
+      <Link
+        to={`/user/${author?._id}`}
+        className="flex flex-1 flex-wrap items-start gap-2 md:gap-4"
+      >
         <Avatar className="size-9 md:size-10" user={author} />
         <div className="min-w-[min(10rem,_100%)]">
           <p>{author?.username}</p>
           <p>{title}</p>
         </div>
-      </div>
+      </Link>
 
       <div className="relative ml-auto mt-2">
         <Button

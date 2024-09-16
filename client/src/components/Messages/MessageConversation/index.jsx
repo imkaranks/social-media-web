@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import useAuth from "@/hooks/useAuth";
 // import useSocket from "@/hooks/useSocket";
+import { useMessagesContext } from "../Messages.hooks";
 import Avatar from "@/components/ui/Avatar";
 import { cn } from "@/utils/cn";
 import formatDate from "@/utils/formatDate";
 import formatTime from "@/utils/formatTime";
 import styles from "./index.module.css";
 
-export const ConversationPlaceholder = ({ children }) => {
+export const MessageConversationPlaceholder = ({ children }) => {
   return (
     <div className="grid h-full place-content-center text-2xl text-gray-400 dark:text-neutral-500">
       <div className="flex items-center gap-4">
@@ -42,11 +43,12 @@ const groupMessagesByDate = (messages) => {
   }, {});
 };
 
-export default function Conversation({ messages, friend }) {
+export default function MessageConversation({ friend }) {
   const messagesRef = useRef();
   const { auth } = useAuth();
+  const { messages } = useMessagesContext();
   // const { socket } = useSocket();
-  const [isLoading, setIsLoading] = useState(false);
+  // const [isLoading, setIsLoading] = useState(false);
 
   // TODO: Implement pagination for previous messages to load more when the user scrolls to the top
   // TODO: Add a loading indicator to show progress while previous messages are being fetched
@@ -57,34 +59,16 @@ export default function Conversation({ messages, friend }) {
     messagesRef?.current?.scrollTo(0, messagesRef.current.scrollHeight);
   });
 
-  // TODO: Move this logic upwards so that others user's can also be seen typing
-  // useEffect(() => {
-  //   socket.on("user-start-typing", (payload) => {
-  //     const { sender, receiver } = payload;
-  //     console.log(`${sender} started typing to ${receiver}`);
-  //   });
-
-  //   socket.on("user-stop-typing", (payload) => {
-  //     const { sender, receiver } = payload;
-  //     console.log(`${sender} stopped typing to ${receiver}`);
-  //   });
-
-  //   return () => {
-  //     socket.off("user-start-typing");
-  //     socket.on("user-stop-typing");
-  //   };
-  // }, [socket]);
-
   return (
     <div
       className="h-[calc(100%-9rem)] space-y-2 overflow-y-auto overflow-x-hidden p-4"
       ref={messagesRef}
     >
-      {isLoading && (
+      {/* {isLoading && (
         <div className="flex justify-center">
           <span className="inline-block size-5 animate-spin rounded-full border-[3px] border-white border-t-transparent text-blue-600"></span>
         </div>
-      )}
+      )} */}
       {Object.keys(groupedMessages).length > 0 ? (
         Object.keys(groupedMessages).map((date, idx) => (
           <div className="space-y-2" key={idx}>

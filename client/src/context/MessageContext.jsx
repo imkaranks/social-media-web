@@ -1,139 +1,31 @@
 import { createContext, useCallback, useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import useAuth from "@/hooks/useAuth";
 import useSocket from "@/hooks/useSocket";
-import useFriendshipHandler from "@/hooks/useFriendshipHandler";
-import useAxiosPrivate from "@/hooks/useAxiosPrivate";
+import useInitMessages from "@/hooks/useInitMessages";
 import useStore from "@/app/store";
 
 const MessageContext = createContext(null);
 
 export const MessageProvider = ({ children }) => {
   const { auth } = useAuth();
-  const axiosPrivate = useAxiosPrivate();
   const { socket } = useSocket();
-  const { friends } = useFriendshipHandler();
 
-  const chats = useStore((state) => state.chats);
   const addFriendChat = useStore((state) => state.addFriendChat);
   const addUnreadFriendChat = useStore((state) => state.addUnreadFriendChat);
   const markFriendChatAsRead = useStore((state) => state.markFriendChatAsRead);
-  const setChats = useStore((state) => state.setChats);
-  const initUnreadFriendChats = useStore(
-    (state) => state.initUnreadFriendChats,
-  );
 
-  const [loading, setLoading] = useState(false);
-  const [currentChatUserId, setCurrentChatUserId] = useState(null);
-  const [unreadChatIds, setUnreadChatIds] = useState({});
-  const [typingUsers, setTypingUsers] = useState([]);
+  const { loading, unreadChatIds, setUnreadChatIds } = useInitMessages();
+  const [chattingWithUserId, setChattingWithUserId] = useState(null);
 
-  const setCurrentParticipant = useCallback(
+  const setActiveConversation = useCallback(
     (id) => {
-      if (currentChatUserId === id) return;
-      setCurrentChatUserId(id);
+      if (chattingWithUserId === id) return;
+      setChattingWithUserId(id);
       markFriendChatAsRead(id);
     },
-    [currentChatUserId, markFriendChatAsRead],
+    [chattingWithUserId, markFriendChatAsRead],
   );
-
-  useEffect(() => {
-    if (!auth) return;
-
-    async function getAllMessages() {
-      setLoading(true);
-      try {
-        // const responses = await Promise.all(
-        //   friends.map((friend) => axiosPrivate.get(`/message/${friend._id}`)),
-        // );
-        // const chats = responses.reduce(
-        //   (acc, response, idx) => ({
-        //     ...acc,
-        //     [friends[idx]._id]: response?.data?.data,
-        //   }),
-        //   {},
-        // );
-        const responses = await Promise.allSettled(
-          friends.map((friend) => axiosPrivate.get(`/message/${friend._id}`)),
-        );
-        const chats = responses.reduce(
-          (acc, response, idx) => ({
-            ...acc,
-            [friends[idx]._id]:
-              response.status === "fulfilled"
-                ? response?.value?.data?.data
-                : [],
-          }),
-          {},
-        );
-        setChats(chats);
-        initUnreadFriendChats(friends.map((friend) => ({ user: friend._id })));
-        const unreadChats = responses.reduce(
-          (acc, response, idx) => {
-            // return {
-            //   ...acc,
-            //   [friends[idx]._id]:
-            //     (
-            //       response.status === "fulfilled" &&
-            //       response?.value?.data?.data?.filter((chat) => !chat?.read)
-            //     ).map((chat) => chat._id) || [],
-            // };
-            if (response.status === "fulfilled") {
-              const unreadChats = response?.value?.data?.data?.filter(
-                (chat) => !chat?.read,
-              );
-              const unreadSentChats = unreadChats
-                ?.filter((chat) => chat.sender === auth?.user?._id)
-                .map((chat) => chat._id);
-              const unreadReceivedChats = unreadChats
-                ?.filter((chat) => chat.sender !== auth?.user?._id)
-                .map((chat) => chat._id);
-
-              return {
-                ...acc,
-                sent: {
-                  ...acc.sent,
-                  [friends[idx]._id]: acc.sent[friends[idx]._id]?.length
-                    ? [...acc.sent[friends[idx]._id], ...unreadSentChats]
-                    : [...unreadSentChats],
-                },
-                received: {
-                  ...acc.received,
-                  [friends[idx]._id]: acc.received[friends[idx]._id]?.length
-                    ? [
-                        ...acc.received[friends[idx]._id],
-                        ...unreadReceivedChats,
-                      ]
-                    : [...unreadReceivedChats],
-                },
-              };
-            } else {
-              return {
-                ...acc,
-                sent: { ...acc.sent, [friends[idx]._id]: [] },
-                received: { ...acc.received, [friends[idx]._id]: [] },
-              };
-            }
-          },
-          { sent: {}, received: {} },
-        );
-        // console.log(unreadChats);
-        setUnreadChatIds(
-          // friends.reduce((acc, friend) => {
-          //   return { ...acc, [friend._id]: [] };
-          // }, {}),
-          unreadChats,
-        );
-      } catch (error) {
-        console.log(error instanceof Error ? error.message : error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    if (!Object.keys(chats)?.length) {
-      getAllMessages();
-    }
-  }, [auth, friends, axiosPrivate, setChats, initUnreadFriendChats]);
 
   useEffect(() => {
     if (!socket || !auth) return;
@@ -144,57 +36,37 @@ export const MessageProvider = ({ children }) => {
         chat: payload,
       });
 
-      // add to unread ids
-      setUnreadChatIds((prev) => ({
-        ...prev,
-        [payload.sender]: (prev[payload.sender] || []).push(payload._id),
-      }));
+      // add to unread ids if not chatting with that user
+      if (chattingWithUserId !== payload.sender) {
+        // TODO: Implement unread message count aggregation from both sockets and database
 
-      currentChatUserId !== payload.sender &&
+        // setUnreadChatIds((prev) => ({
+        //   ...prev,
+        //   [payload.sender]: (prev[payload.sender] || []).push(payload._id),
+        // }));
+
+        toast("You have new unread message", {
+          icon: "💬",
+          position: "bottom-right",
+        });
+
         addUnreadFriendChat(payload.sender);
-    });
-
-    // socket.on("messagesRead", (userId) => {
-    //   console.log(userId);
-    //   setUnreadChatIds((prevUnreadChatIds) => ({
-    //     ...prevUnreadChatIds,
-    //     sent: { ...prevUnreadChatIds.sent, [userId]: [] },
-    //   }));
-    // });
-
-    socket.on("user-start-typing", (payload) => {
-      const { sender, receiver } = payload;
-      // const prevUsers = [...new Set(typingUsers)];
-      // setTypingUsers([...prevUsers, sender]);
-      setTypingUsers((prevUsers) => [...new Set([...prevUsers, sender])]);
-    });
-
-    socket.on("user-stop-typing", (payload) => {
-      const { sender, receiver } = payload;
-      // const idx = typingUsers.findIndex((user) => user === sender);
-      // console.log(typingUsers, idx, sender, receiver);
-      setTypingUsers((prevUsers) =>
-        prevUsers.filter((user) => user !== sender),
-      );
+      }
     });
 
     return () => {
       socket.off("new-message");
-      // socket.off("messagesRead");
-      socket.off("user-start-typing");
-      socket.off("user-stop-typing");
     };
-  }, [socket, addFriendChat, auth, addUnreadFriendChat, currentChatUserId]);
+  }, [socket, addFriendChat, auth, addUnreadFriendChat, chattingWithUserId]);
 
   return (
     <MessageContext.Provider
       value={{
         loading,
-        currentChatUserId,
-        setCurrentParticipant,
+        chattingWithUserId,
+        setActiveConversation,
         unreadChatIds,
         setUnreadChatIds,
-        typingUsers,
       }}
     >
       {children}

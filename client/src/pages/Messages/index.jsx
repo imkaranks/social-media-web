@@ -1,30 +1,39 @@
-import { useCallback, useEffect, useState } from "react";
-import useAuth from "@/hooks/useAuth";
-import useSocket from "@/hooks/useSocket";
+import {
+  createContext,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import useMessages from "@/hooks/useMessages";
 import useFriendshipHandler from "@/hooks/useFriendshipHandler";
-import Conversation, {
-  ConversationPlaceholder,
-} from "@/components/Messages/Conversation";
-import ChatUser from "@/components/Messages/ChatUser";
-import ChatHeader from "@/components/Messages/ChatHeader";
-import MessageInput from "@/components/Messages/MessageInput";
+import useListenTyping from "@/hooks/useListenTyping";
+import MessageRightPanel from "@/components/Messages/MessageRightPanel";
+import MessageLeftPanel from "@/components/Messages/MessageLeftPanel";
 import useStore from "@/app/store";
 
+export const MessagesContext = createContext(null);
+
 export default function Messages() {
-  const { auth } = useAuth();
   const { friends, friendsLoading } = useFriendshipHandler();
-  const { onlineUsers } = useSocket();
-  const { loading, currentChatUserId, setCurrentParticipant } = useMessages();
+  const {
+    loading: messagesLoading,
+    chattingWithUserId,
+    setActiveConversation,
+  } = useMessages();
+  const { typingUsers, setTypingUsers } = useListenTyping();
 
   const chats = useStore((state) => state.chats);
   const unreadFriendChats = useStore((state) => state.unreadFriendChats);
-  const messages = chats[currentChatUserId];
+  const messages = useMemo(
+    () => chats[chattingWithUserId],
+    [chats, chattingWithUserId],
+  );
 
   const [expanded, setExpanded] = useState(false);
   const [currentConversation, setCurrentConversation] = useState(-1);
 
-  const openChatbox = useCallback((idx) => {
+  const openUserConversation = useCallback((idx) => {
     if (window.innerWidth > 767) {
       setCurrentConversation(idx);
     } else {
@@ -33,94 +42,39 @@ export default function Messages() {
     }
   }, []);
 
-  const closeChatbox = useCallback(() => {
+  const closeUserConversation = useCallback(() => {
     if (window.innerWidth <= 767) {
       setExpanded(false);
     }
   }, []);
 
   useEffect(() => {
-    return () => setCurrentParticipant(-1);
+    return () => setActiveConversation(-1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
-    <div className="sticky top-[4.5rem] grid h-[calc(100vh-4.5625rem)] overflow-hidden md:grid-cols-[15rem_1fr] lg:grid-cols-[18rem_1fr]">
-      {/* Left sidebar */}
-      <div className="h-full overflow-y-auto border-r border-r-gray-200 p-4 dark:border-r-neutral-700 md:px-2">
-        <div className="mb-4 flex overflow-hidden rounded-full bg-gray-200 px-3 py-2 dark:bg-neutral-700">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            className="size-5"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
-            />
-          </svg>
-          <input
-            className="w-full min-w-0 flex-1 bg-transparent px-2 text-sm outline-none"
-            type="text"
-            placeholder="#Search"
-          />
-        </div>
+    <MessagesContext.Provider
+      value={{
+        expanded,
+        friends,
+        friendsLoading,
+        chats,
+        unreadFriendChats,
+        messages,
+        messagesLoading,
+        typingUsers,
+        setTypingUsers,
+        currentConversation,
+        openUserConversation,
+        closeUserConversation,
+      }}
+    >
+      <div className="sticky top-[4.5rem] grid h-[calc(100vh-4.5625rem)] overflow-hidden md:grid-cols-[15rem_1fr] lg:grid-cols-[18rem_1fr]">
+        <MessageLeftPanel />
 
-        {/* Display friends list */}
-        {friendsLoading || loading ? (
-          <p>Loading</p>
-        ) : friends.length ? (
-          friends.map((friend, idx) => (
-            <ChatUser
-              key={idx}
-              index={idx}
-              openChatbox={openChatbox}
-              currentConversation={currentConversation}
-              friend={friend}
-              unreadFriendChats={unreadFriendChats}
-            />
-          ))
-        ) : (
-          <p>No friends yet</p>
-        )}
+        <MessageRightPanel />
       </div>
-
-      {/* Right chat panel */}
-      <div
-        className="relative h-full overflow-y-hidden bg-white transition-transform dark:bg-neutral-800 max-md:absolute max-md:left-0 max-md:top-0 max-md:w-full max-md:translate-x-[--chatbox-offset]"
-        style={{ "--chatbox-offset": expanded ? 0 : "100%" }}
-      >
-        {/* Chat header */}
-        {currentConversation !== -1 ? (
-          <ChatHeader
-            closeChatbox={closeChatbox}
-            friend={friends[currentConversation]}
-          />
-        ) : (
-          <ConversationPlaceholder>
-            <span>Start conversation</span>
-          </ConversationPlaceholder>
-        )}
-
-        {currentConversation !== -1 &&
-          (messages?.length > 0 ? (
-            <Conversation
-              messages={messages}
-              friend={friends[currentConversation]}
-            />
-          ) : (
-            <div className="h-[calc(100%-4.625rem)]">
-              <ConversationPlaceholder>
-                <span>No conversation yet</span>
-              </ConversationPlaceholder>
-            </div>
-          ))}
-
-        {currentConversation !== -1 && <MessageInput />}
-      </div>
-    </div>
+    </MessagesContext.Provider>
   );
 }

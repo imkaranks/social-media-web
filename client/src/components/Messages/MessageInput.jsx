@@ -10,7 +10,7 @@ import useStore from "@/app/store";
 export default function MessageInput() {
   const { auth } = useAuth();
   const { socket } = useSocket();
-  const { currentChatUserId } = useMessages();
+  const { chattingWithUserId } = useMessages();
   const addFriendChat = useStore((state) => state.addFriendChat);
   const axiosPrivate = useAxiosPrivate();
   const navigate = useNavigate();
@@ -21,17 +21,17 @@ export default function MessageInput() {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!currentChatUserId || !message.trim()) return;
+    if (!chattingWithUserId || !message.trim()) return;
 
     try {
       const response = await axiosPrivate.post(
-        `/message/send/${currentChatUserId}`,
+        `/message/send/${chattingWithUserId}`,
         { message },
         { withCredentials: true },
       );
       // setMessages((prevMessages) => [...prevMessages, response?.data?.data]);
       addFriendChat({
-        username: currentChatUserId,
+        username: chattingWithUserId,
         chat: response?.data?.data,
       });
       setMessage("");
@@ -52,27 +52,27 @@ export default function MessageInput() {
 
     if (
       message.length > 0 &&
-      currentChatUserId !== null &&
+      chattingWithUserId !== null &&
       auth?.user?._id &&
       isTypingRef.current === false
     ) {
       isTypingRef.current = true;
       socket.emit("user-start-typing", {
         sender: auth.user._id,
-        receiver: currentChatUserId,
+        receiver: chattingWithUserId,
       });
     }
 
     timeoutRef.current = setTimeout(() => {
       if (
-        currentChatUserId !== null &&
+        chattingWithUserId !== null &&
         auth?.user?._id &&
         isTypingRef.current === true
       ) {
         isTypingRef.current = false;
         socket.emit("user-stop-typing", {
           sender: auth.user._id,
-          receiver: currentChatUserId,
+          receiver: chattingWithUserId,
         });
       }
     }, 500);

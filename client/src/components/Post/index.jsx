@@ -1,55 +1,23 @@
+import { createContext } from "react";
 import PostHeader from "./PostHeader";
+import PostImages from "./PostImages";
 import PostEngagement from "./PostEngagement";
 import PostFooter from "./PostFooter";
 
-export default function Post({
-  _id,
-  title,
-  content,
-  images,
-  author,
-  likes,
-  likeCount,
-  userLikedPost,
-  isAuthor,
-  commentCount,
-  friendsWhoLiked,
-  deletePost,
-}) {
+export const PostContext = createContext(null);
+
+export default function Post(props) {
   return (
-    <article className="my-4 rounded-xl bg-gray-100 p-4 text-sm leading-normal dark:bg-neutral-700/20">
-      <PostHeader
-        postId={_id}
-        title={title}
-        isAuthor={isAuthor}
-        author={author}
-        deletePost={deletePost}
-      />
+    <PostContext.Provider value={props}>
+      <article className="my-4 rounded-xl bg-gray-100 p-4 text-sm leading-normal dark:bg-neutral-700/20">
+        <PostHeader />
 
-      {images?.length > 0 && (
-        <div className="mt-3 overflow-hidden rounded-xl">
-          <img
-            src={images[0]?.url}
-            className="h-[60vw] max-h-96 w-full object-cover object-center" /* min(60vw, 24rem) */
-            alt={title}
-          />
-        </div>
-      )}
+        <PostImages />
 
-      <PostEngagement
-        postId={_id}
-        likes={likes}
-        likeCount={likeCount}
-        userLikedPost={userLikedPost}
-        commentCount={commentCount}
-      />
+        <PostEngagement />
 
-      <PostFooter
-        author={author}
-        content={content}
-        likes={likes}
-        friendsWhoLiked={friendsWhoLiked}
-      />
-    </article>
+        <PostFooter />
+      </article>
+    </PostContext.Provider>
   );
 }

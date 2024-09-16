@@ -1,16 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-// import useAuth from "@/hooks/useAuth";
+import { usePostContext } from "./Post.hooks";
 import useLikeHandler from "@/hooks/useLikeHandler";
 import Button from "@/components/ui/Button";
 
-export default function PostEngagement({
-  postId,
-  likes,
-  likeCount,
-  userLikedPost,
-  commentCount,
-}) {
+export default function PostEngagement() {
+  const { _id, likes, likeCount, userLikedPost, commentCount } =
+    usePostContext();
+
   const { toggleLike, isSubmitting } = useLikeHandler();
 
   const [isLiked, setIsLiked] = useState(userLikedPost ?? false);
@@ -18,7 +15,7 @@ export default function PostEngagement({
 
   const handleLikeClick = async () => {
     try {
-      await toggleLike("post", postId);
+      await toggleLike("post", _id);
       setLikesCount(isLiked ? likesCount - 1 : likesCount + 1);
       setIsLiked(!isLiked);
     } catch (error) {
@@ -89,7 +86,7 @@ export default function PostEngagement({
       </Button>
       <Button
         as={Link}
-        to={`/post/${postId}`}
+        to={`/post/${_id}`}
         size="small"
         variant="ghost"
         className="p-2 text-blue-600 hover:bg-blue-100 hover:text-blue-800 dark:text-blue-500 dark:hover:bg-blue-800/30 dark:hover:text-blue-400"
