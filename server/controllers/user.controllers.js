@@ -1,13 +1,13 @@
+import { v2 as cloudinary } from "cloudinary";
+import crypto from "crypto";
 import User from "../models/user.model.js";
-import Post from "../models/post.model.js";
-import Comment from "../models/comment.model.js";
-import Like from "../models/like.model.js";
-import Follow from "../models/follow.model.js";
+import VerificationToken from "../models/verificationToken.model.js";
 import handleAsyncError from "../utils/handleAsyncError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";
 import upload from "../utils/cloudinary.js";
-import { v2 as cloudinary } from "cloudinary";
+
+const RESET_TOKEN_EXPIRATION = 30 * 60 * 1000;
 
 export const getUsers = handleAsyncError(async (req, res) => {
   const users = await User.find({}).select("-password -refreshToken");
@@ -229,11 +229,131 @@ export const updateUserLastSeen = handleAsyncError(async (req, res) => {
   res.status(response.status).json(response);
 });
 
-export const changeEmail = handleAsyncError(async (req, res) => {});
+// export const changeEmail = handleAsyncError(async (req, res) => {});
 
-export const forgotPassword = handleAsyncError(async (req, res) => {});
+export const forgotPassword = handleAsyncError(async (req, res) => {
+  const { email } = req.body;
 
-export const resetPassword = handleAsyncError(async (req, res) => {});
+  if (!email?.trim()) {
+    throw new ApiError(400, "Email must be provided.");
+  }
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    throw new ApiError(404, "User not found.");
+  }
+
+  const token = crypto.randomBytes(20).toString("hex");
+
+  const verificationToken = await VerificationToken.create({
+    user: user._id,
+    token,
+    type: "RESET_PASSWORD",
+  });
+
+  // TODO: send the token to the user via email or other means
+
+  res.status(200).json(new ApiResponse(200, {}, "Verification token sent."));
+});
+
+export const resetPassword = handleAsyncError(async (req, res) => {
+  const { email, token, newPassword, confirmPassword } = req.body;
+
+  if (
+    !email?.trim() ||
+    !token?.trim() ||
+    !newPassword?.trim() ||
+    !confirmPassword?.trim()
+  ) {
+    throw new ApiError(
+      400,
+      "Email, token, newPassword, and confirmPassword must be provided."
+    );
+  }
+
+  if (newPassword !== confirmPassword) {
+    throw new ApiError(
+      400,
+      "New password doesn't match with confirm password."
+    );
+  }
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    throw new ApiError(404, "User not found.");
+  }
+
+  const verificationToken = await VerificationToken.findOne({
+    user: user._id,
+    token,
+    type: "RESET_PASSWORD",
+  });
+
+  if (
+    !verificationToken ||
+    verificationToken.createdAt < new Date(Date.now() - RESET_TOKEN_EXPIRATION)
+  ) {
+    throw new ApiError(400, "Invalid or expired verification token.");
+  }
+
+  user.password = newPassword;
+  await user.save();
+
+  await VerificationToken.findByIdAndDelete(verificationToken._id);
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, {}, "Password reset successfully."));
+});
+
+export const resendResetPasswordToken = handleAsyncError(async (req, res) => {
+  const { email } = req.body;
+
+  if (!email?.trim()) {
+    throw new ApiError(400, "Email must be provided.");
+  }
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    throw new ApiError(404, "User not found.");
+  }
+
+  const existingToken = await VerificationToken.findOne({
+    user: user._id,
+    type: "RESET_PASSWORD",
+  });
+
+  if (
+    existingToken &&
+    existingToken.createdAt >= new Date(Date.now() - RESET_TOKEN_EXPIRATION)
+  ) {
+    throw new ApiError(
+      400,
+      "A verification token was recently sent. Please wait before requesting a new one."
+    );
+  }
+
+  const token = crypto.randomBytes(20).toString("hex");
+
+  await VerificationToken.findByIdAndDelete(existingToken._id);
+
+  const newToken = await VerificationToken.create({
+    user: user._id,
+    token,
+    type: "RESET_PASSWORD",
+  });
+
+  // TODO: send the new token to the user via email or other means
+
+  res
+    .status(200)
+    .json(
+      new ApiResponse(200, {}, "Reset password token resent successfully.")
+    );
+});
 
 export const changePassword = handleAsyncError(async (req, res) => {
   if (!req?.user?._id) {

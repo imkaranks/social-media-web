@@ -6,9 +6,13 @@ import PostFooter from "./PostFooter";
 
 export const PostContext = createContext(null);
 
+const PostProvider = ({ value, children }) => {
+  return <PostContext.Provider value={value}>{children}</PostContext.Provider>;
+};
+
 export default function Post(props) {
   return (
-    <PostContext.Provider value={props}>
+    <PostProvider value={props}>
       <article className="my-4 rounded-xl bg-gray-100 p-4 text-sm leading-normal dark:bg-neutral-700/20">
         <PostHeader />
 
@@ -18,6 +22,6 @@ export default function Post(props) {
 
         <PostFooter />
       </article>
-    </PostContext.Provider>
+    </PostProvider>
   );
 }

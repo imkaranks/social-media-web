@@ -10,27 +10,60 @@ import {
   sendFriendRequest,
 } from "../controllers/friend.controllers.js";
 import { isAuthenticated } from "../middlewares/auth.middleware.js";
+import {
+  acceptFriendRequestValidator,
+  getFriendRecommendationsValidator,
+  getFriendsValidator,
+  getPendingFriendRequestsValidator,
+  rejectFriendRequestValidator,
+  removeExistingFriendValidator,
+  sendFriendRequestValidator,
+} from "../validations/middlewares/friend.middlewares.js";
 
 const router = express.Router();
 
-router.route("/send").post(isAuthenticated, sendFriendRequest);
+router
+  .route("/send")
+  .post(isAuthenticated, sendFriendRequestValidator, sendFriendRequest);
 
-router.route("/accept").post(isAuthenticated, acceptFriendRequest);
+router
+  .route("/accept")
+  .post(isAuthenticated, acceptFriendRequestValidator, acceptFriendRequest);
 
-router.route("/reject").post(isAuthenticated, rejectFriendRequest);
+router
+  .route("/reject")
+  .post(isAuthenticated, rejectFriendRequestValidator, rejectFriendRequest);
 
-router.route("/remove/:friendId").post(isAuthenticated, removeExistingFriend);
+router
+  .route("/remove/:friendId")
+  .post(isAuthenticated, removeExistingFriendValidator, removeExistingFriend);
 
-router.route("/pending").get(isAuthenticated, getPendingFriendRequests);
+router
+  .route("/pending")
+  .get(
+    isAuthenticated,
+    getPendingFriendRequestsValidator,
+    getPendingFriendRequests
+  );
 
-router.route("/pending/:userId").get(isAuthenticated, getPendingFriendRequests);
+router
+  .route("/pending/:userId")
+  .get(
+    isAuthenticated,
+    getPendingFriendRequestsValidator,
+    getPendingFriendRequests
+  );
 
 router.route("/:user1/mutual/:user2").get(isAuthenticated, getMutualFriends);
 
 router
   .route("/mutual-suggestion/:user")
-  .get(isAuthenticated, getFriendRecommendations);
+  .get(
+    isAuthenticated,
+    getFriendRecommendationsValidator,
+    getFriendRecommendations
+  );
 
-router.route("/:userId").get(isAuthenticated, getFriends);
+router.route("/:userId").get(isAuthenticated, getFriendsValidator, getFriends);
 
 export default router;

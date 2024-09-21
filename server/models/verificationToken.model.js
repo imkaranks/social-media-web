@@ -10,6 +10,11 @@ const verificationTokenSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  type: {
+    type: String,
+    enum: ["VERIFY_EMAIL", "RESET_PASSWORD"],
+    default: "VERIFY_EMAIL",
+  },
   createdAt: {
     type: Date,
     default: Date.now,

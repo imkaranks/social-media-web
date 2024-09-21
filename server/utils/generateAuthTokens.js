@@ -15,6 +15,7 @@ const generateAuthTokens = async (userId, res) => {
     const cookieOptions = {
       maxAge: 24 * 60 * 60 * 1000, // 1 days
       secure: process.env.NODE_ENV === "production", // Secure flag only for production
+      // secure: true,
       httpOnly: true, // Prevent XSS attacks
       sameSite: "strict", // Prevent CSRF attacks
     };
