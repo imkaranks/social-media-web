@@ -1,8 +1,11 @@
-import { useId, useRef, useState } from "react";
+import { forwardRef, useId, useRef, useState } from "react";
 
-export default function Input({ label, error, ...props }) {
+const Input = forwardRef(function Input(
+  { label, error, ...props },
+  ref = null,
+) {
   const id = useId();
-  const inputRef = useRef(null);
+  // const inputRef = useRef(null);
   const [show, setShow] = useState(false);
   const { type } = props;
 
@@ -10,9 +13,9 @@ export default function Input({ label, error, ...props }) {
 
   const handleToggleShow = () => {
     setShow((prevShow) => {
-      if (inputRef.current) {
-        inputRef.current.focus();
-      }
+      // if (inputRef.current) {
+      //   inputRef.current.focus();
+      // }
       return !prevShow;
     });
   };
@@ -29,7 +32,8 @@ export default function Input({ label, error, ...props }) {
         <div className="relative">
           <input
             id={id}
-            ref={inputRef}
+            // ref={inputRef}
+            ref={ref}
             className="block w-full rounded-lg border-2 border-gray-200 bg-transparent px-4 py-3 pr-11 text-sm focus:border-blue-500 focus:ring-0 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:border-neutral-600 dark:focus:ring-neutral-600"
             {...passwordInputProps}
           />
@@ -71,13 +75,18 @@ export default function Input({ label, error, ...props }) {
       ) : (
         <input
           id={id}
-          ref={inputRef}
+          // ref={inputRef}
+          ref={ref}
           className="block w-full rounded-lg border-2 border-gray-200 bg-transparent px-4 py-3 text-sm focus:border-blue-500 focus:ring-0 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:border-neutral-600 dark:focus:ring-neutral-600"
           {...props}
         />
       )}
 
-      {error && <span className="text-sm text-red-500">{error.message}</span>}
+      {error && error?.message && (
+        <span className="text-sm text-red-500">{error.message}</span>
+      )}
     </div>
   );
-}
+});
+
+export default Input;

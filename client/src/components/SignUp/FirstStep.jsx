@@ -1,22 +1,23 @@
 import Input from "@/components/ui/Input";
+import { useSignUpContext } from "./SignUp.hooks";
 
-export default function FirstStep({ email, password, updateFormData }) {
+export default function FirstStep() {
+  const { register, errors } = useSignUpContext();
+
   return (
     <>
       <Input
         label="Email"
         type="email"
-        name="email"
-        value={email}
-        onChange={(e) => updateFormData({ email: e.target.value })}
+        {...register("email")}
+        error={errors.email}
         placeholder="you@site.com"
       />
       <Input
         label="Password"
         type="password"
-        name="password"
-        value={password}
-        onChange={(e) => updateFormData({ password: e.target.value })}
+        {...register("password")}
+        error={errors.password}
         placeholder="••••••••"
       />
     </>

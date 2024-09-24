@@ -1,15 +1,16 @@
 import Input from "@/components/ui/Input";
 import ImageFileInput from "@/components/ui/ImageFileInput";
+import { useSignUpContext } from "./SignUp.hooks";
 
 export default function SecondStep({
   avatarPreview,
   handleAvatarChange,
-  fullname,
-  username,
-  updateFormData,
+  setAvatar,
 }) {
+  const { register, errors } = useSignUpContext();
+
   const handleChange = (event) => {
-    handleAvatarChange(event, (file) => updateFormData({ avatar: file }));
+    handleAvatarChange(event, (file) => setAvatar(file));
   };
 
   return (
@@ -23,17 +24,15 @@ export default function SecondStep({
       <Input
         label="Fullname"
         type="text"
-        name="fullname"
-        value={fullname}
-        onChange={(e) => updateFormData({ fullname: e.target.value })}
+        {...register("fullname")}
+        error={errors.fullname}
         placeholder="John Doe"
       />
       <Input
         label="Username"
         type="text"
-        name="username"
-        value={username}
-        onChange={(e) => updateFormData({ username: e.target.value })}
+        {...register("username")}
+        error={errors.username}
         placeholder="im_johnboi"
       />
     </>
