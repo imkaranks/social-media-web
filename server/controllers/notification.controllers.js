@@ -19,7 +19,9 @@ export const getNotifications = handleAsyncError(async (req, res) => {
 
   const notifications = await Notification.find({
     user: req.user._id,
-  });
+  })
+    .sort({ createdAt: -1 })
+    .limit(10);
 
   const populatedNotifications = await Promise.all(
     notifications.map(async (n) => {

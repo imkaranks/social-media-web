@@ -8,6 +8,7 @@ import VerificationToken from "../models/verificationToken.model.js";
 import upload from "../utils/cloudinary.js";
 import generateAuthTokens from "../utils/generateAuthTokens.js";
 import sendVerificationEmail from "../utils/sendVerificationEmail.js";
+import refreshToken from "../utils/refreshToken.js";
 
 export const signup = handleAsyncError(async (req, res) => {
   const { fullname, username, email, password } = req.body;
@@ -281,7 +282,7 @@ export const refreshAccessToken = handleAsyncError(async (req, res) => {
   if (incomingRefreshToken !== user?.refreshToken)
     throw new ApiError(403, "Refresh token mismatch");
 
-  const { accessToken } = await generateAuthTokens(user._id, res);
+  const { accessToken } = await refreshToken(user._id, res);
 
   const authenticatedUser = await User.findById(decoded._id).select(
     "-password -refreshToken"

@@ -24,8 +24,8 @@ router
   .route("/create")
   .post(
     isAuthenticated,
-    createPostValidator,
     upload.array("images", 5),
+    createPostValidator,
     createPost
   );
 
@@ -38,8 +38,8 @@ router
   .get(isAuthenticated, getPostByIdValidator, getPostById)
   .patch(
     isAuthenticated,
-    updatePostValidator,
     upload.array("images", 5),
+    updatePostValidator,
     updatePost
   )
   .delete(isAuthenticated, deletePostValidator, deletePost);

@@ -260,6 +260,7 @@ async function formatPendingRequests(userId, pendingRequests) {
         sender: pendingRequest.user1,
         receiver: pendingRequest.user2,
         mutualFriendsCount,
+        createdAt: pendingRequest.createdAt,
       };
     })
   );

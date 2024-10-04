@@ -36,8 +36,8 @@ router
   .route("/avatar/:userId")
   .patch(
     isAuthenticated,
-    changeAvatarValidator,
     upload.single("avatar"),
+    changeAvatarValidator,
     changeAvatar
   );
 
@@ -62,11 +62,11 @@ router
   .get(isAuthenticated, getUserByIdValidator, getUserById)
   .patch(
     isAuthenticated,
-    updateUserValidator,
     upload.fields([
       { name: "avatar", maxCount: 1 },
       { name: "banner", maxCount: 1 },
     ]),
+    updateUserValidator,
     updateUser
   );
 
