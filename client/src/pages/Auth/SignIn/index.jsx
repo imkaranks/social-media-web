@@ -1,38 +1,44 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import useLogin from "@/hooks/useLogin";
 import useAuth from "@/hooks/useAuth";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 
-const INITIAL_DATA = {
+const initialState = {
   email: "",
   password: "",
 };
 
+const schema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6),
+});
+
 export default function SignIn() {
   const { updateRemember } = useAuth();
   const { login, isSubmitting } = useLogin();
+  const {
+    register,
+    handleSubmit,
+    // setError,
+    reset,
+    formState: { errors },
+  } = useForm({
+    defaultValues: initialState,
+    resolver: zodResolver(schema),
+  });
 
-  const [data, setData] = useState(INITIAL_DATA);
   const [remember, setRemember] = useState(true);
 
-  const handleInputChange = (event) => {
-    const { name, value } = event.target;
-
-    setData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
-  };
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-
+  const onSubmit = async (data) => {
     try {
       await login(data);
-      setData(INITIAL_DATA);
+      reset();
       updateRemember(remember);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : error, {
@@ -47,21 +53,22 @@ export default function SignIn() {
         <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 dark:text-white md:text-2xl">
           Sign in to your account
         </h1>
-        <form className="space-y-4 md:space-y-6" onSubmit={handleSubmit}>
+        <form
+          className="space-y-4 md:space-y-6"
+          onSubmit={handleSubmit(onSubmit)}
+        >
           <Input
             label="Email"
             type="email"
-            name="email"
-            value={data.email}
-            onChange={handleInputChange}
+            {...register("email")}
+            error={errors.email}
             placeholder="you@site.com"
           />
           <Input
             label="Password"
             type="password"
-            name="password"
-            value={data.password}
-            onChange={handleInputChange}
+            {...register("password")}
+            error={errors.password}
             placeholder="••••••••"
           />
           <div className="flex items-center justify-between">

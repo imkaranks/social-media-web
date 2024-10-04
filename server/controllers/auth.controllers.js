@@ -8,6 +8,7 @@ import VerificationToken from "../models/verificationToken.model.js";
 import upload from "../utils/cloudinary.js";
 import generateAuthTokens from "../utils/generateAuthTokens.js";
 import sendVerificationEmail from "../utils/sendVerificationEmail.js";
+import refreshToken from "../utils/refreshToken.js";
 
 export const signup = handleAsyncError(async (req, res) => {
   const { fullname, username, email, password } = req.body;
@@ -101,7 +102,10 @@ export const verifyEmail = handleAsyncError(async (req, res) => {
       .json(new ApiResponse(200, {}, "Email is already verified."));
   }
 
-  const verificationToken = await VerificationToken.findOne({ token });
+  const verificationToken = await VerificationToken.findOne({
+    token,
+    type: "VERIFY_EMAIL",
+  });
 
   if (
     !verificationToken ||
@@ -133,7 +137,10 @@ export const resendVerificationToken = handleAsyncError(async (req, res) => {
     throw new ApiError(400, "Email is already verified");
   }
 
-  const existingToken = await VerificationToken.findOne({ user: user._id });
+  const existingToken = await VerificationToken.findOne({
+    user: user._id,
+    type: "VERIFY_EMAIL",
+  });
 
   if (existingToken) {
     await sendVerificationEmail(email, existingToken.token);
@@ -150,6 +157,7 @@ export const resendVerificationToken = handleAsyncError(async (req, res) => {
   await VerificationToken.create({
     user: user._id,
     token,
+    type: "VERIFY_EMAIL",
   });
 
   await sendVerificationEmail(email, token);
@@ -182,7 +190,10 @@ export const signin = handleAsyncError(async (req, res) => {
   }
 
   if (!user.isVerified) {
-    const existingToken = await VerificationToken.findOne({ user: user._id });
+    const existingToken = await VerificationToken.findOne({
+      user: user._id,
+      type: "VERIFY_EMAIL",
+    });
 
     if (existingToken) {
       await sendVerificationEmail(email, existingToken.token);
@@ -192,6 +203,7 @@ export const signin = handleAsyncError(async (req, res) => {
       await VerificationToken.create({
         user: user._id,
         token,
+        type: "VERIFY_EMAIL",
       });
 
       await sendVerificationEmail(email, token);
@@ -240,6 +252,7 @@ export const signout = handleAsyncError(async (req, res) => {
   const cookieOptions = {
     maxAge: 0, // Set to expire immediately
     secure: process.env.NODE_ENV === "production", // Secure flag only for production
+    // secure: true,
     httpOnly: true, // Prevent XSS attacks
     sameSite: "strict", // Prevent CSRF attacks
   };
@@ -269,7 +282,7 @@ export const refreshAccessToken = handleAsyncError(async (req, res) => {
   if (incomingRefreshToken !== user?.refreshToken)
     throw new ApiError(403, "Refresh token mismatch");
 
-  const { accessToken } = await generateAuthTokens(user._id, res);
+  const { accessToken } = await refreshToken(user._id, res);
 
   const authenticatedUser = await User.findById(decoded._id).select(
     "-password -refreshToken"

@@ -72,7 +72,7 @@ export default function usePostWithComments(postId) {
   useEffect(() => {
     const interval = setInterval(() => {
       refetechPost();
-    }, 5000);
+    }, 10000);
 
     return () => clearInterval(interval);
   }, [refetechPost]);

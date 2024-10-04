@@ -6,6 +6,7 @@ import useAuth from "@/hooks/useAuth";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 import Button from "@/components/ui/Button";
 import Avatar from "@/components/ui/Avatar";
+import formatDate from "../../utils/formatDate";
 import useStore from "@/app/store";
 
 function RequestSkeleton() {
@@ -45,6 +46,9 @@ export default function RightSidebar() {
 
   const chats = useStore((state) => state.chats);
   const unreadFriendChats = useStore((state) => state.unreadFriendChats);
+  // const pendingFriendRequests = useStore(
+  //   (state) => state.pendingFriendRequests,
+  // );
 
   const [suggestions, setSuggestions] = useState(null);
 
@@ -54,8 +58,18 @@ export default function RightSidebar() {
         const response = await axiosPrivate.get(
           `/friend/mutual-suggestion/${auth?.user?._id}`,
         );
-        setSuggestions(response?.data?.data);
-        // console.log(response.data.data);
+        setSuggestions(
+          response?.data?.data?.filter((suggestedUser) => {
+            if (
+              pendingRequests.sent?.find(
+                (request) => request.receiver._id === suggestedUser._id,
+              )
+            )
+              return false;
+            return true;
+          }),
+        );
+        // console.log(pendingFriendRequests);
       } catch (error) {
         console.log(error?.response?.data?.message);
       }
@@ -185,8 +199,8 @@ export default function RightSidebar() {
 
       {/* friend requests */}
       <div>
-        <h3 className="mb-4">Requests</h3>
-        <div className="space-y-4">
+        <h3 className="mb-4">Requests received</h3>
+        <div className="mb-4 space-y-4">
           {pendingRequestsLoading ? (
             <>
               <RequestSkeleton />
@@ -234,7 +248,46 @@ export default function RightSidebar() {
             ))
           ) : (
             <p className="text-gray-400 dark:text-neutral-500 max-2xl:text-sm">
-              No friend requests
+              No friend requests received
+            </p>
+          )}
+        </div>
+
+        <h3 className="mb-4">Requests sent</h3>
+        <div className="space-y-4">
+          {pendingRequestsLoading ? (
+            <>
+              <RequestSkeleton />
+              <RequestSkeleton />
+            </>
+          ) : pendingRequests?.sent?.length ? (
+            pendingRequests?.sent.map((pendingRequest, idx) => (
+              <div
+                key={idx}
+                className="rounded-xl bg-gray-200 p-4 dark:bg-neutral-700"
+              >
+                <div className="mb-2 flex gap-2 2xl:gap-4">
+                  <Link to={`/user/${pendingRequest.receiver._id}`}>
+                    <Avatar size="xsmall" user={pendingRequest.receiver} />
+                  </Link>
+                  <div className="max-2xl:text-sm">
+                    <h4>{pendingRequest.receiver.username}</h4>
+                    {!!pendingRequest?.mutualFriendsCount && (
+                      <p className="text-xs text-gray-400 dark:text-neutral-400 2xl:text-sm">
+                        {pendingRequest.mutualFriendsCount} mutual friend
+                        {pendingRequest.mutualFriendsCount > 1 ? "s" : ""}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <p className="text-xs opacity-75 2xl:text-sm">
+                  Sent on: {formatDate(pendingRequest.createdAt)}
+                </p>
+              </div>
+            ))
+          ) : (
+            <p className="text-gray-400 dark:text-neutral-500 max-2xl:text-sm">
+              No friend requests sent
             </p>
           )}
         </div>

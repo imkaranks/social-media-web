@@ -8,6 +8,12 @@ import CommentsItem from "./CommentsItem";
 
 export const CommentContext = createContext(null);
 
+const CommentProvider = ({ value, children }) => {
+  return (
+    <CommentContext.Provider value={value}>{children}</CommentContext.Provider>
+  );
+};
+
 const CommentComp = ({ initialComments, refetechComments }) => {
   const axiosPrivate = useAxiosPrivate();
   const { postId } = useParams();
@@ -62,13 +68,13 @@ const CommentComp = ({ initialComments, refetechComments }) => {
 
     const interval = setInterval(() => {
       updateComment();
-    }, 5000);
+    }, 10000);
 
     return () => clearInterval(interval);
   }, [refetechComments]);
 
   return (
-    <CommentContext.Provider
+    <CommentProvider
       value={{
         postId,
         comments,
@@ -94,7 +100,7 @@ const CommentComp = ({ initialComments, refetechComments }) => {
           </div>
         </div>
       </main>
-    </CommentContext.Provider>
+    </CommentProvider>
   );
 };
 

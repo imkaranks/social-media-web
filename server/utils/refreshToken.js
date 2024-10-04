@@ -1,15 +1,11 @@
 import User from "../models/user.model.js";
 import ApiError from "./ApiError.js";
 
-const generateAuthTokens = async (userId, res) => {
+const refreshToken = async (userId, res) => {
   try {
     const user = await User.findById(userId);
 
     const accessToken = await user.getAccessToken();
-    const refreshToken = await user.getRefreshToken();
-
-    user.refreshToken = refreshToken;
-    user.save({ validateBeforeSave: false });
 
     // Set options for cookies
     const cookieOptions = {
@@ -20,17 +16,16 @@ const generateAuthTokens = async (userId, res) => {
       sameSite: "strict", // Prevent CSRF attacks
     };
 
-    res.cookie("refreshToken", refreshToken, cookieOptions);
     res.cookie("accessToken", accessToken, cookieOptions);
 
-    return { accessToken, refreshToken };
+    return { accessToken };
   } catch (error) {
     throw new ApiError(
       500,
-      "Something went wrong while generating tokens: ",
+      "Something went wrong while refreshing access token: ",
       error
     );
   }
 };
 
-export default generateAuthTokens;
+export default refreshToken;
