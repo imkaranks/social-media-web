@@ -1,28 +1,5 @@
 import Joi from "joi";
 
-/*
-createComment (
-const { postId } = req.params;
-  const { content, parentId } = req.body; // parentId optional
-)
-
-getComment (
-const { id, postId, userId, username } = req.query; // all are optional
-)
-
-getCommentsByPostId (
-const { postId } = req.params;
-)
-
-getCommentsByUser (
-const { id, username, userId } = req.query; // all are optional
-)
-
-deleteComment (
-const { commentId } = req.params;
-)
-*/
-
 // Schema for creating a comment
 export const createCommentSchema = Joi.object({
   postId: Joi.string().required(),

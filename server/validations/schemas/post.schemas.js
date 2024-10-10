@@ -1,30 +1,4 @@
 import Joi from "joi";
-/*
-createPost (
-const { title, content } = req.body;
-)
-
-getPosts (
-const { username, author, withEngagement } = req.query; 
-)
-
-getPostById (
-const { postId } = req.params;
-)
-
-updatePost (
-const { postId } = req.params;
-  const { title, content } = req.body;
-)
-
-deletePost (
-const { postId } = req.params;
-)
-
-searchPosts (
-  const { keyword } = req.query;
-)
-*/
 
 export const createPostSchema = Joi.object({
   title: Joi.string().required(),
