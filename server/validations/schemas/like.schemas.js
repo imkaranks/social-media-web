@@ -1,15 +1,5 @@
 import Joi from "joi";
 
-/*
-getLikes (
-const { user, username, post } = req.query; // all are optional
-)
-
-toggleLike (
-const { type, id } = req.body;
-)
-*/
-
 export const getLikesSchema = Joi.object({
   user: Joi.string().optional(),
   username: Joi.string().optional(),

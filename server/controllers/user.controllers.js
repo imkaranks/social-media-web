@@ -155,6 +155,10 @@ export const updateUser = handleAsyncError(async (req, res) => {
 
   const user = await User.findById(userId).select("-password -refreshToken");
 
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
   const files = [];
 
   if (avatar) files.push(avatar);
