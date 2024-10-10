@@ -10,7 +10,7 @@ import ProfileBanner from "@/components/ui/ProfileBanner";
 const initialData = {
   fullname: "",
   username: "",
-  email: "",
+  // email: "",
   bio: "",
   avatar: null,
   banner: null,
@@ -93,7 +93,11 @@ export default function Accounts() {
   const setExistingUserData = useCallback(() => {
     const existingUser = {};
     Object.entries(auth?.user).forEach(([key, val]) => {
-      if (key !== "avatar" && key !== "banner") {
+      if (
+        key !== "avatar" &&
+        key !== "banner" &&
+        Object.keys(initialData).some((field) => key === field)
+      ) {
         existingUser[key] = val;
       }
     });
