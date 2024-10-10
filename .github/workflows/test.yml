@@ -1,0 +1,27 @@
+name: QuietSphere Server
+
+on:
+  push:
+    branches:
+      - main
+      - "feat/**"
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js container
+        uses: docker://node:22.8.0
+        with:
+          args: |
+            /bin/sh -c "
+            npm install &&
+            npm run test
+            "
