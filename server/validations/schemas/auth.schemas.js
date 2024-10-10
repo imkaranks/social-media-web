@@ -18,7 +18,13 @@ export const resendVerificationTokenSchema = Joi.object({
 });
 
 export const signinSchema = Joi.object({
-  username: Joi.string().alphanum().min(3).max(30).optional(),
-  email: Joi.string().email().required(),
+  username: Joi.string().alphanum().min(3).max(30),
+  email: Joi.string().email(),
   password: Joi.string().min(6).required(),
+}).custom((value, helpers) => {
+  const { username, email } = value;
+  if (!username && !email) {
+    return helpers.error("any.required"); // Custom error for both fields missing
+  }
+  return value;
 });

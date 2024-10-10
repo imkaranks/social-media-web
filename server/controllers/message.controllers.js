@@ -45,13 +45,18 @@ export const sendMessage = handleAsyncError(async (req, res) => {
 });
 
 export const getMessages = handleAsyncError(async (req, res) => {
-  const sender = String(req.user._id);
+  const sender = String(req?.user?._id);
+
+  if (!sender || !sender?.trim()) {
+    throw new ApiError(400, "sender is missing");
+  }
+
   const { id: receiver } = req.params;
   const { page = 1, limit = 10 } = req.query;
   const skip = (page - 1) * limit;
 
-  if ([sender, receiver].some((field) => !field || !field?.trim())) {
-    throw new ApiError(400, "Please send both sender and receiver");
+  if (!receiver || !receiver?.trim()) {
+    throw new ApiError(400, "receiver is missing");
   }
 
   const conversation = await Conversation.findOne({

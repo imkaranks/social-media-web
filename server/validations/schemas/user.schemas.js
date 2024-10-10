@@ -1,46 +1,4 @@
 import Joi from "joi";
-/*
-getUser (
-const { username, fullname, email, id } = req.query; 
-)
-
-getUserById (
-const { userId } = req.params;
-)
-
-getUserByUsername (
-const { username } = req.params;
-)
-
-searchUsers (
-const { keyword } = req.query;
-)
-
-changeAvatar (
-const { userId } = req.params;
-)
-
-updateUser (
-const { userId } = req.params;
-  const { fullname, username, bio } = req.body;
-)
-
-forgotPassword (
-const { email } = req.body;
-)
-
-resetPassword (
-const { email, token, newPassword, confirmPassword } = req.body;
-)
-
-resendResetPasswordToken (
-const { email } = req.body;
-)
-
-changePassword (
-const { oldPassword, newPassword } = req.body;
-)
-*/
 
 export const getUserSchema = Joi.object({
   username: Joi.string().optional(),
