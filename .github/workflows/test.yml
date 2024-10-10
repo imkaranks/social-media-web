@@ -10,18 +10,20 @@ on:
       - main
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
 
-    steps:
-      - name: Check out the code
-        uses: actions/checkout@v2
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x] # Add 22.x here for testing across versions
 
-      - name: Set up Node.js container
-        uses: docker://node:22.8.0
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
         with:
-          args: |
-            /bin/sh -c "
-            npm install &&
-            npm run test
-            "
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+      - run: npm ci
+      - run: npm run build --if-present
+      - run: npm test
