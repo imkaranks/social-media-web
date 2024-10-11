@@ -8,6 +8,8 @@ import ApiError from "../utils/ApiError.js";
 
 export const getNotifications = handleAsyncError(async (req, res) => {
   const { userId } = req.params;
+  const { page = 1, limit = 5 } = req.query;
+  const skip = (page - 1) * limit;
 
   if (!userId.trim()) {
     throw new ApiError(400, "userId must be provided");
@@ -17,11 +19,15 @@ export const getNotifications = handleAsyncError(async (req, res) => {
     throw new ApiError(403, "You are not permitted to access this resource");
   }
 
-  const notifications = await Notification.find({
-    user: req.user._id,
-  })
-    .sort({ createdAt: -1 })
-    .limit(10);
+  const [count, notifications] = await Promise.all([
+    Notification.countDocuments({ user: req.user._id }),
+    Notification.find({
+      user: req.user._id,
+    })
+      .sort({ createdAt: -1 })
+      .skip(Number(skip))
+      .limit(Number(limit)),
+  ]);
 
   const populatedNotifications = await Promise.all(
     notifications.map(async (n) => {
@@ -91,7 +97,12 @@ export const getNotifications = handleAsyncError(async (req, res) => {
     })
   );
 
-  res
-    .status(200)
-    .json(new ApiResponse(200, populatedNotifications || [], "Success"));
+  const totalPages = Math.ceil(count / limit);
+
+  res.status(200).json({
+    ...new ApiResponse(200, populatedNotifications || [], "Success"),
+    count,
+    totalPages,
+    currentPage: Number(page),
+  });
 });

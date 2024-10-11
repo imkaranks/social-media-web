@@ -1,4 +1,7 @@
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import useNotifications from "@/hooks/useNotifications";
+import Spinner from "@/components/ui/Spinner";
 import {
   generateNotificationMessage,
   generateNotificationAuthorAvatar,
@@ -8,10 +11,21 @@ import formatDate from "@/utils/formatDate";
 import formatTime from "@/utils/formatTime";
 
 export default function Notification() {
-  const { notifications } = useNotifications();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { isLoading, notifications, totalPages, getNotifications } =
+    useNotifications();
+  const [currentPage, setCurrentPage] = useState(
+    Number(searchParams.get("page")) || 1,
+  );
 
-  return (
-    <div className="bg-gray-20 dark:bg-neutral-70 rounded-xl p-4 md:pr-0">
+  useEffect(() => {
+    getNotifications({ page: Number(searchParams.get("page")) });
+  }, [searchParams, getNotifications]);
+
+  return isLoading ? (
+    <Spinner className="flex h-[calc(100vh-4.5625rem)] items-center justify-center" />
+  ) : (
+    <div className="bg-gray-20 dark:bg-neutral-70 flex min-h-[calc(100vh-4.5625rem)] flex-col rounded-xl p-4 md:pr-0">
       <div className="flex items-center justify-between border-b-2 border-gray-100 p-4 dark:border-white/5 md:px-6">
         <h2 className="font-semibold md:text-lg">Notifications</h2>
         <svg
@@ -69,6 +83,92 @@ export default function Notification() {
           );
         })}
       </div>
+
+      {totalPages > 1 && (
+        <nav
+          className="mt-auto flex flex-wrap items-center justify-center gap-x-1"
+          aria-label="Pagination"
+        >
+          <button
+            type="button"
+            className="inline-flex min-h-[38px] min-w-[38px] items-center justify-center gap-x-1.5 rounded-lg px-2.5 py-2 text-sm text-gray-800 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none disabled:pointer-events-none disabled:opacity-50 dark:text-white dark:hover:bg-white/10 dark:focus:bg-white/10"
+            aria-label="Previous"
+            onClick={() => {
+              if (currentPage <= 1) return;
+              const query = new URLSearchParams({ page: currentPage - 1 });
+              setCurrentPage(currentPage - 1);
+              setSearchParams(query);
+            }}
+            disabled={currentPage === 1}
+          >
+            <svg
+              className="size-3.5 shrink-0"
+              xmlns="http://www.w3.org/2000/svg"
+              width={24}
+              height={24}
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="m15 18-6-6 6-6" />
+            </svg>
+            <span>Previous</span>
+          </button>
+          <div className="flex flex-wrap items-center justify-center gap-x-1">
+            {Array.from({ length: totalPages }, (_, index) => (
+              <button
+                key={index + 1}
+                onClick={() => {
+                  const query = new URLSearchParams({ page: index + 1 });
+                  setCurrentPage(index + 1);
+                  setSearchParams(query);
+                }}
+                disabled={currentPage === index + 1}
+                type="button"
+                className={
+                  currentPage === index + 1
+                    ? "flex min-h-[38px] min-w-[38px] items-center justify-center rounded-lg bg-gray-200 px-3 py-2 text-sm text-gray-800 focus:bg-gray-300 focus:outline-none disabled:pointer-events-none disabled:opacity-50 dark:bg-neutral-600 dark:text-white dark:focus:bg-neutral-500"
+                    : "flex min-h-[38px] min-w-[38px] items-center justify-center rounded-lg px-3 py-2 text-sm text-gray-800 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none disabled:pointer-events-none disabled:opacity-50 dark:text-white dark:hover:bg-white/10 dark:focus:bg-white/10"
+                }
+                // aria-current="page"
+              >
+                {index + 1}
+              </button>
+            ))}
+          </div>
+          <button
+            type="button"
+            className="inline-flex min-h-[38px] min-w-[38px] items-center justify-center gap-x-1.5 rounded-lg px-2.5 py-2 text-sm text-gray-800 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none disabled:pointer-events-none disabled:opacity-50 dark:text-white dark:hover:bg-white/10 dark:focus:bg-white/10"
+            aria-label="Next"
+            onClick={() => {
+              if (currentPage >= totalPages) return;
+              const query = new URLSearchParams({ page: currentPage + 1 });
+              setCurrentPage(currentPage + 1);
+              setSearchParams(query);
+            }}
+            disabled={currentPage === totalPages}
+          >
+            <span>Next</span>
+            <svg
+              className="size-3.5 shrink-0"
+              xmlns="http://www.w3.org/2000/svg"
+              width={24}
+              height={24}
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="m9 18 6-6-6-6" />
+            </svg>
+          </button>
+        </nav>
+      )}
     </div>
   );
 }

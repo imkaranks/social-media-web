@@ -12,13 +12,39 @@ export const NotificationProvider = ({ children }) => {
   const axiosPrivate = useAxiosPrivate();
   const { socket } = useSocket();
 
+  const [isLoading, setIsLoading] = useState(false);
   const [notifications, setNotifications] = useState([]);
+  const [totalPages, setTotalPages] = useState(0);
 
   const handleNotification = useCallback((payload) => {
     const notificationMessage = generateNotificationMessage(payload);
     toast(notificationMessage, { icon: "🔔", position: "bottom-right" });
     setNotifications((prevNotifications) => [...prevNotifications, payload]);
   }, []);
+
+  const getNotifications = useCallback(
+    async (query) => {
+      const searchParams = new URLSearchParams(query).toString();
+      setIsLoading(true);
+
+      try {
+        const response = await axiosPrivate.get(
+          `/notification/${auth.user._id}/${searchParams?.trim() ? `?${searchParams}` : ""}`,
+        );
+        setTotalPages(response?.data?.totalPages);
+        setNotifications(response?.data?.data);
+      } catch (error) {
+        console.error(
+          error?.response?.data?.message ||
+            error?.message ||
+            "Failed to get notifications",
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [auth?.user?._id, axiosPrivate],
+  );
 
   useEffect(() => {
     if (!auth || !socket) return;
@@ -31,27 +57,15 @@ export const NotificationProvider = ({ children }) => {
   }, [auth, socket, handleNotification]);
 
   useEffect(() => {
-    const getNotifications = async () => {
-      try {
-        const response = await axiosPrivate.get(
-          `/notification/${auth.user._id}`,
-        );
-        // console.log(response?.data?.data);
-        setNotifications(response?.data?.data);
-      } catch (error) {
-        console.error(
-          error?.response?.data?.message ||
-            error?.message ||
-            "Failed to get notifications",
-        );
-      }
-    };
-
-    auth && !notifications.length && getNotifications();
-  }, [auth, notifications.length]);
+    if (auth && !notifications.length) {
+      getNotifications();
+    }
+  }, [auth, notifications.length, getNotifications]);
 
   return (
-    <NotificationContext.Provider value={{ notifications }}>
+    <NotificationContext.Provider
+      value={{ isLoading, notifications, totalPages, getNotifications }}
+    >
       {children}
     </NotificationContext.Provider>
   );
