@@ -5,6 +5,7 @@ import useAuth from "@/hooks/useAuth";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 import useLogout from "@/hooks/useLogout";
 import useDebounce from "@/hooks/useDebounce";
+import useCreatePost from "@/hooks/useCreatePost";
 import Button from "@/components/ui/Button";
 import Avatar from "@/components/ui/Avatar";
 // import useStore from "@/app/store";
@@ -16,6 +17,7 @@ export default function Topbar() {
   const axiosPrivate = useAxiosPrivate();
   const navigate = useNavigate();
   const { logout, isSubmitting } = useLogout();
+  const { setIsPostModalOpen } = useCreatePost();
 
   // const users = useStore((state) => state.search.users);
   // const setSearchUsers = useStore((state) => state.setSearchUsers);
@@ -105,6 +107,7 @@ export default function Topbar() {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            placeholder="#Search"
           />
           <Button
             size="small"
@@ -173,9 +176,7 @@ export default function Topbar() {
         )} */}
 
         <div className="flex items-center gap-2.5 md:gap-4 lg:gap-6 2xl:gap-8">
-          <Button as="label" htmlFor="create-post">
-            Create
-          </Button>
+          <Button onClick={() => setIsPostModalOpen(true)}>Create</Button>
 
           {auth && (
             <div className="hs-dropdown relative inline-flex">

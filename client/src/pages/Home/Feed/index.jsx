@@ -26,6 +26,7 @@ export default function Feed() {
     const handleScroll = () => {
       // Check if we are at the bottom of the page
       if (
+        !isLoading &&
         window.innerHeight + document.documentElement.scrollTop + 1 >=
           document.documentElement.scrollHeight &&
         page < totalPages

@@ -5,6 +5,11 @@
 @layer base {
   :root {
     --ff-primary: "Inter", sans-serif;
+    --bg-background: rgb(255 255 255);
+  }
+
+  .dark {
+    --bg-background: rgb(38 38 38);
   }
 
   * {

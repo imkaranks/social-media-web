@@ -1,6 +1,7 @@
 import { Link, NavLink, useLocation } from "react-router-dom";
 import useAuth from "@/hooks/useAuth";
 import useLogout from "@/hooks/useLogout";
+import useCreatePost from "@/hooks/useCreatePost";
 import Button from "@/components/ui/Button";
 import Avatar from "@/components/ui/Avatar";
 import useStore from "@/app/store";
@@ -9,6 +10,7 @@ export default function LeftSidebar({ expanded, setExpanded }) {
   const { auth } = useAuth();
   const location = useLocation();
   const { logout, isSubmitting } = useLogout();
+  const { setIsPostModalOpen } = useCreatePost();
   const unreadFriendChats = useStore((state) => state.unreadFriendChats);
   const unreadChats =
     location.pathname !== "/messages" &&
@@ -306,10 +308,9 @@ export default function LeftSidebar({ expanded, setExpanded }) {
 
         <div className="max-xl:hidden">
           <Button
-            as="label"
             size="large"
             className="w-full justify-center"
-            htmlFor="create-post"
+            onClick={() => setIsPostModalOpen(true)}
           >
             Create
           </Button>

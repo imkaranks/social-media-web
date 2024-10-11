@@ -3,6 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import Loader from "@/components/ui/Loader";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import CreatePostModal from "@/components/CreatePostModal";
 import RootLayout from "@/pages/RootLayout";
 import SingleSidebarLayout from "@/pages/SingleSidebarLayout";
 import AuthLayout from "@/pages/Auth/AuthLayout";
@@ -78,6 +79,7 @@ export default function App() {
         </Routes>
       </Suspense>
       <Toaster />
+      <CreatePostModal />
     </>
   );
 }

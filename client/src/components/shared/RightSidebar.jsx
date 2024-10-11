@@ -6,7 +6,8 @@ import useAuth from "@/hooks/useAuth";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 import Button from "@/components/ui/Button";
 import Avatar from "@/components/ui/Avatar";
-import formatDate from "../../utils/formatDate";
+import Spinner from "@/components/ui/Spinner";
+import formatDate from "@/utils/formatDate";
 import useStore from "@/app/store";
 
 function RequestSkeleton() {
@@ -150,7 +151,7 @@ export default function RightSidebar() {
         {/* messages */}
         <div className="space-y-4">
           {friendsLoading ? (
-            <p>Loading...</p>
+            <Spinner className="flex items-center justify-center" />
           ) : friends.length ? (
             (friends.length > 3 ? friends.slice(0, 3) : friends).map(
               (friend, idx) => {
@@ -248,7 +249,7 @@ export default function RightSidebar() {
             ))
           ) : (
             <p className="text-gray-400 dark:text-neutral-500 max-2xl:text-sm">
-              No friend requests received
+              No requests received
             </p>
           )}
         </div>
@@ -287,7 +288,7 @@ export default function RightSidebar() {
             ))
           ) : (
             <p className="text-gray-400 dark:text-neutral-500 max-2xl:text-sm">
-              No friend requests sent
+              No requests sent
             </p>
           )}
         </div>

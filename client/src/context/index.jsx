@@ -2,6 +2,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import { SocketProvider } from "@/context/SocketContext";
 import { MessageProvider } from "@/context/MessageContext";
 import { NotificationProvider } from "@/context/NotificationContext";
+import { CreatePostProvider } from "@/context/CreatePostContext";
 import useHealthCheck from "@/hooks/useHealthCheck";
 
 export default function AppProvider({ children }) {
@@ -13,7 +14,9 @@ export default function AppProvider({ children }) {
     <AuthProvider>
       <SocketProvider>
         <MessageProvider>
-          <NotificationProvider>{children}</NotificationProvider>
+          <NotificationProvider>
+            <CreatePostProvider>{children}</CreatePostProvider>
+          </NotificationProvider>
         </MessageProvider>
       </SocketProvider>
     </AuthProvider>
