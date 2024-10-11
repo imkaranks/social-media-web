@@ -96,12 +96,10 @@ export default function useInitMessages() {
 
     if (!Object.keys(chats)?.length) {
       getAllMessages();
-    } else {
-      if (loading) {
-        setLoading(false);
-      }
+    } else if (loading) {
+      setLoading(false);
     }
-  }, [auth, friends, axiosPrivate, setChats, initUnreadFriendChats, loading]);
+  }, [auth, friends, axiosPrivate, setChats, initUnreadFriendChats]);
 
   return { loading, unreadChatIds, setUnreadChatIds };
 }

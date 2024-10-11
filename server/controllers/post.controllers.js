@@ -94,8 +94,11 @@ async function notifyFriendsAboutPost(author, postId) {
 }
 
 export const getPosts = handleAsyncError(async (req, res) => {
-  const { username, author, withEngagement } = req.query;
+  const { username, author, withEngagement, page = 1, limit = 10 } = req.query;
+  const skip = (page - 1) * limit;
   const query = {};
+
+  const count = await Post.countDocuments();
 
   if (username?.trim()) {
     const user = await User.findOne({ username }).select(
@@ -113,6 +116,8 @@ export const getPosts = handleAsyncError(async (req, res) => {
 
   const posts = await Post.find(query)
     .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(parseInt(limit))
     .populate({
       path: "author",
       model: "User",
@@ -133,20 +138,24 @@ export const getPosts = handleAsyncError(async (req, res) => {
         const userLikedPost = post.likes.some(
           (like) => like?._id?.toString() === req.user._id?.toString()
         );
-        return { ...post._doc, likeCount, commentCount, userLikedPost };
+        return {
+          ...post._doc,
+          likeCount,
+          commentCount,
+          userLikedPost,
+        };
       })
     );
   }
 
-  res
-    .status(200)
-    .json(
-      new ApiResponse(
-        200,
-        withEngagement === "true" ? allPosts : posts || [],
-        "Post fetched Successfully"
-      )
-    );
+  res.status(200).json({
+    ...new ApiResponse(
+      200,
+      withEngagement === "true" ? allPosts : posts || [],
+      "Post fetched Successfully"
+    ),
+    totalPages: Math.floor(count / limit),
+  });
 });
 
 // export const getAllPosts = handleAsyncError(async (req, res) => {

@@ -172,12 +172,10 @@ export default function useFriendshipHandler() {
 
     if (auth) {
       Promise.all([getFriends(), getPendingRequests()]);
-    } else {
-      if (isLoading) {
-        setIsLoading(false);
-      }
+    } else if (isLoading) {
+      setIsLoading(false);
     }
-  }, [axiosPrivate, auth, setFriends, setPendingRequests, isLoading]);
+  }, [axiosPrivate, auth, setFriends, setPendingRequests]);
 
   return {
     friends,

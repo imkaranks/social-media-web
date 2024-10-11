@@ -2,7 +2,7 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import useAuth from "@/hooks/useAuth";
 import useCreatePost from "@/hooks/useCreatePost";
-import Button from "../../../components/ui/Button";
+import Button from "@/components/ui/Button";
 
 const INITIAL_DATA = {
   title: "",
@@ -64,12 +64,12 @@ export default function CreatePost() {
       >
         {auth?.user?.avatar?.url ? (
           <img
-            className="inline-block size-8 rounded-full object-cover sm:size-9 md:size-10"
+            className="inline-block size-8 rounded-full object-cover max-[27.25em]:hidden sm:size-9 md:size-10"
             src={auth.user.avatar.url}
             alt={auth?.user?.fullname}
           />
         ) : (
-          <span className="inline-flex size-8 flex-shrink-0 items-center justify-center rounded-full bg-gray-100 text-sm font-semibold leading-none text-gray-800 dark:bg-white/10 dark:text-white">
+          <span className="inline-flex size-8 flex-shrink-0 items-center justify-center rounded-full bg-gray-100 text-sm font-semibold leading-none text-gray-800 dark:bg-white/10 dark:text-white max-[27.25em]:hidden">
             {auth?.user?.fullname
               .split(" ")
               .map((word) => word[0].toUpperCase())}
@@ -79,7 +79,7 @@ export default function CreatePost() {
           type="text"
           placeholder={`What's on your mind, ${auth?.user?.fullname?.split(" ")[0]}?`}
           id="create-post"
-          className="flex w-full justify-self-start truncate bg-transparent pl-4 text-sm outline-none"
+          className="flex w-full justify-self-start truncate bg-transparent text-sm outline-none min-[27.25em]:pl-4"
         />
         <Button className="p-2">
           <svg

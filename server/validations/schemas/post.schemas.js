@@ -9,6 +9,8 @@ export const getPostsSchema = Joi.object({
   username: Joi.string().optional(),
   author: Joi.string().optional(),
   withEngagement: Joi.boolean().optional(),
+  page: Joi.number().optional(),
+  limit: Joi.number().optional(),
 });
 
 export const getPostByIdSchema = Joi.object({
