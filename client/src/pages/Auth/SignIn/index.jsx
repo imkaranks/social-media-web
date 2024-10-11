@@ -89,7 +89,7 @@ export default function SignIn() {
             </div>
 
             <Link
-              to=""
+              to="/forgot-password"
               className="text-primary-600 dark:text-primary-500 text-sm font-medium hover:underline"
             >
               Forgot password?

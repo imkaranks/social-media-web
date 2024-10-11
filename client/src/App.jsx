@@ -19,6 +19,8 @@ import Settings from "@/pages/Settings";
 import PostDetails from "@/pages/PostDetails";
 import Search from "@/pages/Search";
 import ChangePassword from "@/pages/ChangePassword";
+import ForgotPassword from "@/pages/ForgotPassword";
+import ResetPassword from "@/pages/ResetPassword";
 
 export default function App() {
   return (
@@ -32,6 +34,10 @@ export default function App() {
             </Route>
 
             <Route path="verify" element={<EmailVerification />} />
+
+            <Route path="forgot-password" element={<ForgotPassword />} />
+
+            <Route path="reset-password" element={<ResetPassword />} />
 
             <Route
               path="change-password"

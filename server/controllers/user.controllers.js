@@ -6,6 +6,7 @@ import handleAsyncError from "../utils/handleAsyncError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";
 import upload from "../utils/cloudinary.js";
+import { sendMail } from "../utils/sendMail.js";
 
 const RESET_TOKEN_EXPIRATION = 30 * 60 * 1000;
 
@@ -248,6 +249,22 @@ export const forgotPassword = handleAsyncError(async (req, res) => {
     throw new ApiError(404, "User not found.");
   }
 
+  const existingToken = await VerificationToken.findOne({
+    user: user._id,
+    type: "RESET_PASSWORD",
+  });
+
+  if (
+    existingToken &&
+    verificationToken.createdAt >= new Date(Date.now() - RESET_TOKEN_EXPIRATION)
+  ) {
+    await sendResetPassToken(token, email, user.username);
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, {}, "Verification token sent."));
+  }
+
   const token = crypto.randomBytes(20).toString("hex");
 
   const verificationToken = await VerificationToken.create({
@@ -256,10 +273,46 @@ export const forgotPassword = handleAsyncError(async (req, res) => {
     type: "RESET_PASSWORD",
   });
 
-  // TODO: send the token to the user via email or other means
+  await sendResetPassToken(token, email, user.username);
 
   res.status(200).json(new ApiResponse(200, {}, "Verification token sent."));
 });
+
+async function sendResetPassToken(token, email, username) {
+  const verificationLink = `${
+    process.env.CORS_ORIGIN
+  }/reset-password/?token=${encodeURIComponent(token)}&email=${encodeURIComponent(
+    email
+  )}`;
+
+  await sendMail({
+    email,
+    subject: "Reset Your Password | QuietSphere",
+    text: "Click the link below to reset your password:",
+    html: `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Email Verification</title>
+    </head>
+    <body style="font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f4f4f4;">
+        <div style="max-width: 600px; margin: auto; background: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);">
+            <h1 style="color: #333;">Email Verification</h1>
+            <p style="color: #555;">Hi ${username},</p>
+            <p style="color: #555;">We received a request to reset your password for your account. To proceed, please click the link below:</p>
+            <a href="${verificationLink}" style="display: inline-block; padding: 10px 20px; background-color: #28a745; color: white; text-decoration: none; border-radius: 5px; margin-top: 20px;">Verify Email</a>
+            <p style="color: #555;">f you did not request this password reset, please ignore this email. Your account will remain secure.</p>
+            <div style="margin-top: 20px; font-size: 12px; color: #777;">
+                <p>Best regards,<br>Karan Sethi</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    `,
+  });
+}
 
 export const resetPassword = handleAsyncError(async (req, res) => {
   const { email, token, newPassword, confirmPassword } = req.body;
@@ -305,7 +358,11 @@ export const resetPassword = handleAsyncError(async (req, res) => {
   user.password = newPassword;
   await user.save();
 
-  await VerificationToken.findByIdAndDelete(verificationToken._id);
+  // await VerificationToken.findByIdAndDelete(verificationToken._id);
+  await VerificationToken.deleteMany({
+    user: user._id,
+    type: "RESET_PASSWORD",
+  });
 
   res
     .status(200)

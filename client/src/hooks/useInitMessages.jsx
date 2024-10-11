@@ -14,7 +14,7 @@ export default function useInitMessages() {
   const initUnreadFriendChats = useStore(
     (state) => state.initUnreadFriendChats,
   );
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [unreadChatIds, setUnreadChatIds] = useState({});
 
   // TODO: Implement unread message count aggregation from both sockets and database
@@ -23,7 +23,8 @@ export default function useInitMessages() {
     if (!auth) return;
 
     async function getAllMessages() {
-      setLoading(true);
+      // setLoading(true);
+
       try {
         const responses = await Promise.allSettled(
           friends.map((friend) => axiosPrivate.get(`/message/${friend._id}`)),
@@ -95,8 +96,12 @@ export default function useInitMessages() {
 
     if (!Object.keys(chats)?.length) {
       getAllMessages();
+    } else {
+      if (loading) {
+        setLoading(false);
+      }
     }
-  }, [auth, friends, axiosPrivate, setChats, initUnreadFriendChats]);
+  }, [auth, friends, axiosPrivate, setChats, initUnreadFriendChats, loading]);
 
   return { loading, unreadChatIds, setUnreadChatIds };
 }

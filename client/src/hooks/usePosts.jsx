@@ -10,14 +10,15 @@ export default function usePosts(query) {
   const posts = useStore((state) => state.posts);
   const setPosts = useStore((state) => state.setPosts);
   // const [posts, setPosts] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const searchParams = new URLSearchParams(query).toString();
 
   useEffect(() => {
     async function getPosts() {
-      setIsLoading(true);
+      // setIsLoading(true);
+
       try {
         const response = await axiosPrivate.get(
           !searchParams?.trim() ? "/post" : `/post/?${searchParams}`,

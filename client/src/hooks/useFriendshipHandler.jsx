@@ -23,13 +23,14 @@ export default function useFriendshipHandler() {
   const removeExistingFriend = useStore((state) => state.removeExistingFriend);
 
   const [pendingRequestsLoading, setPendingRequestsLoading] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [sendingFriendRequest, setSendingFriendRequest] = useState(false);
 
   const acceptRequest = useCallback(
     async (requestId) => {
       setIsSubmitting(true);
+
       try {
         const response = await axiosPrivate.post(`/friend/accept`, {
           userId: auth?.user?._id,
@@ -135,7 +136,7 @@ export default function useFriendshipHandler() {
 
   useEffect(() => {
     const getFriends = async () => {
-      setIsLoading(true);
+      // setIsLoading(true);
 
       try {
         const response = await axiosPrivate.get(`/friend/${auth?.user?._id}`);
@@ -171,8 +172,12 @@ export default function useFriendshipHandler() {
 
     if (auth) {
       Promise.all([getFriends(), getPendingRequests()]);
+    } else {
+      if (isLoading) {
+        setIsLoading(false);
+      }
     }
-  }, [axiosPrivate, auth, setFriends, setPendingRequests]);
+  }, [axiosPrivate, auth, setFriends, setPendingRequests, isLoading]);
 
   return {
     friends,
