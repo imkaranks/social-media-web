@@ -64,22 +64,17 @@ export const getMessages = handleAsyncError(async (req, res) => {
   }).populate({
     path: "messages",
     options: {
-      // sort: { createdAt: -1 },
+      sort: { createdAt: -1 },
       skip,
       limit: parseInt(limit),
     },
   });
 
-  // if (!conversation) {
-  //   return res
-  //     .status(200)
-  //     .json(new ApiResponse(200, [], "No conversation found"));
-  // }
   if (!conversation) {
     throw new ApiError(404, "No conversation found");
   }
 
-  const messages = conversation.messages;
+  const messages = conversation.messages.reverse();
 
   res.status(200).json(new ApiResponse(200, messages));
 });
