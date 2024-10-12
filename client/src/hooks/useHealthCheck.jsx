@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import axios from "@/app/axios";
 
-export default function useHealthCheck(pollingInterval = 5000) {
+export default function useHealthCheck(pollingInterval = 30000) {
   const [error, setError] = useState(null);
   const statusRef = useRef("");
 

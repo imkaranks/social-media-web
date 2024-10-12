@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import useNotifications from "@/hooks/useNotifications";
 import Spinner from "@/components/ui/Spinner";
@@ -11,16 +10,9 @@ import formatDate from "@/utils/formatDate";
 import formatTime from "@/utils/formatTime";
 
 export default function Notification() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const { isLoading, notifications, totalPages, getNotifications } =
+  const [, setSearchParams] = useSearchParams();
+  const { isLoading, notifications, totalPages, currentPage, setCurrentPage } =
     useNotifications();
-  const [currentPage, setCurrentPage] = useState(
-    Number(searchParams.get("page")) || 1,
-  );
-
-  useEffect(() => {
-    getNotifications({ page: Number(searchParams.get("page")) });
-  }, [searchParams, getNotifications]);
 
   return isLoading ? (
     <Spinner className="flex h-[calc(100vh-4.5625rem)] items-center justify-center" />
